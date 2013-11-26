@@ -1,1 +1,5 @@
 *.pyc
+*~
+proto_err.sublime-project
+proto_err.sublime-workspace
+/data/*
