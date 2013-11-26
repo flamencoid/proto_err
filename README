@@ -1,0 +1,3 @@
+To read in a reference file subsample and realign with random read errors
+
+python subsample.py -r referenceFile.fa
