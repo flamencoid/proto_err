@@ -7,8 +7,8 @@ import os
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
-from fastaIO import subsample,writeFasta,singleSNP,getRef
-
+from fastaIO import getRef,writeFasta
+from error import singleSNP
 from optparse import OptionParser
 import align
 import pysam
@@ -18,7 +18,8 @@ parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file")
 (opt, args) = parser.parse_args()
 
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
-seqList = subsample(filename=opt.refFilename,readError=singleSNP,errorFreq=0.5)
+ref = getRef(filename)
+seqList = subsample(ref,readError=singleSNP,errorFreq=0.5)
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
 align.refIndex(file=opt.refFilename)
