@@ -18,7 +18,7 @@ parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file")
 (opt, args) = parser.parse_args()
 
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
-ref = getRef(opt.readFilename)
+ref = getRef(opt.refFilename)
 seqList = subsample(ref,readError=singleSNP,errorFreq=0.5)
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
