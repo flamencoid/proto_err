@@ -9,11 +9,16 @@ from Bio.SeqRecord import SeqRecord
 def identity(seqObj):
 	return Seq("".join(list(seqObj)))
 
+def SNP(seq,pos,rl):
+	seq = list(seq)
+	seq[pos] = rl
+	return Seq("".join(seq))
+
 def singleSNP(seqObj,freq):
 	"""
 	Function to randomly add SNP errors
 	"""
-	seq = list(seqObj)
+	seq = seqObj
 	alphabet = getAlphabet()
 	if random.random() < freq:
 		pos = random.randint(0,len(seq))
@@ -21,8 +26,8 @@ def singleSNP(seqObj,freq):
 		reducedAlphabet = alphabet
 		reducedAlphabet.remove(letter)
 		replaceLetter = random.choice(reducedAlphabet)
-		seq[pos] = replaceLetter
-	return Seq("".join(seq))
+		seq = SNP(seq=seqObj,pos=pos,rl=replaceLetter)
+	return seq
 
 def subsample(ref,readError=identity,numReads=10000,readRange = [1000,20000],errorFreq=0.1):
 	"""

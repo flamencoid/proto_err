@@ -10,7 +10,6 @@ sys.path.insert(0, os.path.abspath('../proto_err'))
 from fastaIO import getRef,writeFasta
 from error import singleSNP,subsample
 from optparse import OptionParser
-from read import kmerFreq
 from metrics import comparison 
 import align
 import pysam
@@ -21,7 +20,7 @@ parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
 ref = getRef(opt.refFilename)
-seqList = subsample(ref,readError=singleSNP,numReads=100,readRange = [100,2000],errorFreq=0.5)
+seqList = subsample(ref,readError=singleSNP,numReads=100,readRange = [1000,20000],errorFreq=0.5)
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
 align.refIndex(file=opt.refFilename)
@@ -29,8 +28,8 @@ align.refIndex(file=opt.refFilename)
 samfileName = opt.readFilename + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
 
-compare = comparison()
-compare.setup()
+compare = comparison(ref)
+compare.setup(opt)
 compare.compareReads(samfile=samfileName,reffile=opt.readFilename)
 print compare.res
 

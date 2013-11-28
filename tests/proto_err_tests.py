@@ -1,5 +1,5 @@
 from nose.tools import *
-import ONEC
+import proto_err
 
 def setup():
     print "SETUP!"
