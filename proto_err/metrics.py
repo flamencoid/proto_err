@@ -5,6 +5,8 @@ from pysam import AlignedRead
 from fastaIO import getRef
 import time
 from utils import *
+import difflib
+import itertools
 
 
 ## Compare aligned reads to reference and calculate stats
@@ -40,7 +42,8 @@ class comparison():
 
         ## Create the dictonary of error modes
         ## res[A][T] = counts of A -> T SNPs
-        self.res['errorMode'] = dict(zip(getAlphabet(),[dict(zip(getAlphabet(),[0]*4))]*4))
+
+        self.res['errorMode'] = dict(zip(getAlphabet(),[dict(zip(getAlphabet(),[0]*4)) for i in getAlphabet()]))
 
     def kmerFreq(self,seq,kmer):
         """
@@ -54,7 +57,6 @@ class comparison():
         generates stats
         """
         samfile = pysam.Samfile( samfile )
-        ref = getRef(reffile)
         for read in samfile.fetch():
             self.res['Counts']['Total'] += 1
             if read.is_unmapped:
@@ -62,6 +64,15 @@ class comparison():
             else:
                 self.res['Counts']['Mapped'] += 1
                 self.checkRead(read)
+
+    def readDiff(self,read,ref):
+        return difflib.ndiff(read,ref)
+
+    def getRefRead(self,positions):
+        """
+        Function to return the reference sequence a read is aligned to
+        """
+        return self.ref[positions[0]:positions[-1]+1]
 
     def checkRead(self,read):
         """
@@ -71,15 +82,38 @@ class comparison():
         self.res['Counts']['NM'] += NM
         if NM == 0:
             self.res['Counts']['perfectAlignments'] += 1
+            for base in getAlphabet():
+                self.res['errorMode'][base][base] += read.seq.count(base)
         else:
             self.res['Counts']['mismatchedAlignments'] += 1
             ## Check what type of mismatch it is.
-            ## if the positions on reference are continous and length of 
-            ## read is the same then there's only SNP errors??
-            if (read.rlen == len(read.positions)) and (len(read.positions)==
-                 read.positions[-1] - read.positions[0] + 1):
+            ## if the cigarsting only has M then only SNP errors
+            if (read.rlen == read.cigar[0][1]):
+                refRead = list(str(self.getRefRead(read.positions)))
+                # print "\n".join(difflib.ndiff([str(refRead)], [str(read.seq)]))
+                for t,e in itertools.izip_longest(refRead,list(str(read.seq))):
+                    self.res['errorMode'][t][e] += 1
+
+
+
+
+                # for s in self.readDiff(read.seq,refRead):
+                #     if s[0] == ' ':
+                #         self.res['errorMode'][s[2]][s[2]] += 1
+                #     else:
+                #         print s,s.next()
+                        
+
+                # print read
+                # print read.positions[0],read.positions[-1]
+                # print len(refRead)
+                # print read.rlen
                 # print read.tlen
-                pass
+
+                # for pos,emmittedBase in enumerate(read.seq):
+                #     trueBase = self.ref[read.positions[pos]]
+                #     # print str(trueBase),str(emmittedBase)
+                #     self.res['errorMode'][str(trueBase)][str(emmittedBase)] += 1
 
         
 

@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
 from fastaIO import getRef,writeFasta
-from error import singleSNP,subsample
+from error import singleSNP,subsample,identity
 from optparse import OptionParser
 from metrics import comparison 
 import align
@@ -18,9 +18,13 @@ parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",default="../data/ref.fa")
 (opt, args) = parser.parse_args()
 
+opt.snpFreq = 0.1
+
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
 ref = getRef(opt.refFilename)
-seqList = subsample(ref,readError=singleSNP,numReads=100,readRange = [1000,20000],errorFreq=0.5)
+logging.info("Subsampling reads from reference")
+seqList = subsample(ref,opt,readError=singleSNP,numReads=10000,readRange = [1000,20000])
+logging.info("Writing Fasta file of subsampled reads")
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
 align.refIndex(file=opt.refFilename)
@@ -28,6 +32,7 @@ align.refIndex(file=opt.refFilename)
 samfileName = opt.readFilename + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
 
+logging.info("Doing read comparision")
 compare = comparison(ref)
 compare.setup(opt)
 compare.compareReads(samfile=samfileName,reffile=opt.readFilename)
