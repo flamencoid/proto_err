@@ -39,6 +39,7 @@ class comparison():
         self.res['Counts'] = {}
         self.res['kmerCounts'] = AutoVivification()
         self.res['RefCounts'] =  AutoVivification()
+        self.errorList = []
         for metric in self.counts:
             self.res['Counts'][metric[0]] = metric[2]
 
@@ -113,15 +114,23 @@ class comparison():
                     ## if it's an error, check the preceding  opt.maxOrder bases
                     if not true == emission:
                         ## Check preceding bases
-                        for j in [k +1 for k in range(self.opt.maxOrder)]:
-                            try:
-                                self.res['kmerCounts']['before'][true][emission][read.seq[i-j:i]] += 1
-                            except:
-                                self.res['kmerCounts']['before'][true][emission][read.seq[i-j:i]] = 1
-                            try:
-                                self.res['kmerCounts']['after'][true][emission][read.seq[i+1:j+i+1]] += 1
-                            except:
-                                self.res['kmerCounts']['after'][true][emission][read.seq[i+1:j+i+1]] = 1
+                        self.errorList.append(error(true,emission,read.seq[i-self.opt.maxOrder:self.opt.maxOrder+i+1]))
+                        # for j in [k +1 for k in range(self.opt.maxOrder)]:
+                        #     try:
+                        #         self.res['kmerCounts']['before'][true][emission][read.seq[i-j:i]] += 1
+                        #     except:
+                        #         self.res['kmerCounts']['before'][true][emission][read.seq[i-j:i]] = 1
+                        #     try:
+                        #         self.res['kmerCounts']['after'][true][emission][read.seq[i+1:j+i+1]] += 1
+                        #     except:
+                        #         self.res['kmerCounts']['after'][true][emission][read.seq[i+1:j+i+1]] = 1
+
+class error():
+
+    def __init__(self,true,emission,seq):
+        self.true = true
+        self.emission = emission
+        self.seq = seq
 
 
 
