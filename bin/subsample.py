@@ -29,7 +29,7 @@ seqList = subsample(ref,opt,readError=singleSNP,numReads=1000,readRange = [1000,
 logging.info("Writing Fasta file of subsampled reads")
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
-align.refIndex(file=opt.refFilename)
+# align.refIndex(file=opt.refFilename)
 # ## Align reads to the reference
 samfileName = opt.readFilename + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
@@ -43,10 +43,10 @@ logging.info("countKmers")
 logging.info("compareReads")
 
 compare.compareReads(samfile=samfileName,reffile=opt.readFilename)
-
-# print compare.res
-for ee in compare.errorList:
-	print ee.true,ee.emission,ee.seq
+compare.precedingKmers()
+print compare.res
+# for ee in compare.errorList:
+# 	print ee.true,ee.emission,ee.seq
 
 
 

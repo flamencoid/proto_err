@@ -68,6 +68,23 @@ class comparison():
             for kmer in kmerList:
                 self.res['RefCounts'][str(kmer)] = self.ref.count(kmer)
 
+    def precedingKmers(self):
+        """
+        Function which takes a list of errors and counts the kmers before  
+        and after and error
+        """
+        for error in self.errorList:
+            for j in [k +1 for k in range(self.opt.maxOrder)]:
+                try:
+                    self.res['kmerCounts']['before'][error.true][error.emission][error.before(j)] += 1
+                except:
+                    self.res['kmerCounts']['before'][error.true][error.emission][error.before(j)] = 1
+                try:
+                    self.res['kmerCounts']['after'][error.true][error.emission][error.after(j)] += 1
+                except:
+                    self.res['kmerCounts']['after'][error.true][error.emission][error.after(j)]= 1
+
+
     def compareReads(self,samfile,reffile):
         """
         Function which take a samfile iterates through the aligned reads and 
@@ -114,23 +131,48 @@ class comparison():
                     ## if it's an error, check the preceding  opt.maxOrder bases
                     if not true == emission:
                         ## Check preceding bases
-                        self.errorList.append(error(true,emission,read.seq[i-self.opt.maxOrder:self.opt.maxOrder+i+1]))
-                        # for j in [k +1 for k in range(self.opt.maxOrder)]:
-                        #     try:
-                        #         self.res['kmerCounts']['before'][true][emission][read.seq[i-j:i]] += 1
-                        #     except:
-                        #         self.res['kmerCounts']['before'][true][emission][read.seq[i-j:i]] = 1
-                        #     try:
-                        #         self.res['kmerCounts']['after'][true][emission][read.seq[i+1:j+i+1]] += 1
-                        #     except:
-                        #         self.res['kmerCounts']['after'][true][emission][read.seq[i+1:j+i+1]] = 1
+                        self.errorList.append(error(true,emission,read.seq[i-self.opt.maxOrder:i],read.seq[i+1:self.opt.maxOrder+i+1]))
+
 
 class error():
 
-    def __init__(self,true,emission,seq):
+    def __init__(self,true,emission,leftFlank,rightFlank):
         self.true = true
         self.emission = emission
-        self.seq = seq
+        self.leftFlank = leftFlank 
+        self.rightFlank = rightFlank
+
+    def before(self,j):
+        b = self.leftFlank[-j:]
+        while len(b) < j:
+            b = 'N' +b
+        return b
+    def after(self,j):
+        a = self.rightFlank[0:j]
+        while len(a) < j:
+            a = a + 'N'
+        return a
+
+    @property 
+    def trueSeq(self):
+        return  self.leftFlank + self.true + self.rightFlank
+    @property 
+    def emissionSeq(self):
+        return  self.leftFlank + self.emission + self.rightFlank
+    @property 
+    def flankLength(self):
+        return  (len(self.leftFlank),len(self.rightFlank))
+    @property 
+    def isSnp(self):
+        return len(self.true) == len(self.emission)
+    @property 
+    def isIndel(self):
+        return len(self.true) != len(self.emission)
+
+
+
+
+
 
 
 
