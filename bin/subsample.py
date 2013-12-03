@@ -18,14 +18,17 @@ parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",default="../data/ref.fa")
 (opt, args) = parser.parse_args()
 
-## Hardcod some numbers
+## Hardcode some numbers
 opt.snpFreq = 0.1
 opt.maxOrder = 3
+opt.numReads = 1000
+opt.readSmallest = 1000
+opt.readLargest = 20000
 
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")
-seqList = subsample(ref,opt,readError=singleSNP,numReads=1000,readRange = [1000,20000])
+seqList = subsample(ref,opt,readError=singleSNP,numReads=opt.numReads,readRange = [opt.readSmallest,opt.readLargest])
 logging.info("Writing Fasta file of subsampled reads")
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
