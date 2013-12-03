@@ -37,6 +37,7 @@ class comparison():
         """
         self.res['Counts'] = {}
         self.res['kmerCounts'] = {}
+        self.res['RefCounts'] = {}
         for metric in self.counts:
             self.res['Counts'][metric[0]] = metric[2]
 
@@ -51,6 +52,20 @@ class comparison():
         """
         count = seq.count(kmer)
         return count,float(count)/len(seq)
+
+
+    def countKmers(self,kmerLen):
+        """
+        Function to count all kmers in long sequence (reference) of length kmerLen or below
+        """
+        alpabet = getAlphabet()
+        for klen in [i+1 for i in range(kmerLen)]:
+            # generate all kmers of length klen
+            kmerList = kmerCombo(alpabet,klen)
+            self.res['RefCounts'][klen] = dict(zip(kmerList,[0]*len(kmerList)))
+            for kmer in kmerList:
+                self.res['RefCounts'][klen][str(kmer)] = self.ref.count(kmer)
+
     def compareReads(self,samfile,reffile):
         """
         Function which take a samfile iterates through the aligned reads and 

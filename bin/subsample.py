@@ -35,7 +35,13 @@ aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdo
 logging.info("Doing read comparision")
 compare = comparison(ref)
 compare.setup(opt)
-compare.compareReads(samfile=samfileName,reffile=opt.readFilename)
+logging.info("countKmers")
+compare.countKmers(3)
+logging.info("countKmers")
+logging.info("compareReads")
+
+# compare.compareReads(samfile=samfileName,reffile=opt.readFilename)
+
 print compare.res
 
 
