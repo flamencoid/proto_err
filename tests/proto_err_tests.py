@@ -1,6 +1,22 @@
 from nose.tools import *
 import proto_err.metrics
 
+def testErrorClassBasic():
+	"""Just to everything works in the most basis case"""
+	error = proto_err.metrics.error('A','T')
+	assert_equal(error.true,'A')
+	assert_equal(error.emission,'T')
+	assert_equal(error.leftFlank,'')
+	assert_equal(error.rightFlank,'')
+	assert_equal(error.before(2),'NN')
+	assert_equal(error.after(2),'NN')
+	assert_equal(error.trueSeq,'A')
+	assert_equal(error.emissionSeq,'T')
+	assert_equal(error.flankLength,(0,0))
+	assert_equal(error.isSnp,True)
+	assert_equal(error.isIndel,False)
+
+
 def testErrorClass():
     true = 'A'
     emission = 'T'

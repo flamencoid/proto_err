@@ -135,19 +135,21 @@ class comparison():
 
 
 class error():
-
-    def __init__(self,true,emission,leftFlank,rightFlank):
+    """ Information about the errors in a read """
+    def __init__(self,true,emission,leftFlank='',rightFlank=''):
         self.true = true
         self.emission = emission
         self.leftFlank = leftFlank 
         self.rightFlank = rightFlank
 
     def before(self,j):
+        """Return the preceding j bases,return N when bases missing"""
         b = self.leftFlank[-j:]
         while len(b) < j:
             b = 'N' +b
         return b
     def after(self,j):
+        """Return the following j bases,return N when bases missing"""
         a = self.rightFlank[0:j]
         while len(a) < j:
             a = a + 'N'
@@ -155,50 +157,24 @@ class error():
 
     @property 
     def trueSeq(self):
+        """Sequence of the truth"""
         return  self.leftFlank + self.true + self.rightFlank
     @property 
     def emissionSeq(self):
+        """Sequence emmited"""
         return  self.leftFlank + self.emission + self.rightFlank
     @property 
     def flankLength(self):
+        """Lengths of the flanks either side"""
         return  (len(self.leftFlank),len(self.rightFlank))
     @property 
     def isSnp(self):
+        """Is the error a SNP"""
         return len(self.true) == len(self.emission)
     @property 
     def isIndel(self):
+        """Is the error an INDEL"""
         return len(self.true) != len(self.emission)
-
-
-
-
-
-
-
-
-
-
-
-
-                # for s in self.readDiff(read.seq,refRead):
-                #     if s[0] == ' ':
-                #         self.res['errorMode'][s[2]][s[2]] += 1
-                #     else:
-                #         print s,s.next()
-                        
-
-                # print read
-                # print read.positions[0],read.positions[-1]
-                # print len(refRead)
-                # print read.rlen
-                # print read.tlen
-
-                # for pos,emmittedBase in enumerate(read.seq):
-                #     trueBase = self.ref[read.positions[pos]]
-                #     # print str(trueBase),str(emmittedBase)
-                #     self.res['errorMode'][str(trueBase)][str(emmittedBase)] += 1
-
-        
 
 class alignedRead():
     """
