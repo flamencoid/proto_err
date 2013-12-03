@@ -18,29 +18,31 @@ parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",default="../data/ref.fa")
 (opt, args) = parser.parse_args()
 
+## Hardcod some numbers
 opt.snpFreq = 0.1
+opt.maxOrder = 3
 
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")
-seqList = subsample(ref,opt,readError=singleSNP,numReads=10000,readRange = [1000,20000])
+# seqList = subsample(ref,opt,readError=singleSNP,numReads=100000,readRange = [1000,20000])
 logging.info("Writing Fasta file of subsampled reads")
-writeFasta(filename = opt.readFilename,seqList = seqList)
+# writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
-align.refIndex(file=opt.refFilename)
+# align.refIndex(file=opt.refFilename)
 # ## Align reads to the reference
 samfileName = opt.readFilename + '.sam'
-aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
+# aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
 
 logging.info("Doing read comparision")
 compare = comparison(ref)
 compare.setup(opt)
 logging.info("countKmers")
-compare.countKmers(3)
+compare.countKmers(opt.maxOrder)
 logging.info("countKmers")
 logging.info("compareReads")
 
-# compare.compareReads(samfile=samfileName,reffile=opt.readFilename)
+compare.compareReads(samfile=samfileName,reffile=opt.readFilename)
 
 print compare.res
 

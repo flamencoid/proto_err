@@ -35,9 +35,10 @@ class comparison():
         """
         Function to set up dictionary structure for outputed stats
         """
+        self.opt = opt
         self.res['Counts'] = {}
-        self.res['kmerCounts'] = {}
-        self.res['RefCounts'] = {}
+        self.res['kmerCounts'] = AutoVivification()
+        self.res['RefCounts'] =  AutoVivification()
         for metric in self.counts:
             self.res['Counts'][metric[0]] = metric[2]
 
@@ -62,9 +63,9 @@ class comparison():
         for klen in [i+1 for i in range(kmerLen)]:
             # generate all kmers of length klen
             kmerList = kmerCombo(alpabet,klen)
-            self.res['RefCounts'][klen] = dict(zip(kmerList,[0]*len(kmerList)))
+            self.res['RefCounts'] = dict(zip(kmerList,[0]*len(kmerList)))
             for kmer in kmerList:
-                self.res['RefCounts'][klen][str(kmer)] = self.ref.count(kmer)
+                self.res['RefCounts'][str(kmer)] = self.ref.count(kmer)
 
     def compareReads(self,samfile,reffile):
         """
@@ -105,9 +106,25 @@ class comparison():
             ## if the cigarsting only has M then only SNP errors
             if (read.rlen == read.cigar[0][1]):
                 refRead = list(str(self.getRefRead(read.positions)))
-                # print "\n".join(difflib.ndiff([str(refRead)], [str(read.seq)]))
-                for t,e in itertools.izip_longest(refRead,list(str(read.seq))):
-                    self.res['errorMode'][t][e] += 1
+
+                for i,tupl in enumerate(itertools.izip_longest(refRead,list(str(read.seq)))):
+                    true,emission = tupl
+                    self.res['errorMode'][true][emission] += 1
+                    ## if it's an error, check the preceding  opt.maxOrder bases
+                    if not true == emission:
+                        ## Check preceding bases
+                        for j in [k +1 for k in range(self.opt.maxOrder)]:
+                            try:
+                                self.res['kmerCounts']['before'][true][emission][read.seq[i-j:i]] += 1
+                            except:
+                                self.res['kmerCounts']['before'][true][emission][read.seq[i-j:i]] = 1
+                            try:
+                                self.res['kmerCounts']['after'][true][emission][read.seq[i+1:j+i+1]] += 1
+                            except:
+                                self.res['kmerCounts']['after'][true][emission][read.seq[i+1:j+i+1]] = 1
+
+
+
 
 
 
