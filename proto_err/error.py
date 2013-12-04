@@ -5,37 +5,98 @@ import numpy as np
 import math
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+from copy import copy
 # A python module for simulating errors in reads.
-def identity(seqObj,opt):
-	return Seq("".join(list(seqObj)))
+class simulateError():
+	"""Class of objects to simulate errors in a SeqRecord"""
+	def __init__(self,record,opt,id):
+		self.alphabet = ['A','T','C','G']
+		self.seq = record.seq
+		self.id = id
+		self.opt = opt
+		self.errorProb = [0]*len(self.seq)
 
-def snp(seq,pos,rl):
-	seq = list(seq)
-	seq[pos] = rl
-	return Seq("".join(seq))
+	def snp(self,pos,rl):
+		"""function to induce a SNP"""
+		seq = list(self.seq)
+		seq[pos] = rl
+		self.seq = Seq("".join(seq))
+		self.id += '&s(%s,%s)' % (str(pos),str(rl))
 
-def ins(seq,pos,insSeq):
-	seq = list(seq)
-	seq = seq[:pos] + list(insSeq) + seq[pos:]
-	return Seq("".join(seq))
+	def ins(self,pos,rl):
+		"""function to induce a insertion"""
+		seq = list(self.seq)
+		seq = seq[:pos+1] + list(rl) + seq[pos+1:]
+		## Also need to insert the equivalent qscores
+		self.errorProb = self.errorProb[:pos+1] + [self.errorProb[pos] for _ in list(rl)]  +self.errorProb[pos+1:]
+		self.seq = Seq("".join(seq))
+		self.id += '&i(%s,%s)' % (str(pos),str(rl))
 
-def singleSNP(seqObj,opt):
-	"""
-	Function to randomly add SNP errors
-	"""
-	seq = seqObj
-	alphabet = getAlphabet()
-	if random.random() < opt.snpFreq:
-		pos = random.randint(0,len(seq)-1)
-		letter = seq[pos]
-		reducedAlphabet = alphabet
-		reducedAlphabet.remove(letter)
-		replaceLetter = random.choice(reducedAlphabet)
-		seq = snp(seq=seqObj,pos=pos,rl=replaceLetter)
-	return seq
+	def deletion(self,pos,dlen):
+		"""function to induce a deletion"""
+		seq = list(self.seq)
+		seq = seq[:pos] + seq[pos+dlen:]
+		## Also need to delete the equivalent qscores
+		self.errorProb = self.errorProb[:pos] + self.errorProb[pos+dlen:]
+		self.seq = Seq("".join(seq))
+		self.id += '&d(%s,%s)' % (str(pos),str(dlen))
 
+	def indel(self,pos):
+		"""function to induce an INDEL"""
+		indelSize = int(round(random.gauss(self.opt.indelMean,self.opt.indelSd)))
+		if random.random() < 0.5:
+			self.ins(pos,rl="".join([random.choice(self.alphabet) for _ in range(indelSize)]))
+		else:
+			self.deletion(pos,dlen=indelSize)
 
-def subsample(ref,opt,readError=identity,numReads=10000,readRange = [1000,20000], readMean = 10000,readSd = 3000):
+	@property 
+	def record(self):
+		"""Return a Bio.SeqRecord"""
+		return SeqRecord(self.seq,self.id)
+	@property
+	def qscore(self):
+		qscore = 0
+		return qscore
+
+class singleSNP(simulateError):
+	def __init__(self,record,opt,id):
+		simulateError.__init__(self,record,opt,id)
+		self.errorProb = [random.gauss(opt.snpFreq, 0.01) for _ in range(len(self.seq))] 
+
+	def error(self):
+		"""Function to induce and error"""
+		## iterate through the probability list
+		for pos,prob in enumerate(self.errorProb):
+			if random.random() < prob:
+				letter = self.seq[pos]
+				alphabet = copy(self.alphabet)
+				reducedAlphabet = alphabet
+				reducedAlphabet.remove(letter)
+				replaceLetter = random.choice(reducedAlphabet)
+				self.snp(pos,replaceLetter)
+
+class complexError(simulateError):
+	def __init__(self,record,opt,id):
+		simulateError.__init__(self,record,opt,id)
+		self.errorProb = [random.gauss(opt.snpFreq, 0.01) for _ in self.seq]
+
+	def error(self):
+		"""Function to induce and error"""
+		## iterate through the probability list
+		for pos,prob in enumerate(self.errorProb):
+			if random.random() < prob and pos < len(self.errorProb):
+				letter = self.seq[pos]
+				alphabet = copy(self.alphabet)
+				reducedAlphabet = alphabet
+				reducedAlphabet.remove(letter)
+				replaceLetter = random.choice(reducedAlphabet)
+				if random.random() < self.opt.SnpIndelRatio:
+					self.snp(pos,replaceLetter)
+				else:
+					self.indel(pos)
+			
+
+def subsample(ref,opt,errorSimulator=complexError,numReads=100,readRange = [1000,20000], readMean = 100,readSd = 30):
 	"""
 	Function to take a fasta file subsample reads and generate a list of 
 	subsampled reads
@@ -46,8 +107,15 @@ def subsample(ref,opt,readError=identity,numReads=10000,readRange = [1000,20000]
 		seqLength = abs(int(math.ceil(np.random.normal(readMean,readSd))))
 		start = random.randrange(refLength)
 		## randomly subsample from reference
+		recordId = 'st=%s&l=%s' % (str(start),str(seqLength))
 		seq = ref[start:start+seqLength]
-		seq = readError(seqObj=seq,opt=opt)
-		record=SeqRecord(seq,'fragment_%i' % (i+1),'','')
+		record=SeqRecord(seq,recordId,'','')
+		## Take the read from the reverse stand 50% of the time
+		if random.random() < 0.5:
+			record = record.reverse_complement()
+		## Randomly generate errors
+		simulatedErrors = errorSimulator(record,opt,id = recordId)
+		simulatedErrors.error()
+		record = simulatedErrors.record
 		seqList.append(record)
 	return seqList

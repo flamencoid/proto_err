@@ -99,6 +99,7 @@ class comparison():
                 self.res['Counts']['UnMapped'] += 1
             else:
                 self.res['Counts']['Mapped'] += 1
+                # print read.qname
                 self.checkRead(read)
         self.res['Counts']['totalErrorBases'] = len(self.errorList)
 
@@ -132,9 +133,8 @@ class comparison():
             self.res['Counts']['mismatchedAlignments'] += 1
             ## Check what type of mismatch it is.
             ## if the cigarsting only has M then only SNP errors
-            if (read.rlen == read.cigar[0][1]):
+            if (read.rlen == read.cigar[0][1]) and (read.cigar[0][0] == 0):
                 refRead = list(str(self.getRefRead(read.positions)))
-
                 for i,tupl in enumerate(itertools.izip_longest(refRead,list(str(read.seq)))):
                     true,emission = tupl
                     self.res['errorMode'][true][emission] += 1

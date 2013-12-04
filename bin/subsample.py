@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
 from fastaIO import getRef,writeFasta
-from error import singleSNP,subsample,identity
+from error import subsample
 from optparse import OptionParser
 from metrics import comparison 
 import align
@@ -24,15 +24,20 @@ opt.maxOrder = 3
 opt.numReads = 1000
 opt.readSmallest = 1000
 opt.readLargest = 20000
+opt.SnpIndelRatio = 0.5
+opt.readMean = 1000
+opt.readSt = 300
+opt.indelMean = 5
+opt.indelSd = 2 
 
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")
-seqList = subsample(ref,opt,readError=singleSNP,numReads=opt.numReads,readRange = [opt.readSmallest,opt.readLargest])
+seqList = subsample(ref,opt,numReads=opt.numReads, readMean = opt.readMean,readSd = opt.readSt)
 logging.info("Writing Fasta file of subsampled reads")
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
-# align.refIndex(file=opt.refFilename)
+align.refIndex(file=opt.refFilename)
 # ## Align reads to the reference
 samfileName = opt.readFilename + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)

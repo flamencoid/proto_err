@@ -1,5 +1,7 @@
 from nose.tools import *
+from Bio.SeqRecord import SeqRecord
 import proto_err.metrics
+from  proto_err.error import simulateError
 
 def testErrorClassBasic():
 	"""Just to everything works in the most basis case"""
@@ -40,8 +42,19 @@ def testErrorClass():
     assert_equal(error.isSnp,False)
     assert_equal(error.isIndel,True)
 
-
-
+def testErrorSim():
+    """Test the read error simulation"""
+    seq = 'ATCGATCGATCG'
+    record=SeqRecord(seq,'fragment_id')
+    opt = {}
+    errorSim = simulateError(record,opt,id = 'fragment_id')
+    errorSim.snp(0,'T')
+    print errorSim.record.seq
+    assert_equal( str(errorSim.seq) , 'TTCGATCGATCG')
+    errorSim.ins(3,'TTT')
+    assert_equal( str(errorSim.seq) , 'TTCGTTTATCGATCG')
+    errorSim.deletion(4,5)
+    assert_equal( str(errorSim.seq) , 'TTCGCGATCG')
 
 
 
