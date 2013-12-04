@@ -26,7 +26,9 @@ class comparison():
                          ['UnMapped','Total number of non-aligned reads',0],
                          ['NM','Total number of SNP errors',0],
                          ['perfectAlignments','Total number of perfectly aligned reads',0],
-                         ['mismatchedAlignments','Total number of aligned reads with mismatches',0]]
+                         ['mismatchedAlignments','Total number of aligned reads with mismatches',0],
+                         ['totalAlignedBases','Total number of aligned bases',0],
+                         ['totalErrorBases','Total number of single base errors',0]]
         self.ref = ref
         self.logger     = logging.getLogger()
 
@@ -98,6 +100,7 @@ class comparison():
             else:
                 self.res['Counts']['Mapped'] += 1
                 self.checkRead(read)
+        self.res['Counts']['totalErrorBases'] = len(self.errorList)
 
     def readDiff(self,read,ref):
         return difflib.ndiff(read,ref)
@@ -107,6 +110,11 @@ class comparison():
         Function to return the reference sequence a read is aligned to
         """
         return self.ref[positions[0]:positions[-1]+1]
+    def countAlignedBases(self,read):
+        count = 0
+        for t in read.cigar:
+            count += t[1]
+        return count
 
     def checkRead(self,read):
         """
@@ -114,6 +122,8 @@ class comparison():
         """
         NM = read.opt('NM')
         self.res['Counts']['NM'] += NM
+        self.res['Counts']['totalAlignedBases'] += self.countAlignedBases(read)
+
         if NM == 0:
             self.res['Counts']['perfectAlignments'] += 1
             for base in getAlphabet():

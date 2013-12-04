@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 from utils import *
 import random 
+import numpy as np
+import math
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-
-
 # A python module for simulating errors in reads.
 def identity(seqObj,opt):
 	return Seq("".join(list(seqObj)))
@@ -35,7 +35,7 @@ def singleSNP(seqObj,opt):
 	return seq
 
 
-def subsample(ref,opt,readError=identity,numReads=10000,readRange = [1000,20000]):
+def subsample(ref,opt,readError=identity,numReads=10000,readRange = [1000,20000], readMean = 10000,readSd = 3000):
 	"""
 	Function to take a fasta file subsample reads and generate a list of 
 	subsampled reads
@@ -43,7 +43,7 @@ def subsample(ref,opt,readError=identity,numReads=10000,readRange = [1000,20000]
 	refLength =  len(ref)
 	seqList = []
 	for i in range(numReads):
-		seqLength = random.randrange(readRange[0],readRange[1])
+		seqLength = abs(int(math.ceil(np.random.normal(readMean,readSd))))
 		start = random.randrange(refLength)
 		## randomly subsample from reference
 		seq = ref[start:start+seqLength]
