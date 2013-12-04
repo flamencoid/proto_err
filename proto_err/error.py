@@ -21,7 +21,7 @@ class simulateError():
 		seq = list(self.seq)
 		seq[pos] = rl
 		self.seq = Seq("".join(seq))
-		self.id += '&s(%s,%s)' % (str(pos),str(rl))
+		self.id += 's%s,%s' % (str(pos),str(rl))
 
 	def ins(self,pos,rl):
 		"""function to induce a insertion"""
@@ -30,7 +30,7 @@ class simulateError():
 		## Also need to insert the equivalent qscores
 		self.errorProb = self.errorProb[:pos+1] + [self.errorProb[pos] for _ in list(rl)]  +self.errorProb[pos+1:]
 		self.seq = Seq("".join(seq))
-		self.id += '&i(%s,%s)' % (str(pos),str(rl))
+		self.id += 'i%s,%s' % (str(pos),str(rl))
 
 	def deletion(self,pos,dlen):
 		"""function to induce a deletion"""
@@ -39,7 +39,7 @@ class simulateError():
 		## Also need to delete the equivalent qscores
 		self.errorProb = self.errorProb[:pos] + self.errorProb[pos+dlen:]
 		self.seq = Seq("".join(seq))
-		self.id += '&d(%s,%s)' % (str(pos),str(dlen))
+		self.id += 'd%s,%s' % (str(pos),str(dlen))
 
 	def indel(self,pos):
 		"""function to induce an INDEL"""

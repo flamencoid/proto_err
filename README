@@ -1,6 +1,8 @@
 To read in a reference file subsample and realign with random read errors
 
 python subsample.py -r referenceFile.fa
+or simply,
+./subsample.py to run with default reference
 
 To run tests run:
 
