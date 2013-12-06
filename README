@@ -1,14 +1,93 @@
-To read in a reference file subsample and realign with random read errors
-
-python subsample.py -r referenceFile.fa
-or simply,
-./subsample.py to run with default reference
-
 To run tests run:
 
 nosetests
 
 from the top directory. 
+
+To read in a reference file subsample and realign with random read errors 
+and output a samfile
+python subsample.py -r referenceFile.fa
+or simply,
+./subsample.py to run with default reference
+
+Run subsample.py -h for additional options
+
+Options:
+  -h, --help            show this help message and exit
+  -r REFFILENAME, --ref=REFFILENAME
+                        fasta input ref file
+  --numReads=NUMREADS   Number of reads to
+                        sample from referecnce (Optional defaults to 1000)
+  --meanReadLength=READMEAN
+                        Read length is
+                        sampled from a normal of this mean (Optional defaults
+                        to
+                        1000)
+  --errorFreqMean=SNPFREQ
+                        Probablity of an error
+                        at a base occurs is sampled from a normal with mean
+                        of this Probablity (Optional defaults to
+                        .1)
+  --errorFreqSD=SNPFREQSD
+                        Probablity of an error
+                        at a base occurs is sampled from a normal with SD
+                        of this value (Optional defaults to
+                        errorFreqMean/10)
+  --strandBias=STRANDBIAS
+                        Ratio of reads
+                        sampled from forward or reverse strand. 1 samples only
+                        from                                          forward,
+                        0 only from reverse.(Optional defaults to .5)
+  --ReadLengthSD=READSD
+                        Read length is
+                        sampled from a normal with this SD (Optional defaults
+                        to
+                        meanReadLength/3)
+  --SnpIndelRatio=SNPINDELRATIO
+                        Ratio of SNP
+                        errors to INDEL errors (Optional defaults to 0.5)
+                        value of 1 gives ONLY SNP errors, 0 only INDELs
+  --meanIndelSize=INDELMEAN
+                        INDEL size is
+                        sampled from a normal of this mean (Optional defaults
+                        to                                                  5)
+  --IndelSizeSD=INDELSD
+                        INDEL size is
+                        sampled from a normal with this SD (Optional defaults
+                        to
+                        meanIndelSize/2)
+
+
+*Error Reading*
+
+
+python errorStats.py -r referenceFile.fa -s samfile.sam
+
+**Usage beyond scripts**
+
+To iterate through errors in samfile
+
+from metrics import errorReader
+for error in errorReader:
+	print error
+
+The error class has the following attributes amoungst others
+
+error.before(i) will return the i bases before the error. It will return exactly
+i letters returning N when a base does not exist.
+
+i.e. if the error occurs at the first base in a read .before(2) will return 'NN'
+
+simillarly error.after(i) will return the i bases after the error has ended.
+
+error.isSnp
+error.isIndel
+
+
+
+
+
+
 
 
 
