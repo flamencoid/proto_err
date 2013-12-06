@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-
-## python script that will take a fasta file and return a fasta file 
-## of subsampled reads
+## python script that subsamples from a referecnce, induces errors in the reads 
+## and realigns to the reference outputting a sam file
 import sys
 import os
 import logging
@@ -10,25 +9,52 @@ sys.path.insert(0, os.path.abspath('../proto_err'))
 from fastaIO import getRef,writeFasta
 from error import subsample
 from optparse import OptionParser
-from metrics import comparison 
 import align
 import pysam
 
 parser = OptionParser()
-parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",default="../data/ref.fa")
+parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
+					default="../data/ref.fa")
+parser.add_option("--numReads", dest="numReads",help="""Number of reads to 
+					sample from referecnce (Optional defaults to 1000)""",
+					default=1000)
+parser.add_option("--meanReadLength", dest="readMean",help="""Read length is 
+					sampled from a normal of this mean (Optional defaults to 
+						1000)""",default=1000)
+parser.add_option("--errorFreqMean", dest="snpFreq",help="""Probablity of an error 
+					at a base occurs is sampled from a normal with mean 
+					of this Probablity (Optional defaults to 
+						.1)""",default=0.1)
+parser.add_option("--errorFreqSD", dest="snpFreqSd",help="""Probablity of an error 
+					at a base occurs is sampled from a normal with SD 
+					of this value (Optional defaults to 
+						errorFreqMean/10)""",default=None)
+parser.add_option("--strandBias", dest="strandBias",help="""Ratio of reads 
+					sampled from forward or reverse strand. 1 samples only from 
+					forward, 0 only from reverse.(Optional defaults to .5)""",
+					default=0.5)
+parser.add_option("--meanReadLength", dest="readSd",help="""Read length is 
+					sampled from a normal with this SD (Optional defaults to 
+						meanReadLength/3)""",default=None)
+parser.add_option("--SnpIndelRatio", dest="SnpIndelRatio",help="""Ratio of SNP 
+					errors to INDEL errors (Optional defaults to 0.5)
+					value of 1 gives ONLY SNP errors, 0 only INDELs""",
+					default=0.5)
+parser.add_option("--meanIndelSize", dest="indelMean",help="""INDEL size is 
+					sampled from a normal of this mean (Optional defaults to 
+						5)""",
+					default=5)
+parser.add_option("--meanReadLength", dest="indelSd",help="""INDEL size is 
+					sampled from a normal with this SD (Optional defaults to 
+						meanIndelSize/2)""",default=None)
 (opt, args) = parser.parse_args()
-
-## Hardcode some numbers
-opt.snpFreq = 0.1
-opt.maxOrder = 3
-opt.numReads = 1000
-opt.readSmallest = 1000
-opt.readLargest = 20000
-opt.SnpIndelRatio = 0.5
-opt.readMean = 1000
-opt.readSt = 300
-opt.indelMean = 5
-opt.indelSd = 2 
+## Need a mean and a SD
+if not opt.readSd :
+	opt.readSd = int(float(opt.readMean)/3)
+if not opt.indelSd:
+	opt.indelSd = float(opt.readMean)/2
+if not opt.snpFreqSd:
+	opt.snpFreqSd = float(opt.snpFreq)/10
 
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
 ref = getRef(opt.refFilename)
@@ -37,48 +63,12 @@ seqList = subsample(ref,opt,numReads=opt.numReads, readMean = opt.readMean,readS
 logging.info("Writing Fasta file of subsampled reads")
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
+logging.info("Indexing reference")
 align.refIndex(file=opt.refFilename)
 # ## Align reads to the reference
+logging.info("Aligning reads to reference")
 samfileName = opt.readFilename + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
-
-logging.info("Doing read comparision")
-compare = comparison(ref)
-compare.setup(opt)
-logging.info("countKmers")
-compare.countKmers(opt.maxOrder)
-logging.info("countKmers")
-logging.info("compareReads")
-
-compare.compareReads(samfile=samfileName,reffile=opt.readFilename)
-compare.precedingKmers()
-print compare.res
-# for ee in compare.errorList:
-# 	print ee.true,ee.emission,ee.seq
-
-
-
-
-
-
-     # print read.cigarstring
-     # print read.NM
-
-# pysam.sort( "-S",samfileName, "output" )
-# print pysam.idxstats("-S",samfileName)
-
-# '__class__', '__delattr__', '__doc__', '__format__', '__getattribute__', 
-# '__hash__', '__init__', '__new__', '__reduce__', '__reduce_ex__', '__repr__',
- # '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'aend', 'alen', 
- # 'aligned_pairs', 'bin', 'cigar', 'cigarstring', 'compare', 'fancy_str', 'flag', 
- # 'is_duplicate', 'is_paired', 'is_proper_pair', 'is_qcfail', 'is_read1', 'is_read2', 
- # 'is_reverse', 'is_secondary', 'is_unmapped', 'isize', 'mapq', 'mate_is_reverse', 
- # 'mate_is_unmapped', 'mpos', 'mrnm', 'opt', 'overlap', 'pnext', 'pos', 'positions', 
- # 'qend', 'qlen', 'qname', 'qqual', 'qstart', 'qual', 'query', 'rlen', 'rname', 
- # 'rnext', 'seq', 'tags', 'tid', 'tlen']
-
-
-
 
 
 

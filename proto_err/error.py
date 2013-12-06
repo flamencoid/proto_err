@@ -110,8 +110,8 @@ def subsample(ref,opt,errorSimulator=complexError,numReads=100,readRange = [1000
 		recordId = 'st=%s&l=%s' % (str(start),str(seqLength))
 		seq = ref[start:start+seqLength]
 		record=SeqRecord(seq,recordId,'','')
-		## Take the read from the reverse stand 50% of the time
-		if random.random() < 0.5:
+		## Take the read from the reverse stand x% of the time
+		if random.random() > opt.strandBias:
 			record = record.reverse_complement()
 		## Randomly generate errors
 		simulatedErrors = errorSimulator(record,opt,id = recordId)
