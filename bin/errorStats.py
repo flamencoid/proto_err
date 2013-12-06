@@ -22,19 +22,22 @@ parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned rea
 opt.maxKmerLength = 3 
 
 ref = getRef(opt.refFilename)
-logging.info("Finding and aggregating errors")
-errorList = []
-for error in errorReader(opt.samfile,ref):
-	errorList.append(error)
+# logging.info("Finding and aggregating errors")
+# errorList = []
+# for error in errorReader(opt.samfile,ref):
+# 	errorList.append(error)
 
 logging.info("Doing some kmer counting")
-errorCounter = counter(ref,errorList)
+# errorCounter = counter(ref,errorList)
+errorCounter = counter(ref,samfile=opt.samfile)
 errorCounter.setup(opt)
 errorCounter.countRefKmer()
 errorCounter.countErrorKmer()
 
-errorAggregation = aggregator(errorCounter)
-print errorAggregation.precedingKmersCount('TTC')
+
+
+# errorAggregation = aggregator(errorCounter)
+# print errorAggregation.precedingKmersCount('TTC')
 
 # logging.info("Doing read comparision")
 # compare = comparison(ref)

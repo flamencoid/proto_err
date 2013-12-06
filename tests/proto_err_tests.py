@@ -56,6 +56,13 @@ def testErrorSim():
     errorSim.deletion(4,5)
     assert_equal( str(errorSim.seq) , 'TTCGCGATCG')
 
+# def testCounter():
+#     print errorCounter.getCount()
+#     print errorCounter.getCount(kmer='A')
+#     print errorCounter.getCount(truth='A',kmer='A')
+#     print errorCounter.getCount(truth='A',emission='T', kmer='A')
+#     print errorCounter.getCount(emission='A')
+#     print errorCounter.getCount(emission='A',kmer='A')
 
 
 

@@ -79,7 +79,7 @@ simillarly error.after(i) will return the i bases after the error has ended.
 error.isSnp and error.isIndel return boolean values
 
 
-## Header? ##
+## Counting  ##
 
 The counter object will take a list of errors and a reference and count kmers.
 
@@ -100,6 +100,8 @@ dic['after'][trueBase][EmittedBase][kmerString]
 e.g. to get the counts of the number of times 'TTT' appears before the A->T transisition
 dic['before']['A']['T']['TTT']
 12345
+
+## Aggregation  ##
 
 The aggregator object will take a counter and aggregate the counts
 

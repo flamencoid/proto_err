@@ -131,7 +131,19 @@ class errorReader():
 
 class counter(): 
     """Takes a list of errors and does some kmer counting"""
-    def __init__(self,ref,errorList):
+    def __init__(self,ref,errorList=None,samfile=None):
+        self.logger     = logging.getLogger()
+        if (not errorList and not samfile) or (errorList and samfile):
+            self.logger.error("counter takes errorList or samfile, at least one and not both")
+        if samfile and not errorList:
+            self.errorList = []
+            for error in errorReader(samfile,ref):
+                self.errorList.append(error)
+        else:
+            self.errorList = errorList
+
+
+
         # the results dictionary
         self.res = {}
         # set toplevel name 
@@ -149,9 +161,9 @@ class counter():
                          ['totalAlignedBases','Total number of aligned bases',0],
                          ['totalErrorBases','Total number of single base errors',0]]
         self.ref = ref
-        self.logger     = logging.getLogger()
-        self.numErrors = len(errorList)
-        self.errorList = errorList
+        self.numErrors = len(self.errorList)
+        
+        self.countErrorKmerRun = False
 
 
     def setup(self,opt):
@@ -196,6 +208,7 @@ class counter():
         Function which takes a list of errors and counts the kmers before  
         and after and error
         """
+        self.countErrorKmerRun = True
         if not maxKmerLength:
             maxKmerLength = self.opt.maxKmerLength
         # 
@@ -220,6 +233,68 @@ class counter():
         for t in read.cigar:
             count += t[1]
         return count
+
+    def getCount(self,truth=None,emission=None,kmer='',after=False):
+        """Gets the count for a given {truth,emmision,kmer}"""
+        if not self.countErrorKmerRun:
+            self.countErrorKmer()
+        if after:
+            dic = self.res['kmerCounts']['after']
+        else:
+            dic = self.res['kmerCounts']['before']
+
+        if truth and emission and kmer:
+            ##For particular transistion and kmer
+            return dic[truth][emission][kmer]
+        elif truth is None and emission is None:
+            ## We have to iterate through everything 
+            countOut = 0 
+            for emmitedDic in dic.values():
+                for kmerDic in emmitedDic.values():
+                    if kmer:
+                        ## If only one kmer
+                        countOut += kmerDic.get(kmer,0)
+                    else:
+                        ## Otherwise count them all
+                        for count in kmerDic.values():
+                            countOut += count
+
+            return countOut
+        elif not truth is None and emission is None:
+            tmpDic = dic[truth]
+            countOut = 0 
+            for kmerDic in tmpDic.values():
+                    if kmer:
+                        ## If only one kmer
+                        countOut += kmerDic.get(kmer,0)
+                    else:
+                        ## Otherwise count them all
+                        for count in kmerDic.values():
+                            countOut += count
+            if countOut == {}:
+                return 0
+            else:
+                return countOut
+        elif truth is None and not emission is None:
+            countOut = 0 
+            for emmitedDic in dic.values():
+                kmerDic =  emmitedDic[emission]
+                if kmer:
+                    ## If only one kmer
+                    countOut += kmerDic.get(kmer,0)
+                else:
+                    ## Otherwise count them all
+                    for count in kmerDic.values():
+                        countOut += count
+
+            return countOut
+
+
+
+
+
+
+           
 
 
 class aggregator(): 
