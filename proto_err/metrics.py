@@ -42,11 +42,13 @@ class error():
     @property 
     def trueSeq(self):
         """Sequence of the truth"""
-        return  self.leftFlank + self.true + self.rightFlank
+        return  str(self.read.seq)
     @property 
     def emissionSeq(self):
         """Sequence emmited"""
-        return  self.leftFlank + self.emission + self.rightFlank
+        trSeq = list(self.read.seq)
+        trSeq[self.readPos]  = self.emission
+        return  "".join(trSeq)
 
     @property 
     def errorType(self):

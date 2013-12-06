@@ -2,21 +2,24 @@ from nose.tools import *
 from Bio.SeqRecord import SeqRecord
 import proto_err.metrics
 from  proto_err.error import simulateError
+from pysam import AlignedRead
 
 def testErrorClassBasic():
-	"""Just to everything works in the most basis case"""
-	error = proto_err.metrics.error('A','T')
-	assert_equal(error.true,'A')
-	assert_equal(error.emission,'T')
-	assert_equal(error.leftFlank,'')
-	assert_equal(error.rightFlank,'')
-	assert_equal(error.before(2),'NN')
-	assert_equal(error.after(2),'NN')
-	assert_equal(error.trueSeq,'A')
-	assert_equal(error.emissionSeq,'T')
-	assert_equal(error.flankLength,(0,0))
-	assert_equal(error.isSnp,True)
-	assert_equal(error.isIndel,False)
+    """Just to everything works in the most basis case"""
+    a = AlignedRead()
+    a.qname = "read_28833_29006_6945"
+    a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
+    a.tags = ( ("NM", 1),
+               ("RG", "L1") )
+    error = proto_err.metrics.error('A','T',a,0)
+    assert_equal(error.true,'A')
+    assert_equal(error.emission,'T')
+    assert_equal(error.before(2),'NN')
+    assert_equal(error.after(2),'GC')
+    assert_equal(error.trueSeq,'AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG')
+    assert_equal(error.emissionSeq,'TGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG')
+    assert_equal(error.isSnp,True)
+    assert_equal(error.isIndel,False)
 
 
 # def testErrorClass():
