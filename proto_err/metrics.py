@@ -47,10 +47,7 @@ class error():
     def emissionSeq(self):
         """Sequence emmited"""
         return  self.leftFlank + self.emission + self.rightFlank
-    # @property 
-    # def flankLength(self):
-    #     """Lengths of the flanks either side"""
-    #     return  (len(self.leftFlank),len(self.rightFlank))
+
     @property 
     def errorType(self):
         if self.isSnp:
@@ -102,7 +99,6 @@ class errorReader():
 
     def next(self):
         ## if the error list is empty get the next read
-        # print self.errorList
         while not self.errorList:
             self.readNext()
         else:
@@ -133,14 +129,9 @@ class errorReader():
                         ## Check preceding bases
                         self.errorList.append(error(true,emission,read,readPos=i))
 
-
-
-
-
-## Compare aligned reads to reference and calculate stats
-class comparison(): 
-
-    def __init__(self,ref):
+class counter(): 
+    """Takes a list of errors and does some kmer counting"""
+    def __init__(self,ref,errorList):
         # the results dictionary
         self.res = {}
         # set toplevel name 
@@ -159,6 +150,8 @@ class comparison():
                          ['totalErrorBases','Total number of single base errors',0]]
         self.ref = ref
         self.logger     = logging.getLogger()
+        self.numErrors = len(errorList)
+        self.errorList = errorList
 
 
     def setup(self,opt):
@@ -169,13 +162,11 @@ class comparison():
         self.res['Counts'] = {}
         self.res['kmerCounts'] = AutoVivification()
         self.res['RefCounts'] =  AutoVivification()
-        self.errorList = []
         for metric in self.counts:
             self.res['Counts'][metric[0]] = metric[2]
 
         ## Create the dictonary of error modes
         ## res[A][T] = counts of A -> T SNPs
-
         self.res['errorMode'] = dict(zip(getAlphabet(),[dict(zip(getAlphabet(),[0]*4)) for i in getAlphabet()]))
 
     def kmerFreq(self,seq,kmer):
@@ -186,25 +177,30 @@ class comparison():
         return count,float(count)/len(seq)
 
 
-    def countKmers(self,kmerLen):
+    def countRefKmer(self,maxKmerLength=None):
         """
         Function to count all kmers in long sequence (reference) of length kmerLen or below
         """
+        if not maxKmerLength:
+            maxKmerLength = self.opt.maxKmerLength
         alpabet = getAlphabet()
-        for klen in [i+1 for i in range(kmerLen)]:
+        for klen in [i+1 for i in range(self.opt.maxKmerLength)]:
             # generate all kmers of length klen
             kmerList = kmerCombo(alpabet,klen)
             self.res['RefCounts'] = dict(zip(kmerList,[0]*len(kmerList)))
             for kmer in kmerList:
                 self.res['RefCounts'][str(kmer)] = self.ref.count(kmer)
+        return self.res['RefCounts']
 
-    def precedingKmers(self):
+    def precedingKmers(self,maxKmerLength=None):
         """
         Function which takes a list of errors and counts the kmers before  
         and after and error
         """
+        if not maxKmerLength:
+            maxKmerLength = self.opt.maxKmerLength
         for error in self.errorList:
-            for j in [k +1 for k in range(self.opt.maxOrder)]:
+            for j in [k +1 for k in range(self.opt.maxKmerLength)]:
                 try:
                     self.res['kmerCounts']['before'][error.true][error.emission][error.before(j)] += 1
                 except:
@@ -213,49 +209,23 @@ class comparison():
                     self.res['kmerCounts']['after'][error.true][error.emission][error.after(j)] += 1
                 except:
                     self.res['kmerCounts']['after'][error.true][error.emission][error.after(j)]= 1
-
-
-    def compareReads(self,samfile,reffile):
-        """
-        Function which take a samfile iterates through the aligned reads and 
-        generates stats
-        """
-        samfile = pysam.Samfile( samfile )
-        for read in samfile.fetch():
-            self.res['Counts']['Total'] += 1
-            if read.is_unmapped:
-                self.res['Counts']['UnMapped'] += 1
-            else:
-                self.res['Counts']['Mapped'] += 1
-                # print read.qname
-                self.checkRead(read)
-        self.res['Counts']['totalErrorBases'] = len(self.errorList)
+        return self.res['kmerCounts']
 
     def readDiff(self,read,ref):
         return difflib.ndiff(read,ref)
 
-    def getRefRead(self,positions):
-        """
-        Function to return the reference sequence a read is aligned to
-        """
-        return self.ref[positions[0]:positions[-1]+1]
+    # def getRefRead(self,positions):
+    #     """
+    #     Function to return the reference sequence a read is aligned to
+    #     """
+    #     return self.ref[positions[0]:positions[-1]+1]
+
     def countAlignedBases(self,read):
         count = 0
         for t in read.cigar:
             count += t[1]
         return count
 
-
-
-
-
-
-class alignedRead():
-    """
-    Class for the aligned read from a samfile
-    """
-
-    pass
 
 
 
