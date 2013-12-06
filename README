@@ -82,13 +82,11 @@ error.isSnp and error.isIndel return boolean values
 ## Counting  ##
 
 The counter object will take a list of errors or a samfle and a reference.
-
 errorCounter = counter(ref,samfile=samfile)
 or
 errorCounter = counter(ref,errorList=errorList)
 
 To count errorTypes
-
 # Count all the errors    
 print errorCounter.getCount()
 

@@ -131,7 +131,7 @@ class errorReader():
 
 class counter(): 
     """Takes a list of errors and does some kmer counting"""
-    def __init__(self,ref,errorList=None,samfile=None):
+    def __init__(self,ref,errorList=None,samfile=None,opt=None):
         self.logger     = logging.getLogger()
         if (not errorList and not samfile) or (errorList and samfile):
             self.logger.error("counter takes errorList or samfile, at least one and not both")
@@ -141,29 +141,17 @@ class counter():
                 self.errorList.append(error)
         else:
             self.errorList = errorList
-
-
-
         # the results dictionary
         self.res = {}
+        self.res['kmerCounts'] = AutoVivification()
+        self.res['RefCounts'] =  AutoVivification()
+        self.res['errorMode'] = AutoVivification()
         # set toplevel name 
-        self.VERSION  = "v1.0"
-        self.metaLabels = {'name':'proto_err','timestamp': 
-                            time.strftime("%a %b %d %X %Y"),\
-                           'runInfo':[],'version':self.VERSION,\
-                           'metrics':[]}
-        self.counts  = [['Total','Total number of reads',0],
-                         ['Mapped','Total number of aligned reads',0],
-                         ['UnMapped','Total number of non-aligned reads',0],
-                         ['NM','Total number of SNP errors',0],
-                         ['perfectAlignments','Total number of perfectly aligned reads',0],
-                         ['mismatchedAlignments','Total number of aligned reads with mismatches',0],
-                         ['totalAlignedBases','Total number of aligned bases',0],
-                         ['totalErrorBases','Total number of single base errors',0]]
         self.ref = ref
         self.numErrors = len(self.errorList)
-        
         self.countErrorKmerRun = False
+        if opt:
+            self.opt = opt
 
 
     def setup(self,opt):
@@ -171,15 +159,9 @@ class counter():
         Function to set up dictionary structure for outputed stats
         """
         self.opt = opt
-        self.res['Counts'] = {}
-        self.res['kmerCounts'] = AutoVivification()
-        self.res['RefCounts'] =  AutoVivification()
-        for metric in self.counts:
-            self.res['Counts'][metric[0]] = metric[2]
-
         ## Create the dictonary of error modes
         ## res[A][T] = counts of A -> T SNPs
-        self.res['errorMode'] = dict(zip(getAlphabet(),[dict(zip(getAlphabet(),[0]*4)) for i in getAlphabet()]))
+        # self.res['errorMode'] = dict(zip(getAlphabet(),[dict(zip(getAlphabet(),[0]*4)) for i in getAlphabet()]))
 
     def kmerFreq(self,seq,kmer):
         """
@@ -213,7 +195,10 @@ class counter():
             maxKmerLength = self.opt.maxKmerLength
         # 
         for error in self.errorList:
-            self.res['errorMode'][error.true][error.emission] += 1
+            try:
+                self.res['errorMode'][error.true][error.emission] += 1
+            except:
+                self.res['errorMode'][error.true][error.emission] = 1
             for j in [k +1 for k in range(self.opt.maxKmerLength)]:
                 try:
                     self.res['kmerCounts']['before'][error.true][error.emission][error.before(j)] += 1
