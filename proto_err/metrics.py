@@ -123,7 +123,7 @@ class errorReader():
                 refRead = list(str(self.getRefRead(read.positions)))
                 for i,tupl in enumerate(itertools.izip_longest(refRead,list(str(read.seq)))):
                     true,emission = tupl
-                    # self.res['errorMode'][true][emission] += 1
+                    
                     ## if it's an error, check the preceding  opt.maxOrder bases
                     if not true == emission:
                         ## Check preceding bases
@@ -176,7 +176,6 @@ class counter():
         count = seq.count(kmer)
         return count,float(count)/len(seq)
 
-
     def countRefKmer(self,maxKmerLength=None):
         """
         Function to count all kmers in long sequence (reference) of length kmerLen or below
@@ -192,14 +191,16 @@ class counter():
                 self.res['RefCounts'][str(kmer)] = self.ref.count(kmer)
         return self.res['RefCounts']
 
-    def precedingKmers(self,maxKmerLength=None):
+    def countErrorKmer(self,maxKmerLength=None):
         """
         Function which takes a list of errors and counts the kmers before  
         and after and error
         """
         if not maxKmerLength:
             maxKmerLength = self.opt.maxKmerLength
+        # 
         for error in self.errorList:
+            self.res['errorMode'][error.true][error.emission] += 1
             for j in [k +1 for k in range(self.opt.maxKmerLength)]:
                 try:
                     self.res['kmerCounts']['before'][error.true][error.emission][error.before(j)] += 1
@@ -209,16 +210,10 @@ class counter():
                     self.res['kmerCounts']['after'][error.true][error.emission][error.after(j)] += 1
                 except:
                     self.res['kmerCounts']['after'][error.true][error.emission][error.after(j)]= 1
-        return self.res['kmerCounts']
+        return self.res['errorMode'],self.res['kmerCounts']
 
     def readDiff(self,read,ref):
         return difflib.ndiff(read,ref)
-
-    # def getRefRead(self,positions):
-    #     """
-    #     Function to return the reference sequence a read is aligned to
-    #     """
-    #     return self.ref[positions[0]:positions[-1]+1]
 
     def countAlignedBases(self,read):
         count = 0
@@ -226,6 +221,26 @@ class counter():
             count += t[1]
         return count
 
+
+class aggregator(): 
+    """Takes a counter object and does some aggreation"""
+    def __init__(self,counter):
+        self.counts = counter.res
+        self.precedingKmers = AutoVivification()
+
+    def countPrecedingKmers(self):
+        """Count all the kmers preceding any error"""
+        for truth, emmitedDic in self.counts['kmerCounts']['before'].iteritems():
+            for emmited,kmerDic in emmitedDic.iteritems():
+                for kmer,count in kmerDic.iteritems():
+                    try:
+                        self.precedingKmers[kmer] += count
+                    except:
+                        self.precedingKmers[kmer] = count
+    def precedingKmersCount(self,kmer):
+        if not len(self.precedingKmers):
+            self.countPrecedingKmers()
+        return self.precedingKmers[kmer]
 
 
 

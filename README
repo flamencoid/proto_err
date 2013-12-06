@@ -93,12 +93,20 @@ Will return a dictonary of kmer counts within the reference of length 1,2,3
 dic['ATC']
 12345
 
-dic = errorCounter.precedingKmers(maxKmerLength = 3)
+dic = errorCounter.countErrorKmer(maxKmerLength = 3)
 Will return a dictonary of kmer counts before and after an error of the form
 dic['before'][trueBase][EmittedBase][kmerString] and
 dic['after'][trueBase][EmittedBase][kmerString]
 e.g. to get the counts of the number of times 'TTT' appears before the A->T transisition
 dic['before']['A']['T']['TTT']
+12345
+
+The aggregator object will take a counter and aggregate the counts
+
+errorAggregation = aggregator(errorCounter)
+print errorAggregation.precedingKmersCount('TTC')
+123
+
 
 
 
