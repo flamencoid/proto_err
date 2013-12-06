@@ -81,36 +81,47 @@ error.isSnp and error.isIndel return boolean values
 
 ## Counting  ##
 
-The counter object will take a list of errors and a reference and count kmers.
+The counter object will take a list of errors or a samfle and a reference.
 
-e.g.
-errorList = []
-for error in errorReader:
-	errorList.append(error)
+errorCounter = counter(ref,samfile=samfile)
+or
+errorCounter = counter(ref,errorList=errorList)
 
+To count errorTypes
+
+# Count all the errors    
+print errorCounter.getCount()
+
+#  Count all the errors preceded by kmer 'A'
+print errorCounter.getCount(kmer='AA')
+
+#  Count all the errors followed by kmer 'AA'
+print errorCounter.getCount(kmer='AA',after=True)
+
+#    Count all the errors for truth 'A' preceded by an A
+ print errorCounter.getCount(truth='A',kmer='A')
+
+#    Count all the errors A->T preceded by A
+ print errorCounter.getCount(truth='A',emission='T', kmer='A')
+
+#  Count all the errors where the emmited base is 'A' preceded by any kmer
+   print errorCounter.getCount(emission='A')
+
+# To return dictonaries of all kmer counts within the reference of length 1,2,3
 dic = errorCounter.countRefKmer(maxKmerLength = 3)
-Will return a dictonary of kmer counts within the reference of length 1,2,3
 dic['ATC']
 12345
 
 dic = errorCounter.countErrorKmer(maxKmerLength = 3)
-Will return a dictonary of kmer counts before and after an error of the form
-dic['before'][trueBase][EmittedBase][kmerString] and
-dic['after'][trueBase][EmittedBase][kmerString]
+Will return a the emmison matrix (as a dict) and a dictonary of kmer counts before and after an error
+emmisionMatrix,kmerCounts
+
+The kmerCounts is of the form 
+kmerCounts['before'][trueBase][EmittedBase][kmerString] and
+kmerCounts['after'][trueBase][EmittedBase][kmerString]
 e.g. to get the counts of the number of times 'TTT' appears before the A->T transisition
-dic['before']['A']['T']['TTT']
+kmerCounts['before']['A']['T']['TTT']
 12345
-
-## Aggregation  ##
-
-The aggregator object will take a counter and aggregate the counts
-
-errorAggregation = aggregator(errorCounter)
-print errorAggregation.precedingKmersCount('TTC')
-123
-
-
-
 
 
 
