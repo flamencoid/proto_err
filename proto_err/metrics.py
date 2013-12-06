@@ -8,6 +8,134 @@ from utils import *
 import difflib
 import itertools
 
+class error():
+    """ Information about the errors in a read """
+    def __init__(self,true,emission,read,readPos):
+        self.true = true
+        self.emission = emission
+        self.read = read
+        self.readPos = readPos # position on read where error starts 
+        # self.leftFlank = leftFlank 
+        # self.rightFlank = rightFlank
+    def __str__(self):
+        return "%s error(%s to %s)" %(self.errorType,self.true,self.emission)
+
+# read.seq[i-self.opt.maxOrder:i],read.seq[i+1:self.opt.maxOrder+i+1]
+
+    def before(self,j):
+        """Return the preceding j bases,return N when bases missing"""
+        # b = self.leftFlank[-j:
+        i = self.readPos
+        b = self.read.seq[i-j:i]
+        while len(b) < j:
+            b = 'N' +b
+        return b
+    def after(self,j):
+        """Return the following j bases,return N when bases missing"""
+        # a = self.rightFlank[0:j]
+        i = self.readPos
+        a = self.read.seq[i+1:j+i+1]
+        while len(a) < j:
+            a = a + 'N'
+        return a
+
+    @property 
+    def trueSeq(self):
+        """Sequence of the truth"""
+        return  self.leftFlank + self.true + self.rightFlank
+    @property 
+    def emissionSeq(self):
+        """Sequence emmited"""
+        return  self.leftFlank + self.emission + self.rightFlank
+    # @property 
+    # def flankLength(self):
+    #     """Lengths of the flanks either side"""
+    #     return  (len(self.leftFlank),len(self.rightFlank))
+    @property 
+    def errorType(self):
+        if self.isSnp:
+            return 'SNP'
+        elif self.isIndel:
+            return 'INDEL'
+    @property 
+    def isSnp(self):
+        """Is the error a SNP"""
+        return len(self.true) == len(self.emission)
+    @property 
+    def isIndel(self):
+        """Is the error an INDEL"""
+        return len(self.true) != len(self.emission)
+
+class errorReader():
+    """Iterable over errors in aligned reads"""
+    def __init__(self, samfile,ref):
+        self.samfile = pysam.Samfile( samfile ).fetch()
+        self.ref = ref
+        self.alphabet = getAlphabet()
+        self.readCounter = {}
+        self.readCounter['Total'] = 0
+        self.readCounter['UnMapped'] = 0
+        self.readCounter['Mapped'] = 0
+        self.readCounter['perfectAlignments'] = 0
+        self.readCounter['mismatchedAlignments'] = 0
+        self.errorList = []
+
+    def __iter__(self):
+        return self
+
+    def getRefRead(self,positions):
+        """
+        Function to return the reference sequence a read is aligned to
+        """
+        return self.ref[positions[0]:positions[-1]+1]
+
+    def readNext(self):
+        ## If there are errors left in the read 
+        self.read = self.samfile.next()
+        self.readCounter['Total'] += 1
+        if self.read.is_unmapped:
+            self.readCounter['UnMapped'] += 1
+        else:
+            self.readCounter['Mapped'] += 1
+            # print read.qname
+            self.checkRead(self.read)
+
+    def next(self):
+        ## if the error list is empty get the next read
+        # print self.errorList
+        while not self.errorList:
+            self.readNext()
+        else:
+            return self.errorList.pop(0)
+
+        # self.readCounter['totalErrorBases'] = len(self.errorList)
+
+    def checkRead(self,read):
+        """
+        A function which take a read and generates some error objects
+        """
+        NM = read.opt('NM')
+        if NM == 0:
+            self.readCounter['perfectAlignments'] += 1
+            # for base in self.alphabet:
+            #     self.res['errorMode'][base][base] += read.seq.count(base)
+        else:
+            self.readCounter['mismatchedAlignments'] += 1
+            ## Check what type of mismatch it is.
+            ## if the cigarsting only has M then only SNP errors
+            if (read.rlen == read.cigar[0][1]) and (read.cigar[0][0] == 0):
+                refRead = list(str(self.getRefRead(read.positions)))
+                for i,tupl in enumerate(itertools.izip_longest(refRead,list(str(read.seq)))):
+                    true,emission = tupl
+                    # self.res['errorMode'][true][emission] += 1
+                    ## if it's an error, check the preceding  opt.maxOrder bases
+                    if not true == emission:
+                        ## Check preceding bases
+                        self.errorList.append(error(true,emission,read,readPos=i))
+
+
+
+
 
 ## Compare aligned reads to reference and calculate stats
 class comparison(): 
@@ -117,74 +245,10 @@ class comparison():
             count += t[1]
         return count
 
-    def checkRead(self,read):
-        """
-        A function which take a read and returns some error stats
-        """
-        NM = read.opt('NM')
-        self.res['Counts']['NM'] += NM
-        self.res['Counts']['totalAlignedBases'] += self.countAlignedBases(read)
-
-        if NM == 0:
-            self.res['Counts']['perfectAlignments'] += 1
-            for base in getAlphabet():
-                self.res['errorMode'][base][base] += read.seq.count(base)
-        else:
-            self.res['Counts']['mismatchedAlignments'] += 1
-            ## Check what type of mismatch it is.
-            ## if the cigarsting only has M then only SNP errors
-            if (read.rlen == read.cigar[0][1]) and (read.cigar[0][0] == 0):
-                refRead = list(str(self.getRefRead(read.positions)))
-                for i,tupl in enumerate(itertools.izip_longest(refRead,list(str(read.seq)))):
-                    true,emission = tupl
-                    self.res['errorMode'][true][emission] += 1
-                    ## if it's an error, check the preceding  opt.maxOrder bases
-                    if not true == emission:
-                        ## Check preceding bases
-                        self.errorList.append(error(true,emission,read.seq[i-self.opt.maxOrder:i],read.seq[i+1:self.opt.maxOrder+i+1]))
 
 
-class error():
-    """ Information about the errors in a read """
-    def __init__(self,true,emission,leftFlank='',rightFlank=''):
-        self.true = true
-        self.emission = emission
-        self.leftFlank = leftFlank 
-        self.rightFlank = rightFlank
 
-    def before(self,j):
-        """Return the preceding j bases,return N when bases missing"""
-        b = self.leftFlank[-j:]
-        while len(b) < j:
-            b = 'N' +b
-        return b
-    def after(self,j):
-        """Return the following j bases,return N when bases missing"""
-        a = self.rightFlank[0:j]
-        while len(a) < j:
-            a = a + 'N'
-        return a
 
-    @property 
-    def trueSeq(self):
-        """Sequence of the truth"""
-        return  self.leftFlank + self.true + self.rightFlank
-    @property 
-    def emissionSeq(self):
-        """Sequence emmited"""
-        return  self.leftFlank + self.emission + self.rightFlank
-    @property 
-    def flankLength(self):
-        """Lengths of the flanks either side"""
-        return  (len(self.leftFlank),len(self.rightFlank))
-    @property 
-    def isSnp(self):
-        """Is the error a SNP"""
-        return len(self.true) == len(self.emission)
-    @property 
-    def isIndel(self):
-        """Is the error an INDEL"""
-        return len(self.true) != len(self.emission)
 
 class alignedRead():
     """
