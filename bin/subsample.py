@@ -33,7 +33,7 @@ parser.add_option("--strandBias", dest="strandBias",help="""Ratio of reads
 					sampled from forward or reverse strand. 1 samples only from 
 					forward, 0 only from reverse.(Optional defaults to .5)""",
 					default=0.5)
-parser.add_option("--meanReadLength", dest="readSd",help="""Read length is 
+parser.add_option("--ReadLengthSD", dest="readSd",help="""Read length is 
 					sampled from a normal with this SD (Optional defaults to 
 						meanReadLength/3)""",default=None)
 parser.add_option("--SnpIndelRatio", dest="SnpIndelRatio",help="""Ratio of SNP 
@@ -44,7 +44,7 @@ parser.add_option("--meanIndelSize", dest="indelMean",help="""INDEL size is
 					sampled from a normal of this mean (Optional defaults to 
 						5)""",
 					default=5)
-parser.add_option("--meanReadLength", dest="indelSd",help="""INDEL size is 
+parser.add_option("--IndelSizeSD", dest="indelSd",help="""INDEL size is 
 					sampled from a normal with this SD (Optional defaults to 
 						meanIndelSize/2)""",default=None)
 (opt, args) = parser.parse_args()
@@ -59,7 +59,7 @@ if not opt.snpFreqSd:
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")
-seqList = subsample(ref,opt,numReads=opt.numReads, readMean = opt.readMean,readSd = opt.readSt)
+seqList = subsample(ref,opt)
 logging.info("Writing Fasta file of subsampled reads")
 writeFasta(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference

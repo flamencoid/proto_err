@@ -96,15 +96,15 @@ class complexError(simulateError):
 					self.indel(pos)
 			
 
-def subsample(ref,opt,errorSimulator=complexError,numReads=100,readRange = [1000,20000], readMean = 100,readSd = 30):
+def subsample(ref,opt,errorSimulator=complexError):
 	"""
 	Function to take a fasta file subsample reads and generate a list of 
 	subsampled reads
 	"""
 	refLength =  len(ref)
 	seqList = []
-	for i in range(numReads):
-		seqLength = abs(int(math.ceil(np.random.normal(readMean,readSd))))
+	for i in range(opt.numReads):
+		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
 		start = random.randrange(refLength)
 		## randomly subsample from reference
 		recordId = 'st=%s&l=%s' % (str(start),str(seqLength))
