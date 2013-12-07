@@ -7,6 +7,7 @@ def testErrorClassBasic():
     """Just to everything works in the most basis case"""
     a = AlignedRead()
     a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
+    a.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
     error = proto_err.errorCount.error('A','T',a,0)
     assert_equal(error.true,'A')
     assert_equal(error.emission,'T')
@@ -16,6 +17,7 @@ def testErrorClassBasic():
     assert_equal(error.emissionSeq,'TGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG')
     assert_equal(error.isSnp,True)
     assert_equal(error.isIndel,False)
+    assert_equal(error.qual,11)
 
 # def testErrorClass():
 #     true = 'A'

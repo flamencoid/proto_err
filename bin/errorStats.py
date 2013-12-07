@@ -22,9 +22,11 @@ parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned rea
 opt.maxKmerLength = 3 
 
 ref = getRef(opt.refFilename)
-# logging.info("Finding and aggregating errors")
-for error in errorReader(opt.samfile,ref):
-	print error.qscore(-1)
+# logging.info("Finding and aggregating errors
+reader = errorReader(opt.samfile,ref)
+for error in reader:
+	print error.qual
+print reader.readCounter
 
 logging.info("Doing some kmer counting")
 errorCounter = counter(ref,samfile=opt.samfile)
