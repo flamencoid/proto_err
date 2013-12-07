@@ -51,7 +51,7 @@ parser.add_option("--IndelSizeSD", dest="indelSd",help="""INDEL size is
 ## Need a mean and a SD
 if not opt.readSd :
 	opt.readSd = int(float(opt.readMean)/3)
-if not opt.indelSd:
+if not opt.indelSd
 	opt.indelSd = float(opt.readMean)/2
 if not opt.snpFreqSd:
 	opt.snpFreqSd = float(opt.snpFreq)/10

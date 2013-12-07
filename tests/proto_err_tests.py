@@ -7,10 +7,7 @@ from pysam import AlignedRead
 def testErrorClassBasic():
     """Just to everything works in the most basis case"""
     a = AlignedRead()
-    a.qname = "read_28833_29006_6945"
     a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
-    a.tags = ( ("NM", 1),
-               ("RG", "L1") )
     error = proto_err.metrics.error('A','T',a,0)
     assert_equal(error.true,'A')
     assert_equal(error.emission,'T')
