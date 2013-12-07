@@ -52,11 +52,11 @@ class simulateError():
 	@property 
 	def record(self):
 		"""Return a Bio.SeqRecord"""
-		return SeqRecord(self.seq,self.id)
+		return SeqRecord(self.seq,self.id,letter_annotations={'phred_quality':self.qscore})
+
 	@property
 	def qscore(self):
-		qscore = 0
-		return qscore
+		return [int(-10 * math.log10(p+0.000001)) for p in self.errorProb]
 
 class singleSNP(simulateError):
 	def __init__(self,record,opt,id):

@@ -6,8 +6,8 @@ import os
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
-from fastaIO import getRef,writeFasta
-from error import subsample
+from fastaIO import getRef,writeFasta,writeFastq
+from simulation import subsample
 from optparse import OptionParser
 import align
 import pysam
@@ -51,17 +51,17 @@ parser.add_option("--IndelSizeSD", dest="indelSd",help="""INDEL size is
 ## Need a mean and a SD
 if not opt.readSd :
 	opt.readSd = int(float(opt.readMean)/3)
-if not opt.indelSd
+if not opt.indelSd:
 	opt.indelSd = float(opt.readMean)/2
 if not opt.snpFreqSd:
 	opt.snpFreqSd = float(opt.snpFreq)/10
 
-opt.readFilename = opt.refFilename[:-3] + '.subsampled.fa' 
+opt.readFilename = opt.refFilename[:-3] + '.subsampled.fq' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")
 seqList = subsample(ref,opt)
 logging.info("Writing Fasta file of subsampled reads")
-writeFasta(filename = opt.readFilename,seqList = seqList)
+writeFastq(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
 logging.info("Indexing reference")
 align.refIndex(file=opt.refFilename)

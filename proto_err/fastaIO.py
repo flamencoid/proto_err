@@ -15,6 +15,13 @@ def writeFasta(filename,seqList):
 	output_handle = open(filename, "w")
 	SeqIO.write(seqList,output_handle,'fasta')
 	return 1
+def writeFastq(filename,seqList):
+	"""
+	Function to take list of Seq objects and write a fasta file
+	"""
+	output_handle = open(filename, "w")
+	SeqIO.write(seqList,output_handle,'fastq')
+	return 1
 
 
 		

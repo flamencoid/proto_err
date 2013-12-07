@@ -223,6 +223,8 @@ class counter():
 
     def getCount(self,truth=None,emission=None,kmer='',after=False):
         """Gets the count for a given {truth,emmision,kmer}"""
+        ## This function is a bit hacky, come back and rewrite later.
+        ## If flexible querys are priorty, maybe create mongo db of error objects?
         if not self.countErrorKmerRun:
             self.countErrorKmer()
         if after:

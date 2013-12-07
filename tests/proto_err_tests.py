@@ -1,14 +1,13 @@
 from nose.tools import *
 from Bio.SeqRecord import SeqRecord
-import proto_err.metrics
-from  proto_err.error import simulateError
+import proto_err.errorCount
+from  proto_err.simulation import simulateError
 from pysam import AlignedRead
-
 def testErrorClassBasic():
     """Just to everything works in the most basis case"""
     a = AlignedRead()
     a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
-    error = proto_err.metrics.error('A','T',a,0)
+    error = proto_err.errorCount.error('A','T',a,0)
     assert_equal(error.true,'A')
     assert_equal(error.emission,'T')
     assert_equal(error.before(2),'NN')
@@ -17,7 +16,6 @@ def testErrorClassBasic():
     assert_equal(error.emissionSeq,'TGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG')
     assert_equal(error.isSnp,True)
     assert_equal(error.isIndel,False)
-
 
 # def testErrorClass():
 #     true = 'A'
@@ -49,12 +47,14 @@ def testErrorSim():
     opt = {}
     errorSim = simulateError(record,opt,id = 'fragment_id')
     errorSim.snp(0,'T')
-    print errorSim.record.seq
     assert_equal( str(errorSim.seq) , 'TTCGATCGATCG')
     errorSim.ins(3,'TTT')
     assert_equal( str(errorSim.seq) , 'TTCGTTTATCGATCG')
     errorSim.deletion(4,5)
     assert_equal( str(errorSim.seq) , 'TTCGCGATCG')
+    assert_equal(errorSim.errorProb,[0]*len('TTCGCGATCG'))
+    assert_equal(errorSim.qscore,[60]*len('TTCGCGATCG'))
+
 
 # def testCounter():
 #     print errorCounter.getCount()
