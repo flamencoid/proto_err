@@ -16,4 +16,6 @@ class AutoVivification(dict):
         except KeyError:
             value = self[item] = type(self)()
             return value
+def asciiToInt(s):
+    return ord(s) - 32
 

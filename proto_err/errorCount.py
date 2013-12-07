@@ -15,16 +15,11 @@ class error():
         self.emission = emission
         self.read = read
         self.readPos = readPos # position on read where error starts 
-        # self.leftFlank = leftFlank 
-        # self.rightFlank = rightFlank
     def __str__(self):
         return "%s error(%s to %s)" %(self.errorType,self.true,self.emission)
 
-# read.seq[i-self.opt.maxOrder:i],read.seq[i+1:self.opt.maxOrder+i+1]
-
     def before(self,j):
         """Return the preceding j bases,return N when bases missing"""
-        # b = self.leftFlank[-j:
         i = self.readPos
         b = self.read.seq[i-j:i]
         while len(b) < j:
@@ -32,12 +27,15 @@ class error():
         return b
     def after(self,j):
         """Return the following j bases,return N when bases missing"""
-        # a = self.rightFlank[0:j]
         i = self.readPos
         a = self.read.seq[i+1:j+i+1]
         while len(a) < j:
             a = a + 'N'
         return a
+
+    def qscore(self,i):
+        """Return the quality score at a base +i i from the error start position"""
+        return asciiToInt(self.read.qqual[self.readPos+1])
 
     @property 
     def trueSeq(self):
@@ -64,6 +62,11 @@ class error():
     def isIndel(self):
         """Is the error an INDEL"""
         return len(self.true) != len(self.emission)
+    @property
+    def qual(self):
+        """Quality score of error base"""
+        return asciiToInt(self.read.qqual[self.readPos])
+
 
 class errorReader():
     """Iterable over errors in aligned reads"""

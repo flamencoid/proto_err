@@ -15,7 +15,7 @@ parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 					default="../data/ref.fa")
 parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned reads",
-						default="../data/ref.subsampled.fa.sam")
+						default="../data/ref.subsampled.fq.sam")
 (opt, args) = parser.parse_args()
 
 ## Hardcode some options
@@ -24,7 +24,7 @@ opt.maxKmerLength = 3
 ref = getRef(opt.refFilename)
 # logging.info("Finding and aggregating errors")
 for error in errorReader(opt.samfile,ref):
-	print error.read.qual
+	print error.qscore(-1)
 
 logging.info("Doing some kmer counting")
 errorCounter = counter(ref,samfile=opt.samfile)
