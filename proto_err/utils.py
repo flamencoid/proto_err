@@ -18,4 +18,11 @@ class AutoVivification(dict):
             return value
 def asciiToInt(s):
     return ord(s) - 32
+def popLong(l,i,j):
+    """Pops along multiple index"""
+    return [l.pop(0) for _ in l[i:j]]
+
+# def cigarIntToString(i):
+#     dic = {0:'M',1:'I',''}
+
 

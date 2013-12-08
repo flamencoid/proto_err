@@ -25,7 +25,8 @@ ref = getRef(opt.refFilename)
 # logging.info("Finding and aggregating errors
 reader = errorReader(opt.samfile,ref)
 for error in reader:
-	print error.qual
+	if error.isIndel:
+		print error
 print reader.readCounter
 
 logging.info("Doing some kmer counting")
@@ -33,6 +34,7 @@ errorCounter = counter(ref,samfile=opt.samfile)
 errorCounter.setup(opt)
 errorCounter.countRefKmer()
 errorCounter.countErrorKmer()
+print errorCounter.res['qualCounter']
 
 
 

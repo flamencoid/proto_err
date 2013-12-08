@@ -52,8 +52,12 @@ class error():
     def errorType(self):
         if self.isSnp:
             return 'SNP'
-        elif self.isIndel:
-            return 'INDEL'
+        elif self.isInsertion:
+            return 'Insertion'
+        elif self.isDeletion:
+            return 'Deletion'
+        else:
+            return 'Unknown Error Type'
     @property 
     def isSnp(self):
         """Is the error a SNP"""
@@ -62,6 +66,14 @@ class error():
     def isIndel(self):
         """Is the error an INDEL"""
         return len(self.true) != len(self.emission)
+    @property 
+    def isInsertion(self):
+        """Is the error an insertion"""
+        return len(self.true) < len(self.emission)
+    @property 
+    def isDeletion(self):
+        """Is the error a deletion"""
+        return len(self.true) > len(self.emission)
     @property
     def qual(self):
         """Quality score of error base"""
@@ -84,12 +96,13 @@ class errorReader():
 
     def __iter__(self):
         return self
-
-    def getRefRead(self,positions):
+    @property
+    def refRead(self):
         """
         Function to return the reference sequence a read is aligned to
         """
-        return self.ref[positions[0]:positions[-1]+1]
+        refRead = [str(self.ref[pos]) for pos in self.read.positions]
+        return "".join(refRead)
 
     def readNext(self):
         ## If there are errors left in the read 
@@ -99,8 +112,7 @@ class errorReader():
             self.readCounter['UnMapped'] += 1
         else:
             self.readCounter['Mapped'] += 1
-            # print read.qname
-            self.checkRead(self.read)
+            self.checkRead()
 
     def next(self):
         ## if the error list is empty get the next read
@@ -111,11 +123,11 @@ class errorReader():
 
         # self.readCounter['totalErrorBases'] = len(self.errorList)
 
-    def checkRead(self,read):
+    def checkRead(self):
         """
         A function which take a read and generates some error objects
         """
-        NM = read.opt('NM')
+        NM = self.read.opt('NM')
         if NM == 0:
             self.readCounter['perfectAlignments'] += 1
             # for base in self.alphabet:
@@ -123,16 +135,83 @@ class errorReader():
         else:
             self.readCounter['mismatchedAlignments'] += 1
             ## Check what type of mismatch it is.
-            ## if the cigarsting only has M then only SNP errors
-            if (read.rlen == read.cigar[0][1]) and (read.cigar[0][0] == 0):
-                refRead = list(str(self.getRefRead(read.positions)))
-                for i,tupl in enumerate(itertools.izip_longest(refRead,list(str(read.seq)))):
-                    true,emission = tupl
-                    
-                    ## if it's an error, check the preceding  opt.maxOrder bases
-                    if not true == emission:
-                        ## Check preceding bases
-                        self.errorList.append(error(true,emission,read,readPos=i))
+            ## if the cigarstring only has M then only SNP errors
+            self.currentRefReadList = list(self.refRead)
+            self.currentReadList = list(str(self.read.seq))
+            self.readPos = 0
+            for tup in self.read.cigar:
+                cigarInt = tup[0]
+                numBases = tup[1]
+                if cigarInt == 0:
+                    ## Match or mismatch
+                    self.checkSNPs(N=numBases)
+                    self.readPos += numBases
+                elif cigarInt == 1:
+                    ## Insertion to the reference
+                    self.checkInsertion(N=numBases)
+                    self.readPos += numBases
+                elif cigarInt == 2:
+                    ## Deletion from the reference
+                    self.checkDeletion(N=numBases)
+                elif cigarInt == 3:
+                    ## skipped region from the reference
+                    self.checkSkipped(N=numBases)
+                elif cigarInt == 4:
+                    ##  soft clipping (clipped sequences present in SEQ)
+                    self.checkSoftClipped(N=numBases)
+                elif cigarInt == 5:
+                    ##  hard clipping (clipped sequences NOT present in SEQ)
+                    self.checkHardClipped(N=numBases)
+                elif cigarInt == 6:
+                    ## padding (silent deletion from padded reference)
+                    self.checkPadding(N=numBases)
+                elif cigarInt == 7:
+                    ## sequence match
+                    self.checkSeqMatch(N=numBases)
+                elif cigarInt == 8:
+                    ## sequence mismatch
+                    self.checkSeqMismatch(N=numBases)
+            assert self.currentRefReadList == []
+            assert self.currentReadList == []
+    def checkSNPs(self,N):
+        readSeg = popLong(self.currentReadList,0,N)
+        refSeg = popLong(self.currentRefReadList,0,N)
+        assert len(readSeg) == len(refSeg)
+        for i,tupl in enumerate(itertools.izip(refSeg,readSeg)):
+            true,emission = tupl
+            ## if it's an error, check the preceding  opt.maxOrder bases
+            if not true == emission:
+                ## Check preceding bases
+                self.errorList.append(error(true,emission,self.read,readPos=i+self.readPos))   
+    def checkInsertion(self,N):
+        insSeg = popLong(self.currentReadList,0,N)
+        self.errorList.append(error(true='',emission="".join(insSeg),read=self.read,readPos=self.readPos))
+    def checkDeletion(self,N):
+        i = self.read.positions[self.readPos-1] + 1
+        j =  self.read.positions[self.readPos]        
+        delSeg = self.ref[i:j]
+        self.errorList.append(error(true=delSeg,emission="",read=self.read,readPos=self.readPos))
+    def checkSkipped(self,N):
+        logging.error("Haven't written a handler for this case yet")
+        0/0
+    def checkSoftClipped(self,N):
+        del self.currentReadList[0:N]
+    def checkHardClipped(self,N):
+        pass
+        # del self.currentReadList[0:N]
+    def checkPadding(self,N):
+        logging.error("Haven't written a handler for this case yet")
+        0/0
+    def checkSeqMismatch(self,N):
+        logging.error("Haven't written a handler for this case yet")
+        0/0
+    def checkSkipped(self,N):
+        logging.error("Haven't written a handler for this case yet")
+        0/0
+
+
+
+
 
 class counter(): 
     """Takes a list of errors and does some kmer counting"""
@@ -151,6 +230,7 @@ class counter():
         self.res['kmerCounts'] = AutoVivification()
         self.res['RefCounts'] =  AutoVivification()
         self.res['errorMode'] = AutoVivification()
+        self.res['qualCounter'] = AutoVivification()
         # set toplevel name 
         self.ref = ref
         self.numErrors = len(self.errorList)
@@ -202,8 +282,10 @@ class counter():
         for error in self.errorList:
             try:
                 self.res['errorMode'][error.true][error.emission] += 1
+                self.res['qualCounter'][error.qual] +=1
             except:
                 self.res['errorMode'][error.true][error.emission] = 1
+                self.res['qualCounter'][error.qual] =1
             for j in [k +1 for k in range(self.opt.maxKmerLength)]:
                 try:
                     self.res['kmerCounts']['before'][error.true][error.emission][error.before(j)] += 1
