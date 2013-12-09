@@ -10,10 +10,12 @@ from the top directory.
 To read in a reference file subsample and realign with random read errors and output a samfile
 
 **python subsample.py -r referenceFile.fa**
+
 or simply,
+
 **./subsample.py** to run with default reference
 
-Run subsample.py -h for additional options
+Run **subsample.py -h** for additional options
 ```python
 Options:
   -h, --help            show this help message and exit
