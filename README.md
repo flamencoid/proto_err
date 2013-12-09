@@ -67,8 +67,6 @@ Options:
 
 **python errorStats.py -r referenceFile.fa -s samfile.sam**
 
-**Usage beyond scripts**
-
 ## Error Reader ## 
 To iterate through errors in samfile
 ```python
@@ -82,16 +80,8 @@ Deletion error(GC to )
 ```
 
 ## Error Class##
-Each error has the following attributes and methods
 
-
-error.before(i) will return the i bases before the error. It will return exactly
-i letters returning N when a base does not exist.
-i.e. if the error occurs at the first base in a read .before(2) will return 'NN'
-simillarly error.after(i) will return the i bases after the error has ended.
-
-error.isSnp and error.isIndel return boolean values
-
+[See Error Class](https://github.com/flamencoid/proto_err/blob/master/docs/_build/text/index.txt)
 
 ## Counting  ##
 
