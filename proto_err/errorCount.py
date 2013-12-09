@@ -355,41 +355,39 @@ class errorReader():
 
 
 class counter(): 
-       """ 
+    """ 
     Takes a list of errors or samfile and does some kmer counting
 
     Attributes
     ----------
-    readCounter : dict
-        A dictonary of counts of read alignment
+    ref : string
+        The reference sequence
+    errorList : list 
+        A list of error objects (Optional, can take samfile instead)
+    samfile : string
+        Path to samfile (Optional, can take a list of errors instead)
+    opt : dict
+        Options passed from OptionParser
 
     Parameters
     ----------
-    samfile: string
-        path to samfile
-
-    ref: string
-        reference sequence
+    errorList : list
+        A list of error objects on which counting is done 
+    res : dict
+        A dictonary containg resulting counts
+    numErrors : int
+        Number of errors in errorList
 
 
     See Also
     --------
-    error, counter
+    error, errorReader
 
     Examples
     --------
-    >>> from proto_err.errorCount import errorReader
-    >>> reader = errorReader(opt.samfile,ref)
-    >>> for error in reader:
-    >>>     print error
-    SNP error(T to C)
-    SNP error(A to T)
-    Deletion error(CGCA to )
-    ...
-
-    >>> print reader.readCounter
-    {'UnMapped': 454, 'mismatchedAlignments': 617, 'Total': 1225, 'perfectAlignments': 154, 'Mapped': 771}
-
+    >>> errorCounter = counter(ref,samfile=opt.samfile)
+    >>> errorCounter.setup(opt)
+    >>> errorCounter.countRefKmer()
     """
 
     def __init__(self,ref,errorList=None,samfile=None,opt=None):
@@ -411,21 +409,18 @@ class counter():
         # set toplevel name 
         self.ref = ref
         self.numErrors = len(self.errorList)
-        self.countErrorKmerRun = False
+        self.__countErrorKmerRun = False
         if opt:
             self.setup(opt)
 
 
     def setup(self,opt):
         """
-        Setup output
+        Pass options from OptionParser
         """
         self.opt = opt
-        ## Create the dictonary of error modes
-        ## res[A][T] = counts of A -> T SNPs
-        # self.res['errorMode'] = dict(zip(getAlphabet(),[dict(zip(getAlphabet(),[0]*4)) for i in getAlphabet()]))
 
-    def kmerFreq(self,seq,kmer):
+    def __kmerFreq(self,seq,kmer):
         """
         Calculate the number of times a kmer appears in a sequence
         seq : SeqRecord Object
@@ -438,15 +433,38 @@ class counter():
         """
         Count all kmers in the reference of length kmerLen or below
 
-        i.e.  counter.countRefKmer(maxKmerLength = 3) counts all possible kmers of length 1,2,3
 
-        returns a dictonary of counts in the form
+        Parameters
+        ----------
+        maxKmerLength : int
+            This is a type.
+            Maximum kmer length
 
-        {'AAT':123,'AA':123,...}
 
-        This dictonary is also stored in the counter object in counter.res['RefCounts']
+        Returns
+        ----------
+        dict
+             dictonary of counts in the form
 
+            {'AAT':123,'AA':123,...}
+
+            emmissionDic[trueBase][emmitedBase] = count of trueBase -> emmitedBase transition
+
+            This also stored in the counter object in counter.res['RefCounts'] 
+
+         See Also
+        --------
+        countErrorKmer
+
+        Examples
+        --------
+            >>> from errorCount import counter
+            >>> errorCounter = counter(ref,samfile)
+            >>> errorCounter.countRefKmer(maxKmerLength = 3) 
+            >>> ## counts all possible kmers of length 1,2,3 in reference
+            >>> {'AAT':123,'AA':123,...}
         """
+
         if not maxKmerLength:
             maxKmerLength = self.opt.maxKmerLength
         alpabet = getAlphabet()
@@ -504,10 +522,8 @@ class counter():
             >>> errorCounter.countErrorKmer(maxKmerLength = 3) 
             >>> ## counts all possible kmers of length 1,2,3 before and after an error. 
             >>> ({'A': {'C': 113, 'T': 105, 'G': 84}, ...}, {'after':{'A': {'C': {'CTT': 2, 'GCA': 1,...},..}} ,'before:{'A': {'C': {'CTT': 2, 'GCA': 1,...},..}}'})
-
-
         """
-        self.countErrorKmerRun = True
+        self.__countErrorKmerRun = True
         if not maxKmerLength:
             maxKmerLength = self.opt.maxKmerLength
         # 
@@ -529,17 +545,77 @@ class counter():
                     self.res['kmerCounts']['after'][error.true][error.emission][error.after(j)]= 1
         return self.res['errorMode'],self.res['kmerCounts']
 
-    def readDiff(self,read,ref):
+    def __readDiff(self,read,ref):
         return difflib.ndiff(read,ref)
 
-    def countAlignedBases(self,read):
+    def countAlignedBases(self):
+        """
+        Counts the number of aligned bases in counter
+
+        Returns
+        ----------
+        int
+            Count of aligned bases
+
+        Examples
+        --------
+            >>> from errorCount import counter
+            >>> errorCounter = counter(ref,samfile)
+            >>> errorCounter.countAlignedBases() 
+            >>> 12335
+        """
         count = 0
-        for t in read.cigar:
-            count += t[1]
+        for e in self.errorList:
+            read = e.read
+            for t in read.cigar:
+                count += t[1]
         return count
 
     def getCount(self,truth=None,emission=None,kmer='',after=False):
-        """Gets the count for a given {truth,emmision,kmer}"""
+        """
+        Gets the count for a given {truth,emmision,kmer}
+
+
+        Parameters
+        ----------
+        truth : string
+            truth base(s)
+        emission : string
+            emmited base(s)
+        kmer : string
+            preceding or following kmer
+        after : bool
+            Default False. If True kmer is before, if False kmer is after
+
+        Returns
+        ----------
+        int
+            Count of errors matching Parameter query
+
+        Examples
+        --------
+            >>> from errorCount import counter
+            >>> errorCounter = counter(ref,samfile)
+            >>> #### Count all the errors    
+            >>>print errorCounter.getCount()
+            1234
+            >>> ####   Count all the errors preceded by kmer 'A'
+            >>> print errorCounter.getCount(kmer='AA')
+            123
+            >>> ####  Count all the errors followed by kmer 'AA'
+            >>> print errorCounter.getCount(kmer='AA',after=True)
+            12
+            >>> ####     Count all the errors for truth 'A' preceded by an A
+            >>> print errorCounter.getCount(truth='A',kmer='A')
+            123
+            >>> ####     Count all the errors A->T preceded by A
+            >>> print errorCounter.getCount(truth='A',emission='T', kmer='A')
+            12
+            >>> ####  Count all the errors where the emmited base is 'A' preceded by any kmer
+            >>> print errorCounter.getCount(emission='A')
+            2
+        """
+
         ## This function is a bit hacky, come back and rewrite later.
         ## If flexible querys are priorty, maybe create mongo db of error objects?
         if not self.countErrorKmerRun:

@@ -118,7 +118,63 @@
 <dl class="class">
 <dt id="proto_err.errorCount.counter">
 <em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">counter</tt><big>(</big><em>ref</em>, <em>errorList=None</em>, <em>samfile=None</em>, <em>opt=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Takes a list of errors and does some kmer counting</p>
+<dd><p>Takes a list of errors or samfile and does some kmer counting</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>errorList</strong> : list</p>
+<blockquote>
+<div><p>A list of error objects on which counting is done</p>
+</div></blockquote>
+<p><strong>res</strong> : dict</p>
+<blockquote>
+<div><p>A dictonary containg resulting counts</p>
+</div></blockquote>
+<p><strong>numErrors</strong> : int</p>
+<blockquote class="last">
+<div><p>Number of errors in errorList</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#proto_err.errorCount.error" title="proto_err.errorCount.error"><tt class="xref py py-obj docutils literal"><span class="pre">error</span></tt></a>, <a class="reference internal" href="#proto_err.errorCount.errorReader" title="proto_err.errorCount.errorReader"><tt class="xref py py-obj docutils literal"><span class="pre">errorReader</span></tt></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">samfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span><span class="o">.</span><span class="n">countRefKmer</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="8%" />
+<col width="80%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>ref</td>
+<td>string</td>
+<td>The reference sequence</td>
+</tr>
+<tr class="row-even"><td>errorList</td>
+<td>list</td>
+<td>A list of error objects (Optional, can take samfile instead)</td>
+</tr>
+<tr class="row-odd"><td>samfile</td>
+<td>string</td>
+<td>Path to samfile (Optional, can take a list of errors instead)</td>
+</tr>
+<tr class="row-even"><td>opt</td>
+<td>dict</td>
+<td>Options passed from OptionParser</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -126,8 +182,8 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.countAlignedBases" title="proto_err.errorCount.counter.countAlignedBases"><tt class="xref py py-obj docutils literal"><span class="pre">countAlignedBases</span></tt></a>(read)</td>
-<td></td>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.countAlignedBases" title="proto_err.errorCount.counter.countAlignedBases"><tt class="xref py py-obj docutils literal"><span class="pre">countAlignedBases</span></tt></a>()</td>
+<td>Counts the number of aligned bases in counter</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.countErrorKmer" title="proto_err.errorCount.counter.countErrorKmer"><tt class="xref py py-obj docutils literal"><span class="pre">countErrorKmer</span></tt></a>([maxKmerLength])</td>
 <td>Count all kmers in the list of errors of length kmerLen or below before</td>
@@ -138,21 +194,35 @@
 <tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.getCount" title="proto_err.errorCount.counter.getCount"><tt class="xref py py-obj docutils literal"><span class="pre">getCount</span></tt></a>([truth,&nbsp;emission,&nbsp;kmer,&nbsp;after])</td>
 <td>Gets the count for a given {truth,emmision,kmer}</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.kmerFreq" title="proto_err.errorCount.counter.kmerFreq"><tt class="xref py py-obj docutils literal"><span class="pre">kmerFreq</span></tt></a>(seq,&nbsp;kmer)</td>
-<td>Calculate the number of times a kmer appears in a sequence</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.readDiff" title="proto_err.errorCount.counter.readDiff"><tt class="xref py py-obj docutils literal"><span class="pre">readDiff</span></tt></a>(read,&nbsp;ref)</td>
-<td></td>
-</tr>
 <tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.setup" title="proto_err.errorCount.counter.setup"><tt class="xref py py-obj docutils literal"><span class="pre">setup</span></tt></a>(opt)</td>
-<td>Setup output</td>
+<td>Pass options from OptionParser</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="proto_err.errorCount.counter.countAlignedBases">
-<tt class="descname">countAlignedBases</tt><big>(</big><em>read</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.countAlignedBases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.countAlignedBases" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descname">countAlignedBases</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.countAlignedBases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.countAlignedBases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts the number of aligned bases in counter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>int</strong> :</p>
+<blockquote class="last">
+<div><p>Count of aligned bases</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span><span class="o">.</span><span class="n">countAlignedBases</span><span class="p">()</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">12335</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="method">
 <dt id="proto_err.errorCount.counter.countErrorKmer">
@@ -203,35 +273,107 @@ emmissionDic counts the number of times a transition occurs</p>
 <dt id="proto_err.errorCount.counter.countRefKmer">
 <tt class="descname">countRefKmer</tt><big>(</big><em>maxKmerLength=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.countRefKmer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.countRefKmer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Count all kmers in the reference of length kmerLen or below</p>
-<p>i.e.  counter.countRefKmer(maxKmerLength = 3) counts all possible kmers of length 1,2,3</p>
-<p>returns a dictonary of counts in the form</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>maxKmerLength</strong> : int</p>
+<blockquote>
+<div><p>This is a type.
+Maximum kmer length</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>dict</strong> :</p>
+<blockquote class="last">
+<div><blockquote>
+<div><p>dictonary of counts in the form</p>
+</div></blockquote>
 <p>{&#8216;AAT&#8217;:123,&#8217;AA&#8217;:123,...}</p>
-<p>This dictonary is also stored in the counter object in counter.res[&#8216;RefCounts&#8217;]</p>
+<p>emmissionDic[trueBase][emmitedBase] = count of trueBase -&gt; emmitedBase transition</p>
+<p>This also stored in the counter object in counter.res[&#8216;RefCounts&#8217;]</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#proto_err.errorCount.counter.countErrorKmer" title="proto_err.errorCount.counter.countErrorKmer"><tt class="xref py py-obj docutils literal"><span class="pre">countErrorKmer</span></tt></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span><span class="o">.</span><span class="n">countRefKmer</span><span class="p">(</span><span class="n">maxKmerLength</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="c">## counts all possible kmers of length 1,2,3 in reference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s">&#39;AAT&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span><span class="s">&#39;AA&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span><span class="o">...</span><span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="proto_err.errorCount.counter.getCount">
 <tt class="descname">getCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmer=''</em>, <em>after=False</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.getCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.getCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the count for a given {truth,emmision,kmer}</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>truth</strong> : string</p>
+<blockquote>
+<div><p>truth base(s)</p>
+</div></blockquote>
+<p><strong>emission</strong> : string</p>
+<blockquote>
+<div><p>emmited base(s)</p>
+</div></blockquote>
+<p><strong>kmer</strong> : string</p>
+<blockquote>
+<div><p>preceding or following kmer</p>
+</div></blockquote>
+<p><strong>after</strong> : bool</p>
+<blockquote>
+<div><p>Default False. If True kmer is before, if False kmer is after</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>int</strong> :</p>
+<blockquote class="last">
+<div><p>Count of errors matching Parameter query</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">#### Count all the errors    </span>
+<span class="go">&gt;&gt;&gt;print errorCounter.getCount()</span>
+<span class="go">1234</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####   Count all the errors preceded by kmer &#39;A&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">kmer</span><span class="o">=</span><span class="s">&#39;AA&#39;</span><span class="p">)</span>
+<span class="go">123</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####  Count all the errors followed by kmer &#39;AA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">kmer</span><span class="o">=</span><span class="s">&#39;AA&#39;</span><span class="p">,</span><span class="n">after</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="go">12</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####     Count all the errors for truth &#39;A&#39; preceded by an A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">kmer</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">123</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####     Count all the errors A-&gt;T preceded by A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;T&#39;</span><span class="p">,</span> <span class="n">kmer</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">12</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####  Count all the errors where the emmited base is &#39;A&#39; preceded by any kmer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
 </dd></dl>
-
-<dl class="method">
-<dt id="proto_err.errorCount.counter.kmerFreq">
-<tt class="descname">kmerFreq</tt><big>(</big><em>seq</em>, <em>kmer</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.kmerFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.kmerFreq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the number of times a kmer appears in a sequence
-seq : SeqRecord Object
-kmer : kmer string</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="proto_err.errorCount.counter.readDiff">
-<tt class="descname">readDiff</tt><big>(</big><em>read</em>, <em>ref</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.readDiff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.readDiff" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="proto_err.errorCount.counter.setup">
 <tt class="descname">setup</tt><big>(</big><em>opt</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.setup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setup output</p>
+<dd><p>Pass options from OptionParser</p>
 </dd></dl>
 
 </dd></dl>
