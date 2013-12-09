@@ -1,16 +1,20 @@
-# Tests #
+Proto_err
+=========
+
+### Tests ###
 To run tests run:
 nosetests
 from the top directory. 
+## Simulating Reads ##
 
 To read in a reference file subsample and realign with random read errors and output a samfile
 
-python subsample.py -r referenceFile.fa
+**python subsample.py -r referenceFile.fa**
 or simply,
-./subsample.py to run with default reference
+**./subsample.py** to run with default reference
 
 Run subsample.py -h for additional options
-
+```python
 Options:
   -h, --help            show this help message and exit
   -r REFFILENAME, --ref=REFFILENAME
@@ -55,7 +59,7 @@ Options:
                         sampled from a normal with this SD (Optional defaults
                         to
                         meanIndelSize/2)
-
+```
 
 *Error Reading*
 
