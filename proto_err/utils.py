@@ -21,6 +21,8 @@ def asciiToInt(s):
 def popLong(l,i,j):
     """Pops along multiple index"""
     return [l.pop(0) for _ in l[i:j]]
+def getDBError():
+    return """ ########################################\n####### Is a pymongo instance running at 27017? ##### \n####### Install mongodb and run mongod from shell ####\n########################################"""
 
 # def cigarIntToString(i):
 #     dic = {0:'M',1:'I',''}

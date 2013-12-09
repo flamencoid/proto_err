@@ -29,10 +29,12 @@ for error in reader:
 print reader.readCounter
 
 logging.info("Doing some kmer counting")
-errorCounter = counter(ref,samfile=opt.samfile)
-errorCounter.setup(opt)
+errorCounter = counter(ref,opt,samfile=opt.samfile)
 errorCounter.countRefKmer()
 errorCounter.countErrorKmer(1)
+
+# for post in errorCounter.errordb.find():
+# 	print post
 # errorCounter.res['qualCounter']
 
 

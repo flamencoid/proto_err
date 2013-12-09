@@ -8,6 +8,7 @@ from utils import *
 import difflib
 import itertools
 
+
 class error():
     """ 
     Information about the errors in a read 
@@ -156,6 +157,13 @@ class error():
     def qual(self):
         """Return quality score of the base where the error occured"""
         return asciiToInt(self.read.qqual[self.readPos])
+    @property 
+    def doc(self):
+        """Return a pymongo document"""
+        return {'true':self.true,'emission':self.emission,'read':str(self.read.seq),
+                'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
+                'leftFlank':self.before(5),'rightFlank':self.after(5),'type':self.errorType,
+                'qual':self.qual}
 
 
 class errorReader():
@@ -357,7 +365,7 @@ class errorReader():
 
 
 
-
+from query import errordb
 class counter(): 
     """ 
     Takes a list of errors or samfile and does some kmer counting
@@ -394,7 +402,7 @@ class counter():
     >>> errorCounter.countRefKmer()
     """
 
-    def __init__(self,ref,errorList=None,samfile=None,opt=None):
+    def __init__(self,ref,opt,errorList=None,samfile=None):
         self.logger     = logging.getLogger()
         if (not errorList and not samfile) or (errorList and samfile):
             self.logger.error("counter takes errorList or samfile, at least one and not both")
@@ -414,8 +422,14 @@ class counter():
         self.ref = ref
         self.numErrors = len(self.errorList)
         self.__countErrorKmerRun = False
-        if opt:
-            self.setup(opt)
+        self.setup(opt)
+        ## Connection to mongoDB, runs without for now.
+        try:
+            self.errordb = errordb()
+            self.errorList = self.errordb.addErrors(self.errorList)
+            self.logger.info("Connection to DB succesful")
+        except:
+            self.logger.error(getDBError())
 
 
     def setup(self,opt):
@@ -423,6 +437,10 @@ class counter():
         Pass options from OptionParser
         """
         self.opt = opt
+        ## Check that all required opts exist
+        if not self.opt.maxKmerLength:
+            self.logger.info("opt.maxKmerLength not set, Defaulting to 3")
+            self.opt.maxKmerLength = 3
 
     def __kmerFreq(self,seq,kmer):
         """
@@ -431,6 +449,7 @@ class counter():
         kmer : kmer string
         """
         count = seq.count(kmer)
+
         return count,float(count)/len(seq)
 
     def countRefKmer(self,maxKmerLength=None):
@@ -622,7 +641,7 @@ class counter():
 
         ## This function is a bit hacky, come back and rewrite later.
         ## If flexible querys are priorty, maybe create mongo db of error objects?
-        if not self.countErrorKmerRun:
+        if not self.__countErrorKmerRun:
             self.countErrorKmer()
         if after:
             dic = self.res['kmerCounts']['after']

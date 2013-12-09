@@ -6,7 +6,11 @@ from  proto_err.simulation import simulateError,complexError
 from pysam import AlignedRead
 from proto_err.fastaIO import *
 from proto_err import align
+from optparse import Values
+from proto_err.query import *
 import random
+
+
 def testErrorClassBasic():
     """Just to everything works in the most basis case"""
     a = AlignedRead()
@@ -22,6 +26,7 @@ def testErrorClassBasic():
     assert_equal(errorObj.qual,11)
     assert_equal(errorObj.qscore(2),9)
 
+
 def testComplexErrorSim():
     """Test the read error simulation"""
     N= 500
@@ -32,7 +37,7 @@ def testComplexErrorSim():
     ref = "".join([random.choice(getAlphabet()) for _ in range(100000)])+seq + "".join([random.choice(getAlphabet()) for _ in range(100000)])
     refRecord=SeqRecord(Seq(ref),'Chromosome dna:chromosome chromosome:ASM19595v1:Chromosome:1:4411532:1','','')
     record=SeqRecord(Seq(seq),'st=%s'%(100000),'','')
-    opt = {}
+    opt = Values()
     rep = [0.1]*N
     errorSim = complexError(record,opt,id = 'st=%s'%(100000),baseErrorProb = rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
     assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
@@ -87,16 +92,25 @@ def testComplexErrorSim():
     assert_equal(error1.alignedDist,0)
 
     ## Test counter
-    errorCounter = counter(ref,errorList)
+    opt.maxKmerLength = 4
+    errorCounter = counter(ref,opt,errorList)
+    assert_equal(errorCounter.getCount(),12)
 
+def testbasicQuery():
+    """Test DB stuff"""
+    ## testing db stuff
+    database = errordb()
+    database.deleteAll()
+    a = AlignedRead()
+    a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
+    a.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
+    errorObj = error('A','T',a,0)
+    errorObj = database.addError(error=errorObj)
+    print database.find_one()
+    print errorObj.dbID
 
-# def testCounter():
-#     print errorCounter.getCount()
-#     print errorCounter.getCount(kmer='A')
-#     print errorCounter.getCount(truth='A',kmer='A')
-#     print errorCounter.getCount(truth='A',emission='T', kmer='A')
-#     print errorCounter.getCount(emission='A')
-#     print errorCounter.getCount(emission='A',kmer='A')
+  
+
 
 
 

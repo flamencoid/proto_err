@@ -1,1 +1,1 @@
-nosetests --with-coverage --cover-package proto_err
+nosetests -s --with-coverage --cover-package proto_err
