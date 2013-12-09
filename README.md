@@ -9,7 +9,7 @@ Install requirements with
 ### Tests ###
 To run tests run:
 
-*nosetests*
+**nosetests**
 
 from the top directory. 
 ## Simulating Reads ##
