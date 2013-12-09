@@ -1,0 +1,14 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}\texttt {proto\_err} -- Main package}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}\texttt {proto\_err.simulation} -- Simulating Error Reads}{1}{section.1.1}
+\contentsline {paragraph}{Methods}{1}{paragraph*.5}
+\contentsline {paragraph}{Methods}{1}{paragraph*.8}
+\contentsline {paragraph}{Methods}{1}{paragraph*.16}
+\contentsline {section}{\numberline {1.2}\texttt {proto\_err.errorCount} -- Error Counting}{2}{section.1.2}
+\contentsline {paragraph}{Methods}{2}{paragraph*.20}
+\contentsline {paragraph}{Examples}{2}{paragraph*.23}
+\contentsline {paragraph}{Methods}{3}{paragraph*.30}
+\contentsline {paragraph}{Methods}{3}{paragraph*.41}
+\contentsline {chapter}{\numberline {2}Indices and tables}{5}{chapter.2}
+\contentsline {chapter}{Python Module Index}{7}{section*.54}
+\contentsline {chapter}{Index}{9}{section*.55}

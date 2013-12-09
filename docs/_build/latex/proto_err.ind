@@ -1,0 +1,88 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter A
+  \item after() (proto\_err.errorCount.error method), \hyperpage{3}
+
+  \indexspace
+  \bigletter B
+  \item before() (proto\_err.errorCount.error method), \hyperpage{3}
+
+  \indexspace
+  \bigletter C
+  \item checkDeletion() (proto\_err.errorCount.errorReader method), \hyperpage{3}
+  \item checkHardClipped() (proto\_err.errorCount.errorReader method), \hyperpage{3}
+  \item checkInsertion() (proto\_err.errorCount.errorReader method), \hyperpage{3}
+  \item checkPadding() (proto\_err.errorCount.errorReader method), \hyperpage{3}
+  \item checkRead() (proto\_err.errorCount.errorReader method), \hyperpage{4}
+  \item checkSeqMismatch() (proto\_err.errorCount.errorReader method), \hyperpage{4}
+  \item checkSkipped() (proto\_err.errorCount.errorReader method), \hyperpage{4}
+  \item checkSNPs() (proto\_err.errorCount.errorReader method), \hyperpage{4}
+  \item checkSoftClipped() (proto\_err.errorCount.errorReader method), \hyperpage{4}
+  \item complexError (class in proto\_err.simulation), \hyperpage{1}
+  \item countAlignedBases() (proto\_err.errorCount.counter method), \hyperpage{2}
+  \item counter (class in proto\_err.errorCount), \hyperpage{2}
+  \item countErrorKmer() (proto\_err.errorCount.counter method), \hyperpage{2}
+  \item countRefKmer() (proto\_err.errorCount.counter method), \hyperpage{2}
+
+  \indexspace
+  \bigletter D
+  \item deletion() (proto\_err.simulation.simulateError method), \hyperpage{1}
+
+  \indexspace
+  \bigletter E
+  \item error (class in proto\_err.errorCount), \hyperpage{3}
+  \item error() (proto\_err.simulation.complexError method), \hyperpage{1}
+  \item error() (proto\_err.simulation.singleSNP method), \hyperpage{1}
+  \item errorReader (class in proto\_err.errorCount), \hyperpage{3}
+  \item errorType (proto\_err.errorCount.error attribute), \hyperpage{3}
+
+  \indexspace
+  \bigletter G
+  \item getCount() (proto\_err.errorCount.counter method), \hyperpage{3}
+
+  \indexspace
+  \bigletter I
+  \item indel() (proto\_err.simulation.simulateError method), \hyperpage{1}
+  \item ins() (proto\_err.simulation.simulateError method), \hyperpage{1}
+  \item isDeletion (proto\_err.errorCount.error attribute), \hyperpage{3}
+  \item isIndel (proto\_err.errorCount.error attribute), \hyperpage{3}
+  \item isInsertion (proto\_err.errorCount.error attribute), \hyperpage{3}
+  \item isSnp (proto\_err.errorCount.error attribute), \hyperpage{3}
+
+  \indexspace
+  \bigletter K
+  \item kmerFreq() (proto\_err.errorCount.counter method), \hyperpage{3}
+
+  \indexspace
+  \bigletter N
+  \item next() (proto\_err.errorCount.errorReader method), \hyperpage{4}
+
+  \indexspace
+  \bigletter P
+  \item proto\_err (module), \hyperpage{1}
+  \item proto\_err.errorCount (module), \hyperpage{2}
+  \item proto\_err.simulation (module), \hyperpage{1}
+
+  \indexspace
+  \bigletter Q
+  \item qscore (proto\_err.simulation.simulateError attribute), \hyperpage{1}
+  \item qscore() (proto\_err.errorCount.error method), \hyperpage{3}
+  \item qual (proto\_err.errorCount.error attribute), \hyperpage{3}
+
+  \indexspace
+  \bigletter R
+  \item readDiff() (proto\_err.errorCount.counter method), \hyperpage{3}
+  \item readNext() (proto\_err.errorCount.errorReader method), \hyperpage{4}
+  \item record (proto\_err.simulation.simulateError attribute), \hyperpage{1}
+  \item refRead (proto\_err.errorCount.errorReader attribute), \hyperpage{4}
+
+  \indexspace
+  \bigletter S
+  \item setup() (proto\_err.errorCount.counter method), \hyperpage{3}
+  \item simulateError (class in proto\_err.simulation), \hyperpage{1}
+  \item singleSNP (class in proto\_err.simulation), \hyperpage{1}
+  \item snp() (proto\_err.simulation.simulateError method), \hyperpage{1}
+  \item subsample() (in module proto\_err.simulation), \hyperpage{1}
+
+\end{theindex}
