@@ -386,25 +386,25 @@ class counter():
            
 
 
-class aggregator(): 
-    """Takes a counter object and does some aggreation"""
-    def __init__(self,counter):
-        self.counts = counter.res
-        self.precedingKmers = AutoVivification()
+# class aggregator(): 
+#     """Takes a counter object and does some aggreation"""
+#     def __init__(self,counter):
+#         self.counts = counter.res
+#         self.precedingKmers = AutoVivification()
 
-    def countPrecedingKmers(self):
-        """Count all the kmers preceding any error"""
-        for truth, emmitedDic in self.counts['kmerCounts']['before'].iteritems():
-            for emmited,kmerDic in emmitedDic.iteritems():
-                for kmer,count in kmerDic.iteritems():
-                    try:
-                        self.precedingKmers[kmer] += count
-                    except:
-                        self.precedingKmers[kmer] = count
-    def precedingKmersCount(self,kmer):
-        if not len(self.precedingKmers):
-            self.countPrecedingKmers()
-        return self.precedingKmers[kmer]
+#     def countPrecedingKmers(self):
+#         """Count all the kmers preceding any error"""
+#         for truth, emmitedDic in self.counts['kmerCounts']['before'].iteritems():
+#             for emmited,kmerDic in emmitedDic.iteritems():
+#                 for kmer,count in kmerDic.iteritems():
+#                     try:
+#                         self.precedingKmers[kmer] += count
+#                     except:
+#                         self.precedingKmers[kmer] = count
+#     def precedingKmersCount(self,kmer):
+#         if not len(self.precedingKmers):
+#             self.countPrecedingKmers()
+#         return self.precedingKmers[kmer]
 
 
 

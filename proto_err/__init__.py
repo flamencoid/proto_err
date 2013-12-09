@@ -1,1 +1,1 @@
-__all__ = ["fastaIO","metrics"]
+__all__ = ["fastaIO","align","errorCount","simulation","utils"]

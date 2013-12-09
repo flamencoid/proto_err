@@ -63,20 +63,27 @@ Options:
                         meanIndelSize/2)
 ```
 
-*Error Reading*
+# Error Reading # 
 
-
-python errorStats.py -r referenceFile.fa -s samfile.sam
+**python errorStats.py -r referenceFile.fa -s samfile.sam**
 
 **Usage beyond scripts**
 
+## Error Reader ## 
 To iterate through errors in samfile
-
+```python
 from metrics import errorReader
 for error in errorReader:
-	print error
+    print error
 
-The error class has the following attributes amoungst others
+SNP error(T to A)
+Deletion error(GC to )
+...
+```
+
+## Error Class##
+Each error has the following attributes and methods
+
 
 error.before(i) will return the i bases before the error. It will return exactly
 i letters returning N when a base does not exist.
@@ -94,22 +101,22 @@ or
 errorCounter = counter(ref,errorList=errorList)
 
 To count errorTypes
-# Count all the errors    
+#### Count all the errors    
 print errorCounter.getCount()
 
-#  Count all the errors preceded by kmer 'A'
+####   Count all the errors preceded by kmer 'A'
 print errorCounter.getCount(kmer='AA')
 
-#  Count all the errors followed by kmer 'AA'
+####  Count all the errors followed by kmer 'AA'
 print errorCounter.getCount(kmer='AA',after=True)
 
-#    Count all the errors for truth 'A' preceded by an A
+####     Count all the errors for truth 'A' preceded by an A
  print errorCounter.getCount(truth='A',kmer='A')
 
-#    Count all the errors A->T preceded by A
+####     Count all the errors A->T preceded by A
  print errorCounter.getCount(truth='A',emission='T', kmer='A')
 
-#  Count all the errors where the emmited base is 'A' preceded by any kmer
+####  Count all the errors where the emmited base is 'A' preceded by any kmer
    print errorCounter.getCount(emission='A')
 
 # To return dictonaries of all kmer counts within the reference of length 1,2,3
