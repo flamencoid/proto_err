@@ -3,4 +3,13 @@
 proto_err.sublime-project
 proto_err.sublime-workspace
 /data/*
+*.sam
+*.fa
+*.fq
+*.amb
+*.ann
+*.bwt
+*.pac
+*.sa
+ENV/
 

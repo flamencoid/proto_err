@@ -65,23 +65,29 @@ def testComplexErrorSim():
     assert_equal(len(errorList),3)  
     error1 = errorList[0]
     assert_equal(error1.isSnp,True)
+    assert_equal(error1.errorType,'SNP')
     assert_equal(error1.true,'A')
     assert_equal(error1.emission,'T')
 
     error2 = errorList[1]
     assert_equal(error2.isIndel,True)
     assert_equal(error2.isInsertion,True)
+    assert_equal(error2.errorType,'Insertion')
     assert_equal(error2.true,'')
     assert_equal(error2.emission,'TTT')  
 
     error3 = errorList[2]
     assert_equal(error3.isIndel,True)
     assert_equal(error3.isDeletion,True)
+    assert_equal(error3.errorType,'Deletion')
     assert_equal(error3.true,'CGATC')
     assert_equal(error3.emission,'')   
 
     assert_equal(error1.alignedCorrectly,True)
     assert_equal(error1.alignedDist,0)
+
+    ## Test counter
+    errorCounter = counter(ref,errorList)
 
 
 # def testCounter():
