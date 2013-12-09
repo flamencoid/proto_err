@@ -1,4 +1,4 @@
-Proto_err
+[Proto_err](http://proto-err.readthedocs.org/)
 =========
 
 [See Detailed Documenation](http://proto-err.readthedocs.org/)

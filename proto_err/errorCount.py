@@ -10,7 +10,75 @@ import itertools
 # import re
 
 class error():
-    """ Information about the errors in a read """
+    """ Information about the errors in a read 
+    
+    Parameters
+    ----------
+    true: string
+        reference base(s)
+
+    emission: string
+        read base(s)
+
+    read: AlignedRead
+         pysam AlignedRead object from which error was derived
+
+    readPos: int
+        position along read where error occured / length of read sequence
+
+    Attributes
+    ----------
+    true : string
+        reference bases
+    emission : string 
+        Read bases
+    read : AlignedRead
+        pysam AlignedRead object from which error was derived
+    readPos : int
+        position along read where error occured
+    readPer : float
+        position along read where error occured / length of read sequence
+    alignedDist : int or None
+        number of bases between position of start of alignment and where read was sampled
+
+        None if sampled position n/a 
+
+    alignedCorrectly : bool or None
+        If the alignedDist is less then the read length True else False
+
+        None is alignedDist is None
+
+    qual : int or None
+        Quality score of the base where the error occured. 
+        equivalent to error.qscore(0)
+
+
+    See Also
+    --------
+    counter
+
+    Examples
+    --------
+    >>> from pysam import AlignedRead
+    >>> from import proto_err.errorCount import error
+    >>> read = AlignedRead()
+    >>> read.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
+    >>> read.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
+    >>> error = proto_err.errorCount.error('A','T',read,0)
+    >>> error.isSnp
+    True
+    >>> error.isIndel
+    False
+    >>> error.qual
+    11
+    >>> error.before(2)
+    NN 
+    >>> error.after(2)
+    GC 
+
+    """
+    
+
     def __init__(self,true,emission,read,readPos):
         self.true = true
         self.emission = emission
@@ -63,17 +131,6 @@ class error():
         """Return the quality score at a base +i i from the error start position
         error.qscore(0) is equivalent to error.qual """
         return asciiToInt(self.read.qqual[self.readPos+1])
-
-    # @property 
-    # def trueSeq(self):
-    #     """The sequence that the read aligns to"""
-    #     return  str(self.read.seq)
-    # @property 
-    # def emissionSeq(self):
-    #     """Sequence emmited"""
-    #     trSeq = list(self.read.seq)
-    #     trSeq[self.readPos]  = self.emission
-    #     return  "".join(trSeq)
 
     @property 
     def errorType(self):
