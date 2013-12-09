@@ -1,1 +1,5 @@
-Biopython
+numpydoc==0.4
+numpy==1.6
+cython==0.19.2
+pysam==0.6
+Biopython==1.63
