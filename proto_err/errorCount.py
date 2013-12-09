@@ -16,6 +16,7 @@ class error():
         self.emission = emission
         self.read = read
         self.readPos = readPos # position on read where error starts 
+        self.readPer = float(readPos) / float(len(read.seq))
         ## Was the read aligned correctly? 
         try:
             ## messy way of extracting read length
@@ -40,14 +41,18 @@ class error():
         return "%s error(%s to %s)" %(self.errorType,self.true,self.emission)
 
     def before(self,j):
-        """Return the preceding j bases,return N when bases missing"""
+        """Return the preceding j bases,return N when bases missing
+        e.g. error.before(2) returns the 2 bases before the error
+        ''"""
         i = self.readPos
         b = self.read.seq[i-j:i]
         while len(b) < j:
             b = 'N' +b
         return b
     def after(self,j):
-        """Return the following j bases,return N when bases missing"""
+        """Return the following j bases,return N when bases missing
+            e.g. error.after(2) returns the 2 bases after the error
+        """
         i = self.readPos
         a = self.read.seq[i+1:j+i+1]
         while len(a) < j:
@@ -55,22 +60,25 @@ class error():
         return a
 
     def qscore(self,i):
-        """Return the quality score at a base +i i from the error start position"""
+        """Return the quality score at a base +i i from the error start position
+        error.qscore(0) is equivalent to error.qual """
         return asciiToInt(self.read.qqual[self.readPos+1])
 
-    @property 
-    def trueSeq(self):
-        """Sequence of the truth"""
-        return  str(self.read.seq)
-    @property 
-    def emissionSeq(self):
-        """Sequence emmited"""
-        trSeq = list(self.read.seq)
-        trSeq[self.readPos]  = self.emission
-        return  "".join(trSeq)
+    # @property 
+    # def trueSeq(self):
+    #     """The sequence that the read aligns to"""
+    #     return  str(self.read.seq)
+    # @property 
+    # def emissionSeq(self):
+    #     """Sequence emmited"""
+    #     trSeq = list(self.read.seq)
+    #     trSeq[self.readPos]  = self.emission
+    #     return  "".join(trSeq)
 
     @property 
     def errorType(self):
+        """The type of read error 
+        SNP, Insertion or Deletion"""
         if self.isSnp:
             return 'SNP'
         elif self.isInsertion:
@@ -97,7 +105,8 @@ class error():
         return len(self.true) > len(self.emission)
     @property
     def qual(self):
-        """Quality score of error base"""
+        """Quality score of the base where the error occured. 
+        equivalent to error.qscore(0)"""
         return asciiToInt(self.read.qqual[self.readPos])
 
 
@@ -120,12 +129,15 @@ class errorReader():
     @property
     def refRead(self):
         """
-        Function to return the reference sequence a read is aligned to
+        Get the reference sequence the read is aligned to
         """
         refRead = [str(self.ref[pos]) for pos in self.read.positions]
         return "".join(refRead)
 
     def readNext(self):
+        """
+        Iterates to the next read in samfile
+        """
         ## If there are errors left in the read 
         self.read = self.samfile.next()
         self.readCounter['Total'] += 1
@@ -136,6 +148,9 @@ class errorReader():
             self.checkRead()
 
     def next(self):
+        """
+        Returns the next error in the samfile aligned read
+        """
         ## if the error list is empty get the next read
         while not self.errorList:
             self.readNext()
@@ -146,7 +161,7 @@ class errorReader():
 
     def checkRead(self):
         """
-        A function which take a read and generates some error objects
+        Checks current read for errors
         """
         if self.read.opt('NM') == 0:
             self.readCounter['perfectAlignments'] += 1
@@ -190,6 +205,10 @@ class errorReader():
         assert self.currentRefReadList == []
         assert self.currentReadList == []
     def checkSNPs(self,N):
+        """
+        Checks read segment for SNP errors. called when cigarstring = M:N 
+        """
+
         readSeg = popLong(self.currentReadList,0,N)
         refSeg = popLong(self.currentRefReadList,0,N)
         assert len(readSeg) == len(refSeg)
@@ -200,27 +219,51 @@ class errorReader():
                 ## Check preceding bases
                 self.errorList.append(error(true,emission,self.read,readPos=i+self.readPos))   
     def checkInsertion(self,N):
+        """
+        Checks Insertion read segment for errors. called when cigarstring = I:N 
+        """
         insSeg = popLong(self.currentReadList,0,N)
         self.errorList.append(error(true='',emission="".join(insSeg),read=self.read,readPos=self.readPos))
     def checkDeletion(self,N):
+        """
+        Checks Deletionread segment for  errors. called when cigarstring = D:N 
+        """
         i = self.read.positions[self.readPos-1] + 1
         j =  self.read.positions[self.readPos]        
-        delSeg = self.ref[i:j]
+        delSeg = str(self.ref[i:j])
         self.errorList.append(error(true=delSeg,emission="",read=self.read,readPos=self.readPos))
     def checkSkipped(self,N):
+        """
+        Checks skipped read segment for errors. called when cigarstring = N:N 
+        """
         logging.error("Haven't written a handler for this case yet")
         0/0
     def checkSoftClipped(self,N):
+        """
+        Checks SoftClipped read segment for errors. called when cigarstring = S:N 
+        """
         del self.currentReadList[0:N]
     def checkHardClipped(self,N):
+        """
+        Checks HardClipped read segment for errors. called when cigarstring = H:N 
+        """
         pass
     def checkPadding(self,N):
+        """
+        Checks Padding read segment for errors. called when cigarstring = P:N 
+        """
         logging.error("Haven't written a handler for this case yet")
         0/0
     def checkSeqMismatch(self,N):
+        """
+        Checks SeqMismatch read segment for errors. called when cigarstring = =:N 
+        """
         logging.error("Haven't written a handler for this case yet")
         0/0
     def checkSkipped(self,N):
+        """
+        Checks Skipped read segment for errors. called when cigarstring = X:N 
+        """
         logging.error("Haven't written a handler for this case yet")
         0/0
 
@@ -256,7 +299,7 @@ class counter():
 
     def setup(self,opt):
         """
-        Function to set up dictionary structure for outputed stats
+        Setup output
         """
         self.opt = opt
         ## Create the dictonary of error modes
@@ -265,14 +308,25 @@ class counter():
 
     def kmerFreq(self,seq,kmer):
         """
-        Function to calculate the number of times a kmer appears in a sequence
+        Calculate the number of times a kmer appears in a sequence
+        seq : SeqRecord Object
+        kmer : kmer string
         """
         count = seq.count(kmer)
         return count,float(count)/len(seq)
 
     def countRefKmer(self,maxKmerLength=None):
         """
-        Function to count all kmers in long sequence (reference) of length kmerLen or below
+        Count all kmers in the reference of length kmerLen or below
+
+        i.e.  counter.countRefKmer(maxKmerLength = 3) counts all possible kmers of length 1,2,3
+
+        returns a dictonary of counts in the form
+
+        {'AAT':123,'AA':123,...}
+
+        This dictonary is also stored in the counter object in counter.res['RefCounts']
+
         """
         if not maxKmerLength:
             maxKmerLength = self.opt.maxKmerLength
@@ -287,8 +341,52 @@ class counter():
 
     def countErrorKmer(self,maxKmerLength=None):
         """
-        Function which takes a list of errors and counts the kmers before  
-        and after and error
+        Count all kmers in the list of errors of length kmerLen or below before 
+        and after and error.
+
+
+        Parameters
+        ----------
+        maxKmerLength : int
+            This is a type.
+            Maximum kmer length
+
+
+        Returns
+        ----------
+        emmissionDic,beforeAfterCount
+            dict,dict
+            emmissionDic counts the number of times a transition occurs
+
+            e.g. {'A':{'T':123,'C':123,...,},'T':{'A':123,...},...}
+
+            emmissionDic[trueBase][emmitedBase] = count of trueBase -> emmitedBase transition
+
+
+
+            beforeAfterCount counts the number of times a kmer appears before or after an error
+
+            beforeAfterCount['before'][trueBase][emmitedBase][kmer] = count of kmer occurance before trueBase -> emmitedBase transition
+
+            beforeAfterCount['after'][trueBase][emmitedBase][kmer] = count of kmer occurance after trueBase -> emmitedBase transition 
+
+
+
+            These dictonaries are also stored in the counter object in counter.res['errorMode'],counter.res['kmerCounts']
+
+         See Also
+        --------
+        countRefKmer
+
+        Examples
+        --------
+            >>> from errorCount import counter
+            >>> errorCounter = counter(ref,samfile)
+            >>> errorCounter.countErrorKmer(maxKmerLength = 3) 
+            >>> ## counts all possible kmers of length 1,2,3 before and after an error. 
+            >>> ({'A': {'C': 113, 'T': 105, 'G': 84}, ...}, {'after':{'A': {'C': {'CTT': 2, 'GCA': 1,...},..}} ,'before:{'A': {'C': {'CTT': 2, 'GCA': 1,...},..}}'})
+
+
         """
         self.countErrorKmerRun = True
         if not maxKmerLength:

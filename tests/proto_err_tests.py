@@ -13,8 +13,6 @@ def testErrorClassBasic():
     assert_equal(error.emission,'T')
     assert_equal(error.before(2),'NN')
     assert_equal(error.after(2),'GC')
-    assert_equal(error.trueSeq,'AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG')
-    assert_equal(error.emissionSeq,'TGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG')
     assert_equal(error.isSnp,True)
     assert_equal(error.isIndel,False)
     assert_equal(error.qual,11)

@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
 from optparse import OptionParser
-from errorCount import errorReader,counter,aggregator
+from errorCount import errorReader,counter
 from fastaIO import getRef
 
 
@@ -32,7 +32,7 @@ logging.info("Doing some kmer counting")
 errorCounter = counter(ref,samfile=opt.samfile)
 errorCounter.setup(opt)
 errorCounter.countRefKmer()
-errorCounter.countErrorKmer()
+print errorCounter.countErrorKmer(1)
 print errorCounter.res['qualCounter']
 
 

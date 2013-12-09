@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to proto_err’s documentation! &mdash; proto_err 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="proto_err 1 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">proto_err 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-proto-err-s-documentation">
+<h1>Welcome to proto_err&#8217;s documentation!<a class="headerlink" href="#welcome-to-proto-err-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="proto-err-main-package">
+<h2><a class="reference internal" href="#module-proto_err" title="proto_err"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err</span></tt></a> &#8211; Main package<a class="headerlink" href="#proto-err-main-package" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-proto_err"></span><div class="section" id="module-proto_err.simulation">
+<span id="proto-err-simulation-simulating-error-reads"></span><h3><a class="reference internal" href="#module-proto_err.simulation" title="proto_err.simulation"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.simulation</span></tt></a> &#8211; Simulating Error Reads<a class="headerlink" href="#module-proto_err.simulation" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="proto_err.simulation.complexError">
+<em class="property">class </em><tt class="descclassname">proto_err.simulation.</tt><tt class="descname">complexError</tt><big>(</big><em>record</em>, <em>opt</em>, <em>id</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#complexError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.complexError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#proto_err.simulation.simulateError" title="proto_err.simulation.simulateError"><tt class="xref py py-class docutils literal"><span class="pre">proto_err.simulation.simulateError</span></tt></a></p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="proto_err.simulation.complexError.error">
+<tt class="descname">error</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#complexError.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.complexError.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to induce and error</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="proto_err.simulation.simulateError">
+<em class="property">class </em><tt class="descclassname">proto_err.simulation.</tt><tt class="descname">simulateError</tt><big>(</big><em>record</em>, <em>opt</em>, <em>id</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class of objects to simulate errors in a SeqRecord</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="proto_err.simulation.simulateError.deletion">
+<tt class="descname">deletion</tt><big>(</big><em>pos</em>, <em>dlen</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.deletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.deletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to induce a deletion</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.simulation.simulateError.indel">
+<tt class="descname">indel</tt><big>(</big><em>pos</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.indel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.indel" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to induce an INDEL</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.simulation.simulateError.ins">
+<tt class="descname">ins</tt><big>(</big><em>pos</em>, <em>rl</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.ins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.ins" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to induce a insertion</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.simulation.simulateError.qscore">
+<tt class="descname">qscore</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.qscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.qscore" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.simulation.simulateError.record">
+<tt class="descname">record</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Bio.SeqRecord</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.simulation.simulateError.snp">
+<tt class="descname">snp</tt><big>(</big><em>pos</em>, <em>rl</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.snp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.snp" title="Permalink to this definition">¶</a></dt>
+<dd><p>function to induce a SNP</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="proto_err.simulation.singleSNP">
+<em class="property">class </em><tt class="descclassname">proto_err.simulation.</tt><tt class="descname">singleSNP</tt><big>(</big><em>record</em>, <em>opt</em>, <em>id</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#singleSNP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.singleSNP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#proto_err.simulation.simulateError" title="proto_err.simulation.simulateError"><tt class="xref py py-class docutils literal"><span class="pre">proto_err.simulation.simulateError</span></tt></a></p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="proto_err.simulation.singleSNP.error">
+<tt class="descname">error</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#singleSNP.error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.singleSNP.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to induce and error</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="proto_err.simulation.subsample">
+<tt class="descclassname">proto_err.simulation.</tt><tt class="descname">subsample</tt><big>(</big><em>ref</em>, <em>opt</em>, <em>errorSimulator=&lt;class proto_err.simulation.complexError at 0x10544c1f0&gt;</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#subsample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.subsample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to take a fasta file subsample reads and generate a list of 
+subsampled reads</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-proto_err.errorCount">
+<span id="proto-err-errorcount-error-counting"></span><h3><a class="reference internal" href="#module-proto_err.errorCount" title="proto_err.errorCount"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.errorCount</span></tt></a> &#8211; Error Counting<a class="headerlink" href="#module-proto_err.errorCount" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="proto_err.errorCount.counter">
+<em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">counter</tt><big>(</big><em>ref</em>, <em>errorList=None</em>, <em>samfile=None</em>, <em>opt=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of errors and does some kmer counting</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="proto_err.errorCount.counter.countAlignedBases">
+<tt class="descname">countAlignedBases</tt><big>(</big><em>read</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.countAlignedBases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.countAlignedBases" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.countErrorKmer">
+<tt class="descname">countErrorKmer</tt><big>(</big><em>maxKmerLength=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.countErrorKmer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.countErrorKmer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count all kmers in the list of errors of length kmerLen or below before 
+and after and error.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>maxKmerLength</strong> : int</p>
+<blockquote>
+<div><p>This is a type.
+Maximum kmer length</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>emmissionDic,beforeAfterCount</strong> :</p>
+<blockquote class="last">
+<div><p>dict,dict
+emmissionDic counts the number of times a transition occurs</p>
+<p>e.g. {&#8216;A&#8217;:{&#8216;T&#8217;:123,&#8217;C&#8217;:123,...,},&#8217;T&#8217;:{&#8216;A&#8217;:123,...},...}</p>
+<p>emmissionDic[trueBase][emmitedBase] = count of trueBase -&gt; emmitedBase transition</p>
+<p>beforeAfterCount counts the number of times a kmer appears before or after an error</p>
+<p>beforeAfterCount[&#8216;before&#8217;][trueBase][emmitedBase][kmer] = count of kmer occurance before trueBase -&gt; emmitedBase transition</p>
+<p>beforeAfterCount[&#8216;after&#8217;][trueBase][emmitedBase][kmer] = count of kmer occurance after trueBase -&gt; emmitedBase transition</p>
+<p>These dictonaries are also stored in the counter object in counter.res[&#8216;errorMode&#8217;],counter.res[&#8216;kmerCounts&#8217;]</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#proto_err.errorCount.counter.countRefKmer" title="proto_err.errorCount.counter.countRefKmer"><tt class="xref py py-obj docutils literal"><span class="pre">countRefKmer</span></tt></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span><span class="o">.</span><span class="n">countErrorKmer</span><span class="p">(</span><span class="n">maxKmerLength</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="c">## counts all possible kmers of length 1,2,3 before and after an error. </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">({</span><span class="s">&#39;A&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="mi">113</span><span class="p">,</span> <span class="s">&#39;T&#39;</span><span class="p">:</span> <span class="mi">105</span><span class="p">,</span> <span class="s">&#39;G&#39;</span><span class="p">:</span> <span class="mi">84</span><span class="p">},</span> <span class="o">...</span><span class="p">},</span> <span class="p">{</span><span class="s">&#39;after&#39;</span><span class="p">:{</span><span class="s">&#39;A&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;C&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;CTT&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;GCA&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span><span class="o">...</span><span class="p">},</span><span class="o">..</span><span class="p">}}</span> <span class="p">,</span><span class="s">&#39;before:{&#39;</span><span class="n">A</span><span class="s">&#39;: {&#39;</span><span class="n">C</span><span class="s">&#39;: {&#39;</span><span class="n">CTT</span><span class="s">&#39;: 2, &#39;</span><span class="n">GCA</span><span class="s">&#39;: 1,...},..}}&#39;</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.countRefKmer">
+<tt class="descname">countRefKmer</tt><big>(</big><em>maxKmerLength=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.countRefKmer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.countRefKmer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count all kmers in the reference of length kmerLen or below</p>
+<p>i.e.  counter.countRefKmer(maxKmerLength = 3) counts all possible kmers of length 1,2,3</p>
+<p>returns a dictonary of counts in the form</p>
+<p>{&#8216;AAT&#8217;:123,&#8217;AA&#8217;:123,...}</p>
+<p>This dictonary is also stored in the counter object in counter.res[&#8216;RefCounts&#8217;]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.getCount">
+<tt class="descname">getCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmer=''</em>, <em>after=False</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.getCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.getCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the count for a given {truth,emmision,kmer}</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.kmerFreq">
+<tt class="descname">kmerFreq</tt><big>(</big><em>seq</em>, <em>kmer</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.kmerFreq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.kmerFreq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the number of times a kmer appears in a sequence
+seq : SeqRecord Object
+kmer : kmer string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.readDiff">
+<tt class="descname">readDiff</tt><big>(</big><em>read</em>, <em>ref</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.readDiff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.readDiff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.setup">
+<tt class="descname">setup</tt><big>(</big><em>opt</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup output</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="proto_err.errorCount.error">
+<em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">error</tt><big>(</big><em>true</em>, <em>emission</em>, <em>read</em>, <em>readPos</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about the errors in a read</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="proto_err.errorCount.error.after">
+<tt class="descname">after</tt><big>(</big><em>j</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#error.after"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.after" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the following j bases,return N when bases missing
+e.g. error.after(2) returns the 2 bases after the error</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.error.before">
+<tt class="descname">before</tt><big>(</big><em>j</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#error.before"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.before" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the preceding j bases,return N when bases missing
+e.g. error.before(2) returns the 2 bases before the error
+&#8216;&#8217;</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.error.errorType">
+<tt class="descname">errorType</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.errorType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.errorType" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of read error 
+SNP, Insertion or Deletion</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.error.isDeletion">
+<tt class="descname">isDeletion</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.isDeletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.isDeletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the error a deletion</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.error.isIndel">
+<tt class="descname">isIndel</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.isIndel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.isIndel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the error an INDEL</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.error.isInsertion">
+<tt class="descname">isInsertion</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.isInsertion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.isInsertion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the error an insertion</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.error.isSnp">
+<tt class="descname">isSnp</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.isSnp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.isSnp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the error a SNP</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.error.qscore">
+<tt class="descname">qscore</tt><big>(</big><em>i</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#error.qscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.qscore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the quality score at a base +i i from the error start position
+error.qscore(0) is equivalent to error.qual</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.error.qual">
+<tt class="descname">qual</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.qual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.qual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quality score of the base where the error occured. 
+equivalent to error.qscore(0)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="proto_err.errorCount.errorReader">
+<em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">errorReader</tt><big>(</big><em>samfile</em>, <em>ref</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterable over errors in aligned reads</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkDeletion">
+<tt class="descname">checkDeletion</tt><big>(</big><em>N</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkDeletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkDeletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks Deletionread segment for  errors. called when cigarstring = D:N</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkHardClipped">
+<tt class="descname">checkHardClipped</tt><big>(</big><em>N</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkHardClipped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkHardClipped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks HardClipped read segment for errors. called when cigarstring = H:N</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkInsertion">
+<tt class="descname">checkInsertion</tt><big>(</big><em>N</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkInsertion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkInsertion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks Insertion read segment for errors. called when cigarstring = I:N</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkPadding">
+<tt class="descname">checkPadding</tt><big>(</big><em>N</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkPadding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkPadding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks Padding read segment for errors. called when cigarstring = P:N</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkRead">
+<tt class="descname">checkRead</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkRead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkRead" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks current read for errors</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkSNPs">
+<tt class="descname">checkSNPs</tt><big>(</big><em>N</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkSNPs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkSNPs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks read segment for SNP errors. called when cigarstring = M:N</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkSeqMismatch">
+<tt class="descname">checkSeqMismatch</tt><big>(</big><em>N</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkSeqMismatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkSeqMismatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks SeqMismatch read segment for errors. called when cigarstring = =:N</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkSkipped">
+<tt class="descname">checkSkipped</tt><big>(</big><em>N</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkSkipped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkSkipped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks Skipped read segment for errors. called when cigarstring = X:N</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.checkSoftClipped">
+<tt class="descname">checkSoftClipped</tt><big>(</big><em>N</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.checkSoftClipped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.checkSoftClipped" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks SoftClipped read segment for errors. called when cigarstring = S:N</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.next">
+<tt class="descname">next</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the next error in the samfile aligned read</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.errorReader.readNext">
+<tt class="descname">readNext</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.readNext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.readNext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates to the next read in samfile</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.errorReader.refRead">
+<tt class="descname">refRead</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.refRead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.refRead" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the reference sequence the read is aligned to</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to proto_err&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#proto-err-main-package"><tt class="docutils literal"><span class="pre">proto_err</span></tt> &#8211; Main package</a><ul>
+<li><a class="reference internal" href="#module-proto_err.simulation"><tt class="docutils literal"><span class="pre">proto_err.simulation</span></tt> &#8211; Simulating Error Reads</a></li>
+<li><a class="reference internal" href="#module-proto_err.errorCount"><tt class="docutils literal"><span class="pre">proto_err.errorCount</span></tt> &#8211; Error Counting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">proto_err 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Phelim Bradley.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
+    </div>
+  </body>
+</html>

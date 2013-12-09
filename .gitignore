@@ -18,5 +18,4 @@ Makefile
 conf.py
 *.rst
 docs/_build/doctrees
-docs/_build/html
 *out
