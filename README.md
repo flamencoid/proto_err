@@ -1,6 +1,8 @@
 Proto_err
 =========
 
+[See Detailed Documenation](http://proto-err.readthedocs.org/)
+
 ### Tests ###
 To run tests run:
 nosetests
