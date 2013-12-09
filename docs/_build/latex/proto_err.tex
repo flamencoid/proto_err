@@ -15,7 +15,7 @@
 
 \title{proto\_err Documentation}
 \date{December 09, 2013}
-\release{1}
+\release{0.0.1}
 \author{Phelim Bradley}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
@@ -123,155 +123,38 @@
 
 
 \chapter{\texttt{proto\_err} -- Main package}
-\label{index:proto-err-main-package}\label{index:welcome-to-proto-err-s-documentation}\phantomsection\label{index:module-proto_err}\index{proto\_err (module)}
-
-\section{\texttt{proto\_err.simulation} -- Simulating Error Reads}
-\label{index:proto-err-simulation-simulating-error-reads}\label{index:module-proto_err.simulation}\index{proto\_err.simulation (module)}\index{complexError (class in proto\_err.simulation)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.complexError}\pysiglinewithargsret{\strong{class }\code{proto\_err.simulation.}\bfcode{complexError}}{\emph{record}, \emph{opt}, \emph{id}}{}
-Bases: {\hyperref[index:proto_err.simulation.simulateError]{\code{proto\_err.simulation.simulateError}}}
-\paragraph{Methods}
-\index{error() (proto\_err.simulation.complexError method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.complexError.error}\pysiglinewithargsret{\bfcode{error}}{}{}
-Function to induce and error
-
-\end{fulllineitems}
-
-
-\end{fulllineitems}
-
-\index{simulateError (class in proto\_err.simulation)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.simulateError}\pysiglinewithargsret{\strong{class }\code{proto\_err.simulation.}\bfcode{simulateError}}{\emph{record}, \emph{opt}, \emph{id}}{}
-Class of objects to simulate errors in a SeqRecord
-\paragraph{Methods}
-\index{deletion() (proto\_err.simulation.simulateError method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.simulateError.deletion}\pysiglinewithargsret{\bfcode{deletion}}{\emph{pos}, \emph{dlen}}{}
-function to induce a deletion
-
-\end{fulllineitems}
-
-\index{indel() (proto\_err.simulation.simulateError method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.simulateError.indel}\pysiglinewithargsret{\bfcode{indel}}{\emph{pos}}{}
-function to induce an INDEL
-
-\end{fulllineitems}
-
-\index{ins() (proto\_err.simulation.simulateError method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.simulateError.ins}\pysiglinewithargsret{\bfcode{ins}}{\emph{pos}, \emph{rl}}{}
-function to induce a insertion
-
-\end{fulllineitems}
-
-\index{qscore (proto\_err.simulation.simulateError attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.simulateError.qscore}\pysigline{\bfcode{qscore}\strong{ None}}
-\end{fulllineitems}
-
-\index{record (proto\_err.simulation.simulateError attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.simulateError.record}\pysigline{\bfcode{record}\strong{ None}}
-Return a Bio.SeqRecord
-
-\end{fulllineitems}
-
-\index{snp() (proto\_err.simulation.simulateError method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.simulateError.snp}\pysiglinewithargsret{\bfcode{snp}}{\emph{pos}, \emph{rl}}{}
-function to induce a SNP
-
-\end{fulllineitems}
-
-
-\end{fulllineitems}
-
-\index{singleSNP (class in proto\_err.simulation)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.singleSNP}\pysiglinewithargsret{\strong{class }\code{proto\_err.simulation.}\bfcode{singleSNP}}{\emph{record}, \emph{opt}, \emph{id}}{}
-Bases: {\hyperref[index:proto_err.simulation.simulateError]{\code{proto\_err.simulation.simulateError}}}
-\paragraph{Methods}
-\index{error() (proto\_err.simulation.singleSNP method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.singleSNP.error}\pysiglinewithargsret{\bfcode{error}}{}{}
-Function to induce and error
-
-\end{fulllineitems}
-
-
-\end{fulllineitems}
-
-\index{subsample() (in module proto\_err.simulation)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.simulation.subsample}\pysiglinewithargsret{\code{proto\_err.simulation.}\bfcode{subsample}}{\emph{ref}, \emph{opt}, \emph{errorSimulator=\textless{}class proto\_err.simulation.complexError at 0x10544c1f0\textgreater{}}}{}
-Function to take a fasta file subsample reads and generate a list of 
-subsampled reads
-
-\end{fulllineitems}
-
-
+\label{index:module-proto_err}\label{index:proto-err-main-package}\label{index:welcome-to-proto-err-s-documentation}\index{proto\_err (module)}
 
 \section{\texttt{proto\_err.errorCount} -- Error Counting}
-\label{index:proto-err-errorcount-error-counting}\label{index:module-proto_err.errorCount}\index{proto\_err.errorCount (module)}\index{counter (class in proto\_err.errorCount)}
+\label{index:proto-err-errorcount-error-counting}\index{error (class in proto\_err.errorCount)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.counter}\pysiglinewithargsret{\strong{class }\code{proto\_err.errorCount.}\bfcode{counter}}{\emph{ref}, \emph{errorList=None}, \emph{samfile=None}, \emph{opt=None}}{}
-Takes a list of errors and does some kmer counting
-\paragraph{Methods}
-\index{countAlignedBases() (proto\_err.errorCount.counter method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.counter.countAlignedBases}\pysiglinewithargsret{\bfcode{countAlignedBases}}{\emph{read}}{}
-\end{fulllineitems}
-
-\index{countErrorKmer() (proto\_err.errorCount.counter method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.counter.countErrorKmer}\pysiglinewithargsret{\bfcode{countErrorKmer}}{\emph{maxKmerLength=None}}{}
-Count all kmers in the list of errors of length kmerLen or below before 
-and after and error.
+\phantomsection\label{index:proto_err.errorCount.error}\pysiglinewithargsret{\strong{class }\code{proto\_err.errorCount.}\bfcode{error}}{\emph{true}, \emph{emission}, \emph{read}, \emph{readPos}}{}
+Information about the errors in a read
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
-\textbf{maxKmerLength} : int
+\textbf{true: string} :
 \begin{quote}
 
-This is a type.
-Maximum kmer length
+reference base(s)
 \end{quote}
 
-\item[{Returns}] \leavevmode
-\textbf{emmissionDic,beforeAfterCount} :
+\textbf{emission: string} :
 \begin{quote}
 
-dict,dict
-emmissionDic counts the number of times a transition occurs
+read base(s)
+\end{quote}
 
-e.g. \{`A':\{`T':123,'C':123,...,\},'T':\{`A':123,...\},...\}
+\textbf{read: AlignedRead} :
+\begin{quote}
 
-emmissionDic{[}trueBase{]}{[}emmitedBase{]} = count of trueBase -\textgreater{} emmitedBase transition
+pysam AlignedRead object from which error was derived
+\end{quote}
 
-beforeAfterCount counts the number of times a kmer appears before or after an error
+\textbf{readPos: int} :
+\begin{quote}
 
-beforeAfterCount{[}'before'{]}{[}trueBase{]}{[}emmitedBase{]}{[}kmer{]} = count of kmer occurance before trueBase -\textgreater{} emmitedBase transition
-
-beforeAfterCount{[}'after'{]}{[}trueBase{]}{[}emmitedBase{]}{[}kmer{]} = count of kmer occurance after trueBase -\textgreater{} emmitedBase transition
-
-These dictonaries are also stored in the counter object in counter.res{[}'errorMode'{]},counter.res{[}'kmerCounts'{]}
+position along read where error occured / length of read sequence
 \end{quote}
 
 \end{description}\end{quote}
@@ -280,260 +163,46 @@ These dictonaries are also stored in the counter object in counter.res{[}'errorM
 \strong{See also:}
 
 
-{\hyperref[index:proto_err.errorCount.counter.countRefKmer]{\code{countRefKmer}}}
+\code{counter}
 
 
 \paragraph{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
-\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{k+kn}{from} \PYG{n+nn}{errorCount} \PYG{k+kn}{import} \PYG{n}{counter}
-\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{errorCounter} \PYG{o}{=} \PYG{n}{counter}\PYG{p}{(}\PYG{n}{ref}\PYG{p}{,}\PYG{n}{samfile}\PYG{p}{)}
-\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{errorCounter}\PYG{o}{.}\PYG{n}{countErrorKmer}\PYG{p}{(}\PYG{n}{maxKmerLength} \PYG{o}{=} \PYG{l+m+mi}{3}\PYG{p}{)} 
-\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{c}{\PYGZsh{}\PYGZsh{} counts all possible kmers of length 1,2,3 before and after an error. }
-\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{A}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{C}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:} \PYG{l+m+mi}{113}\PYG{p}{,} \PYG{l+s}{\PYGZsq{}}\PYG{l+s}{T}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:} \PYG{l+m+mi}{105}\PYG{p}{,} \PYG{l+s}{\PYGZsq{}}\PYG{l+s}{G}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:} \PYG{l+m+mi}{84}\PYG{p}{\PYGZcb{}}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{\PYGZcb{}}\PYG{p}{,} \PYG{p}{\PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{after}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:}\PYG{p}{\PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{A}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{C}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{CTT}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:} \PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+s}{\PYGZsq{}}\PYG{l+s}{GCA}\PYG{l+s}{\PYGZsq{}}\PYG{p}{:} \PYG{l+m+mi}{1}\PYG{p}{,}\PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{\PYGZcb{}}\PYG{p}{,}\PYG{o}{.}\PYG{o}{.}\PYG{p}{\PYGZcb{}}\PYG{p}{\PYGZcb{}} \PYG{p}{,}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{before:\PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{n}{A}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{: \PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{n}{C}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{: \PYGZob{}}\PYG{l+s}{\PYGZsq{}}\PYG{n}{CTT}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{: 2, }\PYG{l+s}{\PYGZsq{}}\PYG{n}{GCA}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{: 1,...\PYGZcb{},..\PYGZcb{}\PYGZcb{}}\PYG{l+s}{\PYGZsq{}}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{k+kn}{from} \PYG{n+nn}{pysam} \PYG{k+kn}{import} \PYG{n}{AlignedRead}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{k+kn}{from} \PYG{k+kn}{import} \PYG{n}{proto\PYGZus{}err}\PYG{o}{.}\PYG{n}{errorCount} \PYG{k+kn}{import} \PYG{n+nn}{error}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{read} \PYG{o}{=} \PYG{n}{AlignedRead}\PYG{p}{(}\PYG{p}{)}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{read}\PYG{o}{.}\PYG{n}{seq}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG}\PYG{l+s}{\PYGZdq{}}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{read}\PYG{o}{.}\PYG{n}{qual} \PYG{o}{=} \PYG{l+s}{\PYGZsq{}}\PYG{l+s}{++))++)+*)******)))+)**+*+++)**)*+)}\PYG{l+s}{\PYGZsq{}}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{error} \PYG{o}{=} \PYG{n}{proto\PYGZus{}err}\PYG{o}{.}\PYG{n}{errorCount}\PYG{o}{.}\PYG{n}{error}\PYG{p}{(}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{T}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,}\PYG{l+s}{\PYGZsq{}}\PYG{l+s}{A}\PYG{l+s}{\PYGZsq{}}\PYG{p}{,}\PYG{n}{read}\PYG{p}{,}\PYG{l+m+mi}{0}\PYG{p}{)}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{error}\PYG{o}{.}\PYG{n}{isSnp}
+\PYG{g+go}{True}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{error}\PYG{o}{.}\PYG{n}{isIndel}
+\PYG{g+go}{False}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{error}\PYG{o}{.}\PYG{n}{qual}
+\PYG{g+go}{11}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{error}\PYG{o}{.}\PYG{n}{before}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{)}
+\PYG{g+go}{NN }
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{error}\PYG{o}{.}\PYG{n}{after}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{)}
+\PYG{g+go}{GC }
 \end{Verbatim}
+\paragraph{Attributes}
 
-\end{fulllineitems}
+\begin{longtable}{ll}
+\hline
+\endfirsthead
 
-\index{countRefKmer() (proto\_err.errorCount.counter method)}
+\multicolumn{2}{c}%
+{{\textsf{\tablename\ \thetable{} -- continued from previous page}}} \\
+\hline
+\endhead
 
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.counter.countRefKmer}\pysiglinewithargsret{\bfcode{countRefKmer}}{\emph{maxKmerLength=None}}{}
-Count all kmers in the reference of length kmerLen or below
+\hline \multicolumn{2}{|r|}{{\textsf{Continued on next page}}} \\ \hline
+\endfoot
 
-i.e.  counter.countRefKmer(maxKmerLength = 3) counts all possible kmers of length 1,2,3
+\endlastfoot
 
-returns a dictonary of counts in the form
-
-\{`AAT':123,'AA':123,...\}
-
-This dictonary is also stored in the counter object in counter.res{[}'RefCounts'{]}
-
-\end{fulllineitems}
-
-\index{getCount() (proto\_err.errorCount.counter method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.counter.getCount}\pysiglinewithargsret{\bfcode{getCount}}{\emph{truth=None}, \emph{emission=None}, \emph{kmer='`}, \emph{after=False}}{}
-Gets the count for a given \{truth,emmision,kmer\}
-
-\end{fulllineitems}
-
-\index{kmerFreq() (proto\_err.errorCount.counter method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.counter.kmerFreq}\pysiglinewithargsret{\bfcode{kmerFreq}}{\emph{seq}, \emph{kmer}}{}
-Calculate the number of times a kmer appears in a sequence
-seq : SeqRecord Object
-kmer : kmer string
-
-\end{fulllineitems}
-
-\index{readDiff() (proto\_err.errorCount.counter method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.counter.readDiff}\pysiglinewithargsret{\bfcode{readDiff}}{\emph{read}, \emph{ref}}{}
-\end{fulllineitems}
-
-\index{setup() (proto\_err.errorCount.counter method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.counter.setup}\pysiglinewithargsret{\bfcode{setup}}{\emph{opt}}{}
-Setup output
-
-\end{fulllineitems}
-
-
-\end{fulllineitems}
-
-\index{error (class in proto\_err.errorCount)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error}\pysiglinewithargsret{\strong{class }\code{proto\_err.errorCount.}\bfcode{error}}{\emph{true}, \emph{emission}, \emph{read}, \emph{readPos}}{}
-Information about the errors in a read
-\paragraph{Methods}
-\index{after() (proto\_err.errorCount.error method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.after}\pysiglinewithargsret{\bfcode{after}}{\emph{j}}{}
-Return the following j bases,return N when bases missing
-e.g. error.after(2) returns the 2 bases after the error
-
-\end{fulllineitems}
-
-\index{before() (proto\_err.errorCount.error method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.before}\pysiglinewithargsret{\bfcode{before}}{\emph{j}}{}
-Return the preceding j bases,return N when bases missing
-e.g. error.before(2) returns the 2 bases before the error
-`'
-
-\end{fulllineitems}
-
-\index{errorType (proto\_err.errorCount.error attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.errorType}\pysigline{\bfcode{errorType}\strong{ None}}
-The type of read error 
-SNP, Insertion or Deletion
-
-\end{fulllineitems}
-
-\index{isDeletion (proto\_err.errorCount.error attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.isDeletion}\pysigline{\bfcode{isDeletion}\strong{ None}}
-Is the error a deletion
-
-\end{fulllineitems}
-
-\index{isIndel (proto\_err.errorCount.error attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.isIndel}\pysigline{\bfcode{isIndel}\strong{ None}}
-Is the error an INDEL
-
-\end{fulllineitems}
-
-\index{isInsertion (proto\_err.errorCount.error attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.isInsertion}\pysigline{\bfcode{isInsertion}\strong{ None}}
-Is the error an insertion
-
-\end{fulllineitems}
-
-\index{isSnp (proto\_err.errorCount.error attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.isSnp}\pysigline{\bfcode{isSnp}\strong{ None}}
-Is the error a SNP
-
-\end{fulllineitems}
-
-\index{qscore() (proto\_err.errorCount.error method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.qscore}\pysiglinewithargsret{\bfcode{qscore}}{\emph{i}}{}
-Return the quality score at a base +i i from the error start position
-error.qscore(0) is equivalent to error.qual
-
-\end{fulllineitems}
-
-\index{qual (proto\_err.errorCount.error attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.error.qual}\pysigline{\bfcode{qual}\strong{ None}}
-Quality score of the base where the error occured. 
-equivalent to error.qscore(0)
-
-\end{fulllineitems}
-
-
-\end{fulllineitems}
-
-\index{errorReader (class in proto\_err.errorCount)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader}\pysiglinewithargsret{\strong{class }\code{proto\_err.errorCount.}\bfcode{errorReader}}{\emph{samfile}, \emph{ref}}{}
-Iterable over errors in aligned reads
-\paragraph{Methods}
-\index{checkDeletion() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkDeletion}\pysiglinewithargsret{\bfcode{checkDeletion}}{\emph{N}}{}
-Checks Deletionread segment for  errors. called when cigarstring = D:N
-
-\end{fulllineitems}
-
-\index{checkHardClipped() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkHardClipped}\pysiglinewithargsret{\bfcode{checkHardClipped}}{\emph{N}}{}
-Checks HardClipped read segment for errors. called when cigarstring = H:N
-
-\end{fulllineitems}
-
-\index{checkInsertion() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkInsertion}\pysiglinewithargsret{\bfcode{checkInsertion}}{\emph{N}}{}
-Checks Insertion read segment for errors. called when cigarstring = I:N
-
-\end{fulllineitems}
-
-\index{checkPadding() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkPadding}\pysiglinewithargsret{\bfcode{checkPadding}}{\emph{N}}{}
-Checks Padding read segment for errors. called when cigarstring = P:N
-
-\end{fulllineitems}
-
-\index{checkRead() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkRead}\pysiglinewithargsret{\bfcode{checkRead}}{}{}
-Checks current read for errors
-
-\end{fulllineitems}
-
-\index{checkSNPs() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkSNPs}\pysiglinewithargsret{\bfcode{checkSNPs}}{\emph{N}}{}
-Checks read segment for SNP errors. called when cigarstring = M:N
-
-\end{fulllineitems}
-
-\index{checkSeqMismatch() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkSeqMismatch}\pysiglinewithargsret{\bfcode{checkSeqMismatch}}{\emph{N}}{}
-Checks SeqMismatch read segment for errors. called when cigarstring = =:N
-
-\end{fulllineitems}
-
-\index{checkSkipped() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkSkipped}\pysiglinewithargsret{\bfcode{checkSkipped}}{\emph{N}}{}
-Checks Skipped read segment for errors. called when cigarstring = X:N
-
-\end{fulllineitems}
-
-\index{checkSoftClipped() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.checkSoftClipped}\pysiglinewithargsret{\bfcode{checkSoftClipped}}{\emph{N}}{}
-Checks SoftClipped read segment for errors. called when cigarstring = S:N
-
-\end{fulllineitems}
-
-\index{next() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.next}\pysiglinewithargsret{\bfcode{next}}{}{}
-Returns the next error in the samfile aligned read
-
-\end{fulllineitems}
-
-\index{readNext() (proto\_err.errorCount.errorReader method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.readNext}\pysiglinewithargsret{\bfcode{readNext}}{}{}
-Iterates to the next read in samfile
-
-\end{fulllineitems}
-
-\index{refRead (proto\_err.errorCount.errorReader attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proto_err.errorCount.errorReader.refRead}\pysigline{\bfcode{refRead}\strong{ None}}
-Get the reference sequence the read is aligned to
-
-\end{fulllineitems}
+\hline\end{longtable}
 
 
 \end{fulllineitems}
@@ -559,8 +228,6 @@ Get the reference sequence the read is aligned to
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 \bigletter{p}
 \item {\texttt{proto\_err}}, \pageref{index:module-proto_err}
-\item {\texttt{proto\_err.errorCount}}, \pageref{index:module-proto_err.errorCount}
-\item {\texttt{proto\_err.simulation}}, \pageref{index:module-proto_err.simulation}
 \end{theindex}
 
 \renewcommand{\indexname}{Index}

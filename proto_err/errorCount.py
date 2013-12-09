@@ -7,24 +7,10 @@ import time
 from utils import *
 import difflib
 import itertools
-# import re
 
 class error():
-    """ Information about the errors in a read 
-    
-    Parameters
-    ----------
-    true: string
-        reference base(s)
-
-    emission: string
-        read base(s)
-
-    read: AlignedRead
-         pysam AlignedRead object from which error was derived
-
-    readPos: int
-        position along read where error occured / length of read sequence
+    """ 
+    Information about the errors in a read 
 
     Attributes
     ----------
@@ -39,14 +25,25 @@ class error():
     readPer : float
         position along read where error occured / length of read sequence
     alignedDist : int or None
-        number of bases between position of start of alignment and where read was sampled
-        None if sampled position n/a 
+        number of bases between position of start of alignment and where read was sampled None if sampled position n/a 
     alignedCorrectly : bool or None
-        If the alignedDist is less then the read length True else False
-        None is alignedDist is None
-    qual : int or None
-        Quality score of the base where the error occured. 
-        equivalent to error.qscore(0)
+        If the alignedDist is less then the read length True else False None is alignedDist is None
+
+    Parameters
+    ----------
+    true: string
+        reference base(s)
+
+    emission: string
+        read base(s)
+
+    read: AlignedRead
+         pysam AlignedRead object from which error was derived
+
+    readPos: int
+        position along read where error occured / length of read sequence
+
+
 
     See Also
     --------
@@ -70,6 +67,10 @@ class error():
     NN 
     >>> error.after(2)
     GC 
+    >>> error.qscore(0) ## equivalent to error.qual
+    11
+    >>> error.qscore(2)
+    9
 
     """
     
@@ -104,18 +105,14 @@ class error():
         return "%s error(%s to %s)" %(self.errorType,self.true,self.emission)
 
     def before(self,j):
-        """Return the preceding j bases,return N when bases missing
-        e.g. error.before(2) returns the 2 bases before the error
-        ''"""
+        """Return the preceding j bases,return N when bases missing"""
         i = self.readPos
         b = self.read.seq[i-j:i]
         while len(b) < j:
             b = 'N' +b
         return b
     def after(self,j):
-        """Return the following j bases,return N when bases missing
-            e.g. error.after(2) returns the 2 bases after the error
-        """
+        """Return the following j bases,return N when bases missing"""
         i = self.readPos
         a = self.read.seq[i+1:j+i+1]
         while len(a) < j:
@@ -125,12 +122,11 @@ class error():
     def qscore(self,i):
         """Return the quality score at a base +i i from the error start position
         error.qscore(0) is equivalent to error.qual """
-        return asciiToInt(self.read.qqual[self.readPos+1])
+        return asciiToInt(self.read.qqual[self.readPos+i])
 
     @property 
     def errorType(self):
-        """The type of read error 
-        SNP, Insertion or Deletion"""
+        """The type of read error SNP, Insertion or Deletion"""
         if self.isSnp:
             return 'SNP'
         elif self.isInsertion:
@@ -141,33 +137,68 @@ class error():
             return 'Unknown Error Type'
     @property 
     def isSnp(self):
-        """Is the error a SNP"""
+        """Return whether or not the error is a SNP"""
         return len(self.true) == len(self.emission)
     @property 
     def isIndel(self):
-        """Is the error an INDEL"""
+        """Return whether or not the error is a INDEL"""
         return len(self.true) != len(self.emission)
     @property 
     def isInsertion(self):
-        """Is the error an insertion"""
+        """Return whether or not the error is an insertion"""
         return len(self.true) < len(self.emission)
     @property 
     def isDeletion(self):
-        """Is the error a deletion"""
+        """Return whether or not the error is a deletion"""
         return len(self.true) > len(self.emission)
     @property
     def qual(self):
-        """Quality score of the base where the error occured. 
-        equivalent to error.qscore(0)"""
+        """Return quality score of the base where the error occured"""
         return asciiToInt(self.read.qqual[self.readPos])
 
 
 class errorReader():
-    """Iterable over errors in aligned reads"""
+    """ 
+    Iterable over errors in aligned reads
+
+    Attributes
+    ----------
+    readCounter : dict
+        A dictonary of counts of read alignment
+
+    Parameters
+    ----------
+    samfile: string
+        path to samfile
+
+    ref: string
+        reference sequence
+
+
+    See Also
+    --------
+    error, counter
+
+    Examples
+    --------
+    >>> from proto_err.errorCount import errorReader
+    >>> reader = errorReader(opt.samfile,ref)
+    >>> for error in reader:
+    >>>     print error
+    SNP error(T to C)
+    SNP error(A to T)
+    Deletion error(CGCA to )
+    ...
+
+    >>> print reader.readCounter
+    {'UnMapped': 454, 'mismatchedAlignments': 617, 'Total': 1225, 'perfectAlignments': 154, 'Mapped': 771}
+
+    """
+
     def __init__(self, samfile,ref):
-        self.samfile = pysam.Samfile( samfile ).fetch()
-        self.ref = ref
-        self.alphabet = getAlphabet()
+        self.__samfile = pysam.Samfile( samfile ).fetch()
+        self.__ref = ref
+        self.__alphabet = getAlphabet()
         self.readCounter = {}
         self.readCounter['Total'] = 0
         self.readCounter['UnMapped'] = 0
@@ -179,25 +210,25 @@ class errorReader():
     def __iter__(self):
         return self
     @property
-    def refRead(self):
+    def __refRead(self):
         """
         Get the reference sequence the read is aligned to
         """
-        refRead = [str(self.ref[pos]) for pos in self.read.positions]
+        refRead = [str(self.__ref[pos]) for pos in self.__read.positions]
         return "".join(refRead)
 
-    def readNext(self):
+    def __readNext(self):
         """
         Iterates to the next read in samfile
         """
         ## If there are errors left in the read 
-        self.read = self.samfile.next()
+        self.__read = self.__samfile.next()
         self.readCounter['Total'] += 1
-        if self.read.is_unmapped:
+        if self.__read.is_unmapped:
             self.readCounter['UnMapped'] += 1
         else:
             self.readCounter['Mapped'] += 1
-            self.checkRead()
+            self.__checkRead()
 
     def next(self):
         """
@@ -205,114 +236,114 @@ class errorReader():
         """
         ## if the error list is empty get the next read
         while not self.errorList:
-            self.readNext()
+            self.__readNext()
         else:
             return self.errorList.pop(0)
 
         # self.readCounter['totalErrorBases'] = len(self.errorList)
 
-    def checkRead(self):
+    def __checkRead(self):
         """
         Checks current read for errors
         """
-        if self.read.opt('NM') == 0:
+        if self.__read.opt('NM') == 0:
             self.readCounter['perfectAlignments'] += 1
         else:
             self.readCounter['mismatchedAlignments'] += 1
-        self.currentRefReadList = list(self.refRead)
-        self.currentReadList = list(str(self.read.seq))
-        self.readPos = 0
-        for tup in self.read.cigar:
+        self.__currentRefReadList = list(self.__refRead)
+        self.__currentReadList = list(str(self.__read.seq))
+        self.__readPos = 0
+        for tup in self.__read.cigar:
             cigarInt = tup[0]
             numBases = tup[1]
             if cigarInt == 0:
                 ## Match or mismatch
-                self.checkSNPs(N=numBases)
-                self.readPos += numBases
+                self.__checkSNPs(N=numBases)
+                self.__readPos += numBases
             elif cigarInt == 1:
                 ## Insertion to the reference
-                self.checkInsertion(N=numBases)
-                self.readPos += numBases
+                self.__checkInsertion(N=numBases)
+                self.__readPos += numBases
             elif cigarInt == 2:
                 ## Deletion from the reference
-                self.checkDeletion(N=numBases)
+                self.__checkDeletion(N=numBases)
             elif cigarInt == 3:
                 ## skipped region from the reference
-                self.checkSkipped(N=numBases)
+                self.__checkSkipped(N=numBases)
             elif cigarInt == 4:
                 ##  soft clipping (clipped sequences present in SEQ)
-                self.checkSoftClipped(N=numBases)
+                self.__checkSoftClipped(N=numBases)
             elif cigarInt == 5:
                 ##  hard clipping (clipped sequences NOT present in SEQ)
-                self.checkHardClipped(N=numBases)
+                self.__checkHardClipped(N=numBases)
             elif cigarInt == 6:
                 ## padding (silent deletion from padded reference)
-                self.checkPadding(N=numBases)
+                self.__checkPadding(N=numBases)
             elif cigarInt == 7:
                 ## sequence match
-                self.checkSeqMatch(N=numBases)
+                self.__checkSeqMatch(N=numBases)
             elif cigarInt == 8:
                 ## sequence mismatch
-                self.checkSeqMismatch(N=numBases)
-        assert self.currentRefReadList == []
-        assert self.currentReadList == []
-    def checkSNPs(self,N):
+                self.__checkSeqMismatch(N=numBases)
+        assert self.__currentRefReadList == []
+        assert self.__currentReadList == []
+    def __checkSNPs(self,N):
         """
         Checks read segment for SNP errors. called when cigarstring = M:N 
         """
 
-        readSeg = popLong(self.currentReadList,0,N)
-        refSeg = popLong(self.currentRefReadList,0,N)
+        readSeg = popLong(self.__currentReadList,0,N)
+        refSeg = popLong(self.__currentRefReadList,0,N)
         assert len(readSeg) == len(refSeg)
         for i,tupl in enumerate(itertools.izip(refSeg,readSeg)):
             true,emission = tupl
             ## if it's an error, check the preceding  opt.maxOrder bases
             if not true == emission:
                 ## Check preceding bases
-                self.errorList.append(error(true,emission,self.read,readPos=i+self.readPos))   
-    def checkInsertion(self,N):
+                self.errorList.append(error(true,emission,self.__read,readPos=i+self.__readPos))   
+    def __checkInsertion(self,N):
         """
         Checks Insertion read segment for errors. called when cigarstring = I:N 
         """
-        insSeg = popLong(self.currentReadList,0,N)
-        self.errorList.append(error(true='',emission="".join(insSeg),read=self.read,readPos=self.readPos))
-    def checkDeletion(self,N):
+        insSeg = popLong(self.__currentReadList,0,N)
+        self.errorList.append(error(true='',emission="".join(insSeg),read=self.__read,readPos=self.__readPos))
+    def __checkDeletion(self,N):
         """
         Checks Deletionread segment for  errors. called when cigarstring = D:N 
         """
-        i = self.read.positions[self.readPos-1] + 1
-        j =  self.read.positions[self.readPos]        
-        delSeg = str(self.ref[i:j])
-        self.errorList.append(error(true=delSeg,emission="",read=self.read,readPos=self.readPos))
-    def checkSkipped(self,N):
+        i = self.__read.positions[self.__readPos-1] + 1
+        j =  self.__read.positions[self.__readPos]        
+        delSeg = str(self.__ref[i:j])
+        self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos))
+    def __checkSkipped(self,N):
         """
         Checks skipped read segment for errors. called when cigarstring = N:N 
         """
         logging.error("Haven't written a handler for this case yet")
         0/0
-    def checkSoftClipped(self,N):
+    def __checkSoftClipped(self,N):
         """
         Checks SoftClipped read segment for errors. called when cigarstring = S:N 
         """
-        del self.currentReadList[0:N]
-    def checkHardClipped(self,N):
+        del self.__currentReadList[0:N]
+    def __checkHardClipped(self,N):
         """
         Checks HardClipped read segment for errors. called when cigarstring = H:N 
         """
         pass
-    def checkPadding(self,N):
+    def __checkPadding(self,N):
         """
         Checks Padding read segment for errors. called when cigarstring = P:N 
         """
         logging.error("Haven't written a handler for this case yet")
         0/0
-    def checkSeqMismatch(self,N):
+    def __checkSeqMismatch(self,N):
         """
         Checks SeqMismatch read segment for errors. called when cigarstring = =:N 
         """
         logging.error("Haven't written a handler for this case yet")
         0/0
-    def checkSkipped(self,N):
+    def __checkSkipped(self,N):
         """
         Checks Skipped read segment for errors. called when cigarstring = X:N 
         """
@@ -324,7 +355,43 @@ class errorReader():
 
 
 class counter(): 
-    """Takes a list of errors and does some kmer counting"""
+       """ 
+    Takes a list of errors or samfile and does some kmer counting
+
+    Attributes
+    ----------
+    readCounter : dict
+        A dictonary of counts of read alignment
+
+    Parameters
+    ----------
+    samfile: string
+        path to samfile
+
+    ref: string
+        reference sequence
+
+
+    See Also
+    --------
+    error, counter
+
+    Examples
+    --------
+    >>> from proto_err.errorCount import errorReader
+    >>> reader = errorReader(opt.samfile,ref)
+    >>> for error in reader:
+    >>>     print error
+    SNP error(T to C)
+    SNP error(A to T)
+    Deletion error(CGCA to )
+    ...
+
+    >>> print reader.readCounter
+    {'UnMapped': 454, 'mismatchedAlignments': 617, 'Total': 1225, 'perfectAlignments': 154, 'Mapped': 771}
+
+    """
+
     def __init__(self,ref,errorList=None,samfile=None,opt=None):
         self.logger     = logging.getLogger()
         if (not errorList and not samfile) or (errorList and samfile):
@@ -346,7 +413,7 @@ class counter():
         self.numErrors = len(self.errorList)
         self.countErrorKmerRun = False
         if opt:
-            self.opt = opt
+            self.setup(opt)
 
 
     def setup(self,opt):

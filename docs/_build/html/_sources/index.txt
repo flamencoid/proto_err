@@ -14,7 +14,7 @@ Welcome to proto_err's documentation!
 :mod:`proto_err.simulation` -- Simulating Error Reads
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-.. automodule:: proto_err.simulation
+.. autoclass:: proto_err.simulation.simulateError
    :members:
    :undoc-members:
    :show-inheritance:

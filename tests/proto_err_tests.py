@@ -16,6 +16,7 @@ def testErrorClassBasic():
     assert_equal(error.isSnp,True)
     assert_equal(error.isIndel,False)
     assert_equal(error.qual,11)
+    assert_equal(error.qscore(2),9)
 
 # def testErrorClass():
 #     true = 'A'

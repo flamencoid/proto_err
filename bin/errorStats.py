@@ -32,8 +32,8 @@ logging.info("Doing some kmer counting")
 errorCounter = counter(ref,samfile=opt.samfile)
 errorCounter.setup(opt)
 errorCounter.countRefKmer()
-print errorCounter.countErrorKmer(1)
-print errorCounter.res['qualCounter']
+errorCounter.countErrorKmer(1)
+# errorCounter.res['qualCounter']
 
 
 
