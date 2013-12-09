@@ -11,18 +11,16 @@ def refIndex(file):
 	"""
 	Function to generate BWA index
 	"""
-	if os.path.exists(file + '.bwt'):
-		pass
-	else:
-		logging.info("Creating BW index of reference")
-		index_cmd = Applications.BwaIndexCommandline(infile=file, algorithm="bwtsw")
-		index_cmd()
+	logging.info("Creating BW index of reference")
+	index_cmd = Applications.BwaIndexCommandline(infile=file, algorithm="bwtsw")
+	index_cmd()
 	return 1
 
 def align(reference, read_file, stdout,algorithm='bwa-mem'):
 	if algorithm=='bwa-mem':
 		logging.info("Aligning reads to reference with bwa-mem")
-		alignCmd = BwaMemAlignCommandline( reference=reference, read_file=read_file)
+        alignCmd = BwaMemAlignCommandline( reference=reference, read_file=read_file)
+
 	return alignCmd(stdout=stdout)
 
 class BwaMemAlignCommandline(AbstractCommandline):
@@ -57,10 +55,10 @@ class BwaMemAlignCommandline(AbstractCommandline):
                               filename=True, is_required=True),
                     _Argument(["read_file"], "Read file name",
                               filename=True, is_required=True),
-                    # _Option(["-n", "n"],
-                    #         "Maximum edit distance if the value is INT, or the fraction of missing alignments given 2% uniform base error rate if FLOAT. In the latter case, the maximum edit distance is automatically chosen for different read lengths. [0.04]",
-                    #         checker_function=lambda x: isinstance(x, (int, float)),
-                    #         equate=False),
+                    _Option(["-k", "k"],
+                            "Minimum seed length. Matches shorter than INT will be missed. The alignment speed is usually insensitive to this value unless it significantly deviates 20.",
+                            checker_function=lambda x: isinstance(x, (int, float)),
+                            equate=False),
                     # _Option(["-o", "o"],
                     #         "Maximum edit distance if the value is INT, or the fraction of missing alignments given 2% uniform base error rate if FLOAT. In the latter case, the maximum edit distance is automatically chosen for different read lengths. [0.04]",
                     #         checker_function=lambda x: isinstance(x, (int, float)),

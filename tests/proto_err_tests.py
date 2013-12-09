@@ -1,60 +1,87 @@
 from nose.tools import *
 from Bio.SeqRecord import SeqRecord
-import proto_err.errorCount
-from  proto_err.simulation import simulateError
+from Bio.Seq import Seq
+from proto_err.errorCount import *
+from  proto_err.simulation import simulateError,complexError
 from pysam import AlignedRead
+from proto_err.fastaIO import *
+from proto_err import align
+import random
 def testErrorClassBasic():
     """Just to everything works in the most basis case"""
     a = AlignedRead()
     a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
     a.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
-    error = proto_err.errorCount.error('A','T',a,0)
-    assert_equal(error.true,'A')
-    assert_equal(error.emission,'T')
-    assert_equal(error.before(2),'NN')
-    assert_equal(error.after(2),'GC')
-    assert_equal(error.isSnp,True)
-    assert_equal(error.isIndel,False)
-    assert_equal(error.qual,11)
-    assert_equal(error.qscore(2),9)
+    errorObj = error('A','T',a,0)
+    assert_equal(errorObj.true,'A')
+    assert_equal(errorObj.emission,'T')
+    assert_equal(errorObj.before(2),'NN')
+    assert_equal(errorObj.after(2),'GC')
+    assert_equal(errorObj.isSnp,True)
+    assert_equal(errorObj.isIndel,False)
+    assert_equal(errorObj.qual,11)
+    assert_equal(errorObj.qscore(2),9)
 
-# def testErrorClass():
-#     true = 'A'
-#     emission = 'T'
-#     rightFlank = 'CC'
-#     leftFlank = 'AT'
-#     error = proto_err.metrics.error(true,emission,read)
-#     assert_equal(error.flankLength,(2,2))
-#     leftFlank = ''
-#     error = proto_err.metrics.error(true,emission,read)
-#     assert_equal(error.flankLength,(0,2))
-#     assert_equal(error.trueSeq,'ACC')
-#     assert_equal(error.leftFlank,'')
-#     assert_equal(error.before(2),'NN')
-#     assert_equal(error.before(8),'N'*8)
-#     assert_equal(error.isSnp,True)
-#     rightFlank = ''
-#     error = proto_err.metrics.error(true,emission,read)
-#     assert_equal(error.after(2),'NN')
-#     emission = 'TT'
-#     error = proto_err.metrics.error(true,emission,read)
-#     assert_equal(error.isSnp,False)
-#     assert_equal(error.isIndel,True)
-
-def testErrorSim():
+def testComplexErrorSim():
     """Test the read error simulation"""
-    seq = 'ATCGATCGATCG'
-    record=SeqRecord(seq,'fragment_id')
+    N= 500
+    randomLeftFlank = "".join([random.choice(getAlphabet()) for _ in range(N)])
+    randomRightFlank = "".join([random.choice(getAlphabet()) for _ in range(N)])
+
+    seq = randomLeftFlank+'AGTATACCTCGCATCGATCGATCG' +randomRightFlank# len 12 
+    ref = "".join([random.choice(getAlphabet()) for _ in range(100000)])+seq + "".join([random.choice(getAlphabet()) for _ in range(100000)])
+    refRecord=SeqRecord(Seq(ref),'Chromosome dna:chromosome chromosome:ASM19595v1:Chromosome:1:4411532:1','','')
+    record=SeqRecord(Seq(seq),'st=%s'%(100000),'','')
     opt = {}
-    errorSim = simulateError(record,opt,id = 'fragment_id')
-    errorSim.snp(0,'T')
-    assert_equal( str(errorSim.seq) , 'TTCGATCGATCG')
-    errorSim.ins(3,'TTT')
-    assert_equal( str(errorSim.seq) , 'TTCGTTTATCGATCG')
-    errorSim.deletion(4,5)
-    assert_equal( str(errorSim.seq) , 'TTCGCGATCG')
-    assert_equal(errorSim.errorProb,[0]*len('TTCGCGATCG'))
-    assert_equal(errorSim.qscore,[60]*len('TTCGCGATCG'))
+    rep = [0.1]*N
+    errorSim = complexError(record,opt,id = 'st=%s'%(100000),baseErrorProb = rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
+    assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
+    errorSim.snp(N,'T')
+    assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
+    assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTATACCTCGCATCGATCGATCG'+randomRightFlank)
+    errorSim.ins(N+3,'TTT')
+    assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.15,0.15,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
+    assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTATTTTACCTCGCATCGATCGATCG'+randomRightFlank)
+    errorSim.deletion(N+17,5)
+    assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTATTTTACCTCGCATGATCG'+randomRightFlank)
+
+    ## Write these to a fasta file
+    refFilename = 'tests/ref.fa'
+    readFilename = 'tests/read.fq'
+    writeFasta(filename = refFilename,seqList = [refRecord])
+    writeFastq(filename = readFilename,seqList = [errorSim.record])
+
+    ## Align ref to read
+    align.refIndex(file=refFilename)
+    # ## Align reads to the reference
+    samfileName = readFilename + '.sam'
+    aligned = align.align(reference=refFilename, read_file=readFilename,stdout=samfileName)
+
+    reader = errorReader(samfile=samfileName,ref=ref)
+    errorList = []
+    for error in reader:
+        assert_equal(error.read.cigarstring,'M%sI3M%sD5M%s'%(N+4,10,N+5))
+        errorList.append(error)
+    assert_equal(len(errorList),3)  
+    error1 = errorList[0]
+    assert_equal(error1.isSnp,True)
+    assert_equal(error1.true,'A')
+    assert_equal(error1.emission,'T')
+
+    error2 = errorList[1]
+    assert_equal(error2.isIndel,True)
+    assert_equal(error2.isInsertion,True)
+    assert_equal(error2.true,'')
+    assert_equal(error2.emission,'TTT')  
+
+    error3 = errorList[2]
+    assert_equal(error3.isIndel,True)
+    assert_equal(error3.isDeletion,True)
+    assert_equal(error3.true,'CGATC')
+    assert_equal(error3.emission,'')   
+
+    assert_equal(error1.alignedCorrectly,True)
+    assert_equal(error1.alignedDist,0)
 
 
 # def testCounter():

@@ -76,9 +76,13 @@ class singleSNP(simulateError):
 				self.snp(pos,replaceLetter)
 
 class complexError(simulateError):
-	def __init__(self,record,opt,id):
+	def __init__(self,record,opt,id,baseErrorProb=None):
 		simulateError.__init__(self,record,opt,id)
-		self.errorProb = [random.gauss(opt.snpFreq, 0.01) for _ in self.seq]
+		if baseErrorProb:
+			self.errorProb = baseErrorProb
+			assert len(self.errorProb) == len(self.seq)
+		else:
+			self.errorProb = [random.gauss(opt.snpFreq, 0.01) for _ in self.seq]
 
 	def error(self):
 		"""Function to induce and error"""

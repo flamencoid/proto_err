@@ -78,6 +78,7 @@ class error():
     def __init__(self,true,emission,read,readPos):
         self.true = true
         self.emission = emission
+        assert true != '' or emission != ''
         self.read = read
         self.readPos = readPos # position on read where error starts 
         self.readPer = float(readPos) / float(len(read.seq))
@@ -253,6 +254,7 @@ class errorReader():
         self.__currentRefReadList = list(self.__refRead)
         self.__currentReadList = list(str(self.__read.seq))
         self.__readPos = 0
+        self.__readPosIndex = 0
         for tup in self.__read.cigar:
             cigarInt = tup[0]
             numBases = tup[1]
@@ -260,6 +262,7 @@ class errorReader():
                 ## Match or mismatch
                 self.__checkSNPs(N=numBases)
                 self.__readPos += numBases
+                self.__readPosIndex += numBases
             elif cigarInt == 1:
                 ## Insertion to the reference
                 self.__checkInsertion(N=numBases)
@@ -311,9 +314,10 @@ class errorReader():
         """
         Checks Deletionread segment for  errors. called when cigarstring = D:N 
         """
-        i = self.__read.positions[self.__readPos-1] + 1
-        j =  self.__read.positions[self.__readPos]        
+        i = self.__read.positions[self.__readPosIndex-1] + 1
+        j =  self.__read.positions[self.__readPosIndex]        
         delSeg = str(self.__ref[i:j])
+
         self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos))
     def __checkSkipped(self,N):
         """
@@ -358,7 +362,7 @@ class counter():
     """ 
     Takes a list of errors or samfile and does some kmer counting
 
-    Attributes
+    Parameters
     ----------
     ref : string
         The reference sequence
@@ -369,7 +373,7 @@ class counter():
     opt : dict
         Options passed from OptionParser
 
-    Parameters
+    Attributes
     ----------
     errorList : list
         A list of error objects on which counting is done 

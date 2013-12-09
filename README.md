@@ -2,7 +2,10 @@
 =========
 
 [See Detailed Documenation](http://proto-err.readthedocs.org/)
+##Requirements##
+Install requirements with
 
+*sudo pip install -r requirements.txt*
 ### Tests ###
 To run tests run:
 nosetests
