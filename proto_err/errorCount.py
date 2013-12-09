@@ -7,6 +7,7 @@ import time
 from utils import *
 import difflib
 import itertools
+# import re
 
 class error():
     """ Information about the errors in a read """
@@ -15,6 +16,26 @@ class error():
         self.emission = emission
         self.read = read
         self.readPos = readPos # position on read where error starts 
+        ## Was the read aligned correctly? 
+        try:
+            ## messy way of extracting read length
+            s = list(self.read.qname.split('st=')[1])
+            curInt = '0'
+            tempList = []
+            while curInt.isdigit():
+                curInt = s.pop(0)
+                tempList.append(curInt)
+            sampPos = int("".join(tempList[:-1]))
+            self.alignedDist =  sampPos - self.read.positions[0]
+        except:
+            self.alignedDist = None
+        if self.alignedDist is None:
+            self.alignedCorrectly = None
+        elif not self.alignedDist is None and (self.alignedDist < len(self.read.seq)):
+            self.alignedCorrectly = True
+        else:
+            self.alignedCorrectly = False
+
     def __str__(self):
         return "%s error(%s to %s)" %(self.errorType,self.true,self.emission)
 
@@ -127,52 +148,47 @@ class errorReader():
         """
         A function which take a read and generates some error objects
         """
-        NM = self.read.opt('NM')
-        if NM == 0:
+        if self.read.opt('NM') == 0:
             self.readCounter['perfectAlignments'] += 1
-            # for base in self.alphabet:
-            #     self.res['errorMode'][base][base] += read.seq.count(base)
         else:
             self.readCounter['mismatchedAlignments'] += 1
-            ## Check what type of mismatch it is.
-            ## if the cigarstring only has M then only SNP errors
-            self.currentRefReadList = list(self.refRead)
-            self.currentReadList = list(str(self.read.seq))
-            self.readPos = 0
-            for tup in self.read.cigar:
-                cigarInt = tup[0]
-                numBases = tup[1]
-                if cigarInt == 0:
-                    ## Match or mismatch
-                    self.checkSNPs(N=numBases)
-                    self.readPos += numBases
-                elif cigarInt == 1:
-                    ## Insertion to the reference
-                    self.checkInsertion(N=numBases)
-                    self.readPos += numBases
-                elif cigarInt == 2:
-                    ## Deletion from the reference
-                    self.checkDeletion(N=numBases)
-                elif cigarInt == 3:
-                    ## skipped region from the reference
-                    self.checkSkipped(N=numBases)
-                elif cigarInt == 4:
-                    ##  soft clipping (clipped sequences present in SEQ)
-                    self.checkSoftClipped(N=numBases)
-                elif cigarInt == 5:
-                    ##  hard clipping (clipped sequences NOT present in SEQ)
-                    self.checkHardClipped(N=numBases)
-                elif cigarInt == 6:
-                    ## padding (silent deletion from padded reference)
-                    self.checkPadding(N=numBases)
-                elif cigarInt == 7:
-                    ## sequence match
-                    self.checkSeqMatch(N=numBases)
-                elif cigarInt == 8:
-                    ## sequence mismatch
-                    self.checkSeqMismatch(N=numBases)
-            assert self.currentRefReadList == []
-            assert self.currentReadList == []
+        self.currentRefReadList = list(self.refRead)
+        self.currentReadList = list(str(self.read.seq))
+        self.readPos = 0
+        for tup in self.read.cigar:
+            cigarInt = tup[0]
+            numBases = tup[1]
+            if cigarInt == 0:
+                ## Match or mismatch
+                self.checkSNPs(N=numBases)
+                self.readPos += numBases
+            elif cigarInt == 1:
+                ## Insertion to the reference
+                self.checkInsertion(N=numBases)
+                self.readPos += numBases
+            elif cigarInt == 2:
+                ## Deletion from the reference
+                self.checkDeletion(N=numBases)
+            elif cigarInt == 3:
+                ## skipped region from the reference
+                self.checkSkipped(N=numBases)
+            elif cigarInt == 4:
+                ##  soft clipping (clipped sequences present in SEQ)
+                self.checkSoftClipped(N=numBases)
+            elif cigarInt == 5:
+                ##  hard clipping (clipped sequences NOT present in SEQ)
+                self.checkHardClipped(N=numBases)
+            elif cigarInt == 6:
+                ## padding (silent deletion from padded reference)
+                self.checkPadding(N=numBases)
+            elif cigarInt == 7:
+                ## sequence match
+                self.checkSeqMatch(N=numBases)
+            elif cigarInt == 8:
+                ## sequence mismatch
+                self.checkSeqMismatch(N=numBases)
+        assert self.currentRefReadList == []
+        assert self.currentReadList == []
     def checkSNPs(self,N):
         readSeg = popLong(self.currentReadList,0,N)
         refSeg = popLong(self.currentRefReadList,0,N)
@@ -198,7 +214,6 @@ class errorReader():
         del self.currentReadList[0:N]
     def checkHardClipped(self,N):
         pass
-        # del self.currentReadList[0:N]
     def checkPadding(self,N):
         logging.error("Haven't written a handler for this case yet")
         0/0
