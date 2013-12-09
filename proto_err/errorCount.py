@@ -40,18 +40,13 @@ class error():
         position along read where error occured / length of read sequence
     alignedDist : int or None
         number of bases between position of start of alignment and where read was sampled
-
         None if sampled position n/a 
-
     alignedCorrectly : bool or None
         If the alignedDist is less then the read length True else False
-
         None is alignedDist is None
-
     qual : int or None
         Quality score of the base where the error occured. 
         equivalent to error.qscore(0)
-
 
     See Also
     --------
@@ -64,7 +59,7 @@ class error():
     >>> read = AlignedRead()
     >>> read.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
     >>> read.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
-    >>> error = proto_err.errorCount.error('A','T',read,0)
+    >>> error = proto_err.errorCount.error('T','A',read,0)
     >>> error.isSnp
     True
     >>> error.isIndel
