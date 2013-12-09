@@ -8,7 +8,9 @@ Install requirements with
 *sudo pip install -r requirements.txt*
 ### Tests ###
 To run tests run:
-nosetests
+
+*nosetests*
+
 from the top directory. 
 ## Simulating Reads ##
 
