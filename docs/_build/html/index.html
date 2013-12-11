@@ -46,6 +46,53 @@
             
   <div class="section" id="welcome-to-proto-err-s-documentation">
 <h1>Welcome to proto_err&#8217;s documentation!<a class="headerlink" href="#welcome-to-proto-err-s-documentation" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="requirements">
+<h1>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
+<p>Install requirements with</p>
+<p><strong>pip install -r requirements.txt</strong></p>
+<p><strong>sh nonPiprequirements.sh</strong></p>
+<p>nonPiprequirements installs bwa, R and required R packages. Comment out unneeded lines before running.</p>
+</div>
+<div class="section" id="tests">
+<h1>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h1>
+<p>To run tests run:</p>
+<p><strong>nosetests</strong></p>
+<p>from the top directory.</p>
+</div>
+<div class="section" id="sample-usage">
+<h1>Sample Usage<a class="headerlink" href="#sample-usage" title="Permalink to this headline">¶</a></h1>
+<p>To iterate through errors in samfile</p>
+<div class="highlight-python"><pre>from errorCount import errorReader
+for error in errorReader(ref,samfile):
+    print error
+
+SNP error(T to A)
+Deletion error(GC to )</pre>
+</div>
+<p>If you want to count the errors in a samfile</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="n">Values</span>
+<span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
+<span class="kn">from</span> <span class="nn">fastaIO</span> <span class="kn">import</span> <span class="n">getRef</span>
+<span class="c">## Alternatively pass these from OptionParser</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">Values</span><span class="p">()</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">maxKmerLength</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">outDir</span> <span class="o">=</span> <span class="s">&#39;results/&#39;</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">imgDir</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">outDir</span><span class="o">+</span><span class="s">&#39;img/&#39;</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">jsonDir</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">outDir</span> <span class="o">+</span><span class="s">&#39; json/&#39;</span>
+<span class="c">##</span>
+<span class="n">ref</span> <span class="o">=</span> <span class="n">getRef</span><span class="p">(</span><span class="n">refFilename</span><span class="p">)</span>
+<span class="c">## Initalise a counter object</span>
+<span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">opt</span><span class="p">,</span><span class="n">samfile</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">samfile</span><span class="p">)</span>
+<span class="n">errorCounter</span><span class="o">.</span><span class="n">plotHist</span><span class="p">()</span> <span class="c">## Plot predefined histograms</span>
+<span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">kmerBefore</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span> <span class="c">## Count errors preceded by &#39;A&#39;</span>
+<span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">kmerBefore</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="nb">type</span><span class="o">=</span><span class="s">&#39;SNP&#39;</span><span class="p">)</span> <span class="c">## Count SNP errors preceded by &#39;A&#39;</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="#module-proto_err.errorCount" title="proto_err.errorCount"><tt class="xref py py-class docutils literal"><span class="pre">errorCount</span></tt></a> for more methods</p>
+</div>
+<div class="section" id="api">
+<h1>Api<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="proto-err-main-package">
 <h2><a class="reference internal" href="#module-proto_err" title="proto_err"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err</span></tt></a> &#8211; Main package<a class="headerlink" href="#proto-err-main-package" title="Permalink to this headline">¶</a></h2>
 <span class="target" id="module-proto_err"></span><div class="section" id="proto-err-simulation-simulating-error-reads">
@@ -809,6 +856,59 @@ error.qscore(0) is equivalent to error.qual</p>
 </dd></dl>
 
 <dl class="class">
+<dt id="proto_err.plot.multiHistPlotter">
+<em class="property">class </em><tt class="descclassname">proto_err.plot.</tt><tt class="descname">multiHistPlotter</tt><big>(</big><em>dic</em>, <em>opt</em>, <em>filename</em><big>)</big><a class="headerlink" href="#proto_err.plot.multiHistPlotter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#proto_err.plot.histPlotter" title="proto_err.plot.histPlotter"><tt class="xref py py-class docutils literal"><span class="pre">proto_err.plot.histPlotter</span></tt></a></p>
+<p>Plots a histogram with multiple</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dic</strong> : string</p>
+<blockquote>
+<div><p>truth base(s)</p>
+</div></blockquote>
+<p><strong>opt</strong> : Value</p>
+<blockquote>
+<div><p>options passed from OptionsParser()</p>
+</div></blockquote>
+<p><strong>filename</strong> : string</p>
+<blockquote class="last">
+<div><p>name of output</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">plotter</span> <span class="o">=</span> <span class="n">histPlotter</span><span class="p">({</span><span class="s">&#39;AAA&#39;</span><span class="p">:{</span><span class="s">&#39;Expected&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s">&#39;Observed&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">},</span><span class="s">&#39;TTT&#39;</span><span class="p">:{</span><span class="s">&#39;Expected&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span><span class="s">&#39;Observed&#39;</span><span class="p">:</span><span class="mi">30</span><span class="p">}},,</span><span class="n">opt</span><span class="o">=</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&quot;image&quot;</span><span class="p">)</span>
+<span class="go">INFO:Image saved to /img/image.png</span>
+<span class="go">            INFO:Raw data saved to /json/image.json</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.plot.multiHistPlotter.plot" title="proto_err.plot.multiHistPlotter.plot"><tt class="xref py py-obj docutils literal"><span class="pre">plot</span></tt></a>()</td>
+<td>Method to call plot</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">setup</span></tt>(opt)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="proto_err.plot.multiHistPlotter.plot">
+<tt class="descname">plot</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.plot.multiHistPlotter.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to call plot</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="proto_err.plot.plotter">
 <em class="property">class </em><tt class="descclassname">proto_err.plot.</tt><tt class="descname">plotter</tt><big>(</big><em>opt</em><big>)</big><a class="reference internal" href="_modules/proto_err/plot.html#plotter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.plot.plotter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plotting object from which histPlotter inherits</p>
@@ -1093,7 +1193,11 @@ or via the Python subprocess module, as described in the Biopython tutorial.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to proto_err&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#">Welcome to proto_err&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#tests">Tests</a></li>
+<li><a class="reference internal" href="#sample-usage">Sample Usage</a></li>
+<li><a class="reference internal" href="#api">Api</a><ul>
 <li><a class="reference internal" href="#proto-err-main-package"><tt class="docutils literal"><span class="pre">proto_err</span></tt> &#8211; Main package</a><ul>
 <li><a class="reference internal" href="#proto-err-simulation-simulating-error-reads"><tt class="docutils literal"><span class="pre">proto_err.simulation</span></tt> &#8211; Simulating Error Reads</a><ul>
 </ul>

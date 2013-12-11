@@ -776,16 +776,16 @@ class counter():
             >>>print errorCounter.getCount()
             1234
             >>> ####   Count all the errors preceded by kmer 'A'
-            >>> print errorCounter.getCount(kmer='AA')
+            >>> print errorCounter.getCount(kmerBefore='AA')
             123
             >>> ####  Count all the errors followed by kmer 'AA'
-            >>> print errorCounter.getCount(kmer='AA',after=True)
+            >>> print errorCounter.getCount(kmerAfter='AA')
             12
             >>> ####     Count all the errors for truth 'A' preceded by an A
-            >>> print errorCounter.getCount(truth='A',kmer='A')
+            >>> print errorCounter.getCount(truth='A',kmerBefore'A')
             123
             >>> ####     Count all the errors A->T preceded by A
-            >>> print errorCounter.getCount(truth='A',emission='T', kmer='A')
+            >>> print errorCounter.getCount(truth='A',emission='T', kmerBefore='A')
             12
             >>> ####  Count all the errors where the emmited base is 'A' preceded by any kmer
             >>> print errorCounter.getCount(emission='A')
@@ -793,7 +793,7 @@ class counter():
         """
 
         ## This function is a bit hacky, come back and rewrite later.
-        ## If flexible querys are priorty, maybe create mongo db of error objects?
+        ## If flexible querys are priorty, maybe create mongo db of error objects? - edit: did this
 
 
         ########### Monogo DB Verison

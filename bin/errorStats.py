@@ -16,13 +16,15 @@ parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 					default="../data/ref.fa")
 parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned reads",
 						default="../data/ref.subsampled.fq.sam")
+parser.add_option("--outDir", dest="outDir",help="Path to output directory (Optional)",
+						default="../results")
 (opt, args) = parser.parse_args()
 
 ## Hardcode some options
 opt.maxKmerLength = 3 
-opt.outDir = '../results/'
-opt.imgDir = '../results/img/'
-opt.jsonDir = '../results/json/'
+opt.outDir = opt.outDir + '/'
+opt.imgDir = opt.outDir+'img/'
+opt.jsonDir = opt.outDir +' json/'
 if not os.path.exists(opt.outDir):
     os.makedirs(opt.outDir)
 if not os.path.exists(opt.imgDir):
