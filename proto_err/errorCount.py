@@ -712,7 +712,7 @@ class counter():
         probEmmission = float(1)/float(3)
         expectedCount = probBaseIsTruth * SNPCount * probEmmission
 
-        return expectedCount
+        return round(expectedCount)
 
     def probKmer(self,kmer):
         """
