@@ -8,6 +8,7 @@ from utils import *
 import difflib
 import itertools
 from query import errordb
+from plot import *
 
 class error():
     """ 
@@ -604,6 +605,29 @@ class counter():
             for t in read.cigar:
                 count += t[1]
         return count
+    def plotHist(self,countDictonary):
+        """
+        Plots histograms
+
+
+        Parameters
+        ----------
+        none : none
+            no desc
+
+
+        Returns
+        ----------
+        outputs a png file to opt.imgDir
+
+        Examples
+        --------
+            >>> from errorCount import counter
+            >>> errorCounter = counter(ref,samfile)
+            >>> errorCounter.plotHist()
+        """
+        pass
+
 
     def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
                 type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],

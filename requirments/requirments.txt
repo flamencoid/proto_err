@@ -1,7 +1,7 @@
 numpydoc==0.4
 numpy==1.6
 cython==0.19.2
-pysam==0.6
+pysam==0.7.4
 Biopython==1.63
 nose==1.3
 pymongo==2.6.3

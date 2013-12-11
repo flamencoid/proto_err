@@ -20,6 +20,12 @@ parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned rea
 
 ## Hardcode some options
 opt.maxKmerLength = 3 
+opt.outDir = 'results/'
+opt.imgDir = 'results/img'
+if not os.path.exists(opt.outDir):
+    os.makedirs(opt.outDir)
+if not os.path.exists(opt.imgDir):
+    os.makedirs(opt.imgDir)
 
 ref = getRef(opt.refFilename)
 

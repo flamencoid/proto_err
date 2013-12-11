@@ -66,6 +66,7 @@ def testComplexErrorSim():
     reader = errorReader(samfile=samfileName,ref=ref)
     errorList = []
     for error in reader:
+        print error.read.cigar
         assert_equal(error.read.cigarstring,'M%sI3M%sD5M%s'%(N+4,10,N+5))
         errorList.append(error)
     assert_equal(len(errorList),3)  
@@ -124,7 +125,7 @@ def testPlotting():
     x = ro.IntVector(range(10))
     y = r.rnorm(10)
 
-    grdevices = importr('grDevices')
+    
     grdevices.png(file="tests/img/test.png", width=512, height=512)
     r.layout(r.matrix(ro.IntVector([1,2,3,2]), nrow=2, ncol=2))
     r.plot(r.runif(10), y, xlab="runif", ylab="foo/bar", col="red")
@@ -143,6 +144,18 @@ def testPlotting():
     grdevices.png(file="tests/img/test2.png", width=512, height=512)
     pp.plot()
     grdevices.dev_off()
+
+def testPlottingMore():
+    """Test the plotting module"""
+    opt = Values()
+    opt.imgDir = "tests/img/"
+    testPlotter = plotter(opt)
+    dic = {'TTT':10,'AAA':5}
+    testHistPlotter = histPlotter(dic,opt,filename="testHist")
+    testHistPlotter.plot()
+
+    
+
 
 
 

@@ -8,6 +8,8 @@ Install requirements with
 *pip install -r requirements.txt*
 
 *sh nonPiprequirements.sh*
+
+nonPiprequirements installs bwa, R and required R packages. Comment out unneeded lines before running. 
 ### Tests ###
 To run tests run:
 
