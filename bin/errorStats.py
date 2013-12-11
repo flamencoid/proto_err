@@ -20,12 +20,15 @@ parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned rea
 
 ## Hardcode some options
 opt.maxKmerLength = 3 
-opt.outDir = 'results/'
-opt.imgDir = 'results/img'
+opt.outDir = '../results/'
+opt.imgDir = '../results/img/'
+opt.jsonDir = '../results/json/'
 if not os.path.exists(opt.outDir):
     os.makedirs(opt.outDir)
 if not os.path.exists(opt.imgDir):
     os.makedirs(opt.imgDir)
+if not os.path.exists(opt.jsonDir):
+    os.makedirs(opt.jsonDir)
 
 ref = getRef(opt.refFilename)
 
@@ -33,9 +36,11 @@ logging.info("Doing some kmer counting")
 errorCounter = counter(ref,opt,samfile=opt.samfile)
 for name,count in errorCounter.readCounter.iteritems():
 	logging.info('### Count of %s == %i' % (name,count))
-errorCounter.countRefKmer()
-errorCounter.countErrorKmer(1)
-
+# errorCounter.countRefKmer()
+# errorCounter.countErrorKmer(1)
+errorCounter.plotHist()
+print errorCounter.getExpectedCount(truth='A',emission='T')
+print errorCounter.getCount(truth='A',emission='T')
 
 
 # for post in errorCounter.errordb.find():

@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>proto_err.plot &mdash; proto_err 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="proto_err 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">proto_err 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for proto_err.plot</h1><div class="highlight"><pre>
+<span class="c">## Everything to do with plotting</span>
+<span class="kn">import</span> <span class="nn">math</span><span class="o">,</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">rpy2.robjects.lib.ggplot2</span> <span class="kn">as</span> <span class="nn">ggplot2</span>
+<span class="kn">import</span> <span class="nn">rpy2.robjects</span> <span class="kn">as</span> <span class="nn">ro</span>
+<span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="kn">import</span> <span class="n">importr</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="n">base</span> <span class="o">=</span> <span class="n">importr</span><span class="p">(</span><span class="s">&#39;base&#39;</span><span class="p">)</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">importr</span><span class="p">(</span><span class="s">&#39;stats&#39;</span><span class="p">)</span>
+<span class="n">datasets</span> <span class="o">=</span> <span class="n">importr</span><span class="p">(</span><span class="s">&#39;datasets&#39;</span><span class="p">)</span>
+<span class="n">grdevices</span> <span class="o">=</span> <span class="n">importr</span><span class="p">(</span><span class="s">&#39;grDevices&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="plotter"><a class="viewcode-back" href="../../index.html#proto_err.plot.plotter">[docs]</a><span class="k">class</span> <span class="nc">plotter</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plotting object from which histPlotter inherits</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        opt : Value</span>
+<span class="sd">           	options passed from OptionsParser()</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opt</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span>
+<div class="viewcode-block" id="plotter.setup"><a class="viewcode-back" href="../../index.html#proto_err.plot.plotter.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opt</span><span class="p">):</span>
+       	<span class="k">if</span> <span class="ow">not</span> <span class="n">opt</span><span class="o">.</span><span class="n">imgDir</span><span class="p">:</span>
+       		<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Option must include imgDir&quot;</span><span class="p">)</span> 
+       	<span class="k">else</span><span class="p">:</span>
+       		<span class="bp">self</span><span class="o">.</span><span class="n">imgDir</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">imgDir</span>
+       	<span class="k">if</span> <span class="ow">not</span> <span class="n">opt</span><span class="o">.</span><span class="n">jsonDir</span><span class="p">:</span>
+       		<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Option must include jsonDir&quot;</span><span class="p">)</span> 
+       	<span class="k">else</span><span class="p">:</span>
+       		<span class="bp">self</span><span class="o">.</span><span class="n">jsonDir</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">jsonDir</span>
+        
+
+</div></div>
+<div class="viewcode-block" id="histPlotter"><a class="viewcode-back" href="../../index.html#proto_err.plot.histPlotter">[docs]</a><span class="k">class</span> <span class="nc">histPlotter</span><span class="p">(</span><span class="n">plotter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plots a histogram</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dic : string</span>
+<span class="sd">            truth base(s)</span>
+<span class="sd">        opt : Value</span>
+<span class="sd">           	options passed from OptionsParser()</span>
+<span class="sd">        filename : string</span>
+<span class="sd">            name of output</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        	&gt;&gt;&gt; from optparse import Values</span>
+<span class="sd">        	&gt;&gt;&gt; opt = Values()</span>
+<span class="sd">        	&gt;&gt;&gt; opt.imgDir = &#39;/img&#39;</span>
+<span class="sd">        	&gt;&gt;&gt; opt.jsonDir = &#39;/json&#39;</span>
+<span class="sd">            &gt;&gt;&gt; plotter = histPlotter({&#39;AAA&#39;:1,&#39;TTT&#39;:10},opt=opt,filename=&quot;image&quot;)</span>
+<span class="sd">            INFO:Image saved to /img/image.png</span>
+<span class="sd">			INFO:Raw data saved to /json/image.json</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">dic</span><span class="p">,</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="p">):</span>
+        <span class="n">plotter</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dic</span> <span class="o">=</span> <span class="n">dic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">imgFilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">imgDir</span> <span class="o">+</span> <span class="n">filename</span><span class="o">+</span> <span class="s">&quot;.png&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jsonFilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jsonDir</span> <span class="o">+</span> <span class="n">filename</span><span class="o">+</span> <span class="s">&quot;.json&quot;</span>
+<div class="viewcode-block" id="histPlotter.plot"><a class="viewcode-back" href="../../index.html#proto_err.plot.histPlotter.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    	<span class="sd">&quot;&quot;&quot;Method to call plot&quot;&quot;&quot;</span>
+        <span class="n">dataf</span><span class="o">=</span> <span class="n">ro</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s">&#39;kmer&#39;</span><span class="p">:</span> <span class="n">ro</span><span class="o">.</span><span class="n">StrVector</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dic</span><span class="o">.</span><span class="n">keys</span><span class="p">())),</span> 
+        					<span class="s">&#39;Counts&#39;</span><span class="p">:</span> <span class="n">ro</span><span class="o">.</span><span class="n">IntVector</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dic</span><span class="o">.</span><span class="n">values</span><span class="p">()))}</span> <span class="p">)</span>
+        <span class="n">gp</span> <span class="o">=</span> <span class="n">ggplot2</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">dataf</span><span class="p">)</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">gp</span> <span class="o">+</span> \
+             <span class="n">ggplot2</span><span class="o">.</span><span class="n">aes_string</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s">&#39;kmer&#39;</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="s">&#39;Counts&#39;</span><span class="p">)</span> <span class="o">+</span> \
+             <span class="n">ggplot2</span><span class="o">.</span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s">&#39;identity&#39;</span><span class="p">)</span> <span class="o">+</span> \
+             <span class="n">ggplot2</span><span class="o">.</span><span class="n">theme_bw</span><span class="p">()</span><span class="o">+</span>\
+             <span class="n">ggplot2</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s">&#39;axis.text.x&#39;</span><span class="p">:</span> <span class="n">ggplot2</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span> <span class="o">=</span> <span class="mi">90</span><span class="p">,</span><span class="n">hjust</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)})</span>
+        <span class="n">grdevices</span><span class="o">.</span><span class="n">png</span><span class="p">(</span><span class="nb">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">imgFilename</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span>
+        <span class="n">pp</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+        <span class="n">grdevices</span><span class="o">.</span><span class="n">dev_off</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Image saved to &quot;</span><span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">imgFilename</span> <span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jsonFilename</span><span class="p">,</span><span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">jsonOutFile</span><span class="p">:</span>
+        	<span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__dic</span><span class="p">,</span><span class="n">jsonOutFile</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Raw data saved to &quot;</span><span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">jsonFilename</span> <span class="p">)</span>
+
+
+
+        
+        </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">proto_err 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Phelim Bradley.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3.
+    </div>
+  </body>
+</html>

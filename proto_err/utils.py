@@ -1,13 +1,16 @@
 import itertools
 
 def getAlphabet():
-	return ['A','T','C','G']
+    return ['A','T','C','G']
 
-def kmerCombo(a,r):
-	"""
-	Function to return all combinations of kmer length i in alphabet
-	"""
-	return ["".join(i) for i in itertools.product(a,repeat=r)]
+def kmerCombo(r):
+    """
+    Function to return all combinations of kmer length r in alphabet
+    """
+    a = getAlphabet()
+
+
+    return ["".join(i) for i in itertools.product(a,repeat=r)]
 class AutoVivification(dict):
     """Implementation of perl's autovivification feature."""
     def __getitem__(self, item):

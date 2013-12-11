@@ -20,9 +20,6 @@ class errordb():
 		self.db = self.client.proto_err
 		self.errors = self.db.errors
 
-			
-
-
 	def addErrors(self,errorList):
 		"""
 		Add errors from errorList to database

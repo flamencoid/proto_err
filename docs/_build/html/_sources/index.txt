@@ -27,8 +27,45 @@ Welcome to proto_err's documentation!
    :undoc-members:
    :show-inheritance:
 
+:mod:`proto_err.plot` -- Plotting
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+.. automodule:: proto_err.plot
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
+:mod:`proto_err.query` -- Working with MongoDB
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: proto_err.query
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+:mod:`proto_err.fastaIO` -- Working with Fasta Files
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: proto_err.fastaIO
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+:mod:`proto_err.align` -- Aligning Reads
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: proto_err.align
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+:mod:`proto_err.utils` -- Convinience functions
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: proto_err.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 	
 

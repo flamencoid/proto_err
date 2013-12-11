@@ -502,10 +502,9 @@ class counter():
 
         if not maxKmerLength:
             maxKmerLength = self.opt.maxKmerLength
-        alpabet = getAlphabet()
         for klen in [i+1 for i in range(self.opt.maxKmerLength)]:
             # generate all kmers of length klen
-            kmerList = kmerCombo(alpabet,klen)
+            kmerList = kmerCombo(klen)
             self.res['RefCounts'] = dict(zip(kmerList,[0]*len(kmerList)))
             for kmer in kmerList:
                 self.res['RefCounts'][str(kmer)] = self.ref.count(kmer)
@@ -605,7 +604,7 @@ class counter():
             for t in read.cigar:
                 count += t[1]
         return count
-    def plotHist(self,countDictonary):
+    def plotHist(self):
         """
         Plots histograms
 
@@ -626,8 +625,110 @@ class counter():
             >>> errorCounter = counter(ref,samfile)
             >>> errorCounter.plotHist()
         """
-        pass
+        # if not self.__countErrorKmerRun:
+        #     self.countErrorKmer()
+        # tmpDic =  self.res['errorMode']
+        observedDic = {}
+        expectedDic = {}
+        multi = AutoVivification()
+        for t in getAlphabet():
+            for e in getAlphabet():
+                if t != e:
+                    observed = self.getCount(truth=t,emission=e)
+                    expected = self.getExpectedCount(truth=t,emission=e)
+                    observedDic[t + '->' + e] = observed
+                    expectedDic[t + '->' + e] = expected
+                    multi[t + '->' + e]['Expected'] = expected
+                    multi[t + '->' + e]['Observed'] = observed
+        histPlotter(dic=observedDic,opt=self.opt,filename="SNP_observed_transition").plot()
+        histPlotter(dic=expectedDic,opt=self.opt,filename="SNP_expected_transition").plot()
+        multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
 
+        ## Count deletion kmers
+        dic = {}
+        for error in self.getCount(type='Deletion',returnList=True)[1]:
+            try:
+                dic[error.true] += 1
+            except:
+                dic[error.true] = 1
+        histPlotter(dic=dic,opt=self.opt,filename="deletedKmer").plot()
+
+        ## Count insterted kmers
+        dic = {}
+        for error in self.getCount(type='Insertion',returnList=True)[1]:
+            try:
+                dic[error.emission] += 1
+            except:
+                dic[error.emission] = 1
+        histPlotter(dic=dic,opt=self.opt,filename="insertedKmer").plot()
+
+        ## Count kmers
+        for order in [i+1 for i in range(self.opt.maxKmerLength)]:
+            dicBefore = AutoVivification()
+            dicAfter = AutoVivification()
+            for errorType in ['SNP','Insertion','Deletion']:
+                for kmer in kmerCombo(r=order):
+                    count = self.getCount(kmerBefore = kmer,type=errorType)
+                    if count != 0 :
+                        dicBefore[errorType][kmer] = count
+                    count = self.getCount(kmerAfter = kmer,type=errorType)
+                    if count != 0:
+                        dicAfter[errorType][kmer] = count 
+                histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmer_before_%s_order_%s"%(errorType,order)).plot()
+                histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmer_after_%s_order_%s"%(errorType,order)).plot() 
+
+
+    def getExpectedCount(self,truth,emission):
+        """
+        Gets the expected count of a transition. 
+
+        E[true,emmision] = (frequency of truth in reference) * (Observed SNP Count) * (Probability of emmision | SNP ). 
+
+        i.e for a random reference E[true,emission] = 1/4 * numSnps * 1/3 
+
+        Parameters
+        ----------
+        truth : string
+            truth base(s)
+        emission : string
+            emmited base(s)
+
+        Returns
+        ----------
+        int
+            Expected count
+
+        Examples
+        --------
+            >>> from errorCount import counter
+            >>> errorCounter = counter(ref,samfile)
+            >>> print errorCounter.getExpectedCount(truth='A',emission='T')
+            100.36
+            >>> print errorCounter.getCount(truth='A',emission='T')
+            111
+        """
+        probBaseIsTruth = self.probKmer(truth)
+        SNPCount = float(self.getCount(type='SNP'))
+        probEmmission = float(1)/float(3)
+        expectedCount = probBaseIsTruth * SNPCount * probEmmission
+
+        return expectedCount
+
+    def probKmer(self,kmer):
+        """
+        Gets the fraction of 
+
+        Parameters
+        ----------
+        kmer : string
+            kmer to count
+
+        Returns
+        ----------
+        float
+            freq in ref
+        """
+        return float(self.ref.count(kmer)) / len(self.ref)
 
     def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
                 type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],
@@ -696,10 +797,6 @@ class counter():
 
 
         ########### Monogo DB Verison
-        #{'true':self.true,'emission':self.emission,'read':str(self.read.seq),
-                # 'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
-                # 'leftFlank':self.before(5),'rightFlank':self.after(5),'type':self.errorType,
-                # 'qual':self.qual}
         query = {}
         if truth:
             query['true'] = truth

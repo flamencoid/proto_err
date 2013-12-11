@@ -13,4 +13,6 @@ tests/img
 *.pac
 *.sa
 ENV/
+results/
+tests/json
 

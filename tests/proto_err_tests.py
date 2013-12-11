@@ -101,6 +101,8 @@ def testComplexErrorSim():
     ## Test counter
     opt.maxKmerLength = 4
     errorCounter = counter(ref,opt,errorList)
+    assert_equal(errorCounter.probKmer('A') +  errorCounter.probKmer('T') +
+                    errorCounter.probKmer('C')  +errorCounter.probKmer('G') ,1)
     count,errorQueryList = errorCounter.getCount(returnList=True)
     assert_equal(count,3)
     assert_equal(errorCounter.getCount(kmerBefore='GTA'),1)
@@ -149,10 +151,14 @@ def testPlottingMore():
     """Test the plotting module"""
     opt = Values()
     opt.imgDir = "tests/img/"
+    opt.jsonDir = "tests/json/"
     testPlotter = plotter(opt)
     dic = {'TTT':10,'AAA':5}
     testHistPlotter = histPlotter(dic,opt,filename="testHist")
     testHistPlotter.plot()
+    dic = {'AAA':{'Expected':1,'Observed':3},'TTT':{'Expected':10,'Observed':30}}
+    testMultiHistPlotter = multiHistPlotter(dic,opt,filename="testMultiHist")
+    testMultiHistPlotter.plot()
 
     
 
