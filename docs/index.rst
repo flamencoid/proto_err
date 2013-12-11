@@ -45,7 +45,7 @@ If you want to count the errors in a samfile
    from optparse import Values
    from errorCount import counter
    from fastaIO import getRef
-   ## Alternatively pass these from OptionParser
+   ## Alternatively pass these from OptionParser see https://github.com/flamencoid/proto_err/blob/master/bin/errorStats.py
    opt = Values()
    opt.maxKmerLength = 3 
    opt.outDir = 'results/'
