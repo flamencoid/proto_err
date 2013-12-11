@@ -35,6 +35,14 @@ errorCounter.countErrorKmer(1)
 
 # for post in errorCounter.errordb.find():
 # 	print post
+print errorCounter.getCount(), len(errorCounter.errorList)
+print errorCounter.getCount(kmerBefore='A')
+print errorCounter.getCount(maxAlignedDist=10)
+print errorCounter.getCount(readPosRange=[0,10])
+count,errorList = errorCounter.getCount(qualRange=[10,10],returnList=True)
+for error in errorList:
+	print error
+print count,len(errorList)
 # errorCounter.res['qualCounter']
 
 

@@ -73,13 +73,16 @@ def testComplexErrorSim():
     assert_equal(error1.errorType,'SNP')
     assert_equal(error1.true,'A')
     assert_equal(error1.emission,'T')
+    assert_equal(error1.after(3),'GTA')
 
     error2 = errorList[1]
     assert_equal(error2.isIndel,True)
     assert_equal(error2.isInsertion,True)
     assert_equal(error2.errorType,'Insertion')
     assert_equal(error2.true,'')
-    assert_equal(error2.emission,'TTT')  
+    assert_equal(error2.emission,'TTT') 
+    assert_equal(error2.after(3),'TAC')
+    assert_equal(error2.before(3),'GTA')  
 
     error3 = errorList[2]
     assert_equal(error3.isIndel,True)
@@ -87,6 +90,8 @@ def testComplexErrorSim():
     assert_equal(error3.errorType,'Deletion')
     assert_equal(error3.true,'CGATC')
     assert_equal(error3.emission,'')   
+    assert_equal(error3.after(3),'GAT')
+    assert_equal(error3.before(3),'CAT') 
 
     assert_equal(error1.alignedCorrectly,True)
     assert_equal(error1.alignedDist,0)
@@ -94,7 +99,12 @@ def testComplexErrorSim():
     ## Test counter
     opt.maxKmerLength = 4
     errorCounter = counter(ref,opt,errorList)
-    assert_equal(errorCounter.getCount(),12)
+    count,errorQueryList = errorCounter.getCount(returnList=True)
+    assert_equal(count,3)
+    assert_equal(errorCounter.getCount(kmerBefore='GTA'),1)
+    assert_equal(errorCounter.getCount(kmerBefore='CAT'),1)
+    assert_equal(errorCounter.getCount(kmerAfter='TAC'),1)
+    assert_equal(errorCounter.getCount(kmerAfter='GAT'),1)
 
 def testbasicQuery():
     """Test DB stuff"""
@@ -106,8 +116,7 @@ def testbasicQuery():
     a.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
     errorObj = error('A','T',a,0)
     errorObj = database.addError(error=errorObj)
-    print database.find_one()
-    print errorObj.dbID
+
 
   
 

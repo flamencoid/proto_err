@@ -7,7 +7,7 @@ import time
 from utils import *
 import difflib
 import itertools
-
+from query import errordb
 
 class error():
     """ 
@@ -93,7 +93,7 @@ class error():
                 curInt = s.pop(0)
                 tempList.append(curInt)
             sampPos = int("".join(tempList[:-1]))
-            self.alignedDist =  sampPos - self.read.positions[0]
+            self.alignedDist =  abs(sampPos - self.read.positions[0])
         except:
             self.alignedDist = None
         if self.alignedDist is None:
@@ -115,7 +115,13 @@ class error():
         return b
     def after(self,j):
         """Return the following j bases,return N when bases missing"""
-        i = self.readPos
+        if self.isIndel:
+            ## For insertions, we need to move along the read otherwise the 
+            ## "after" bases will include the inserted sequence
+            i = self.readPos + len(self.emission) -1 
+        else:
+            i = self.readPos
+        
         a = self.read.seq[i+1:j+i+1]
         while len(a) < j:
             a = a + 'N'
@@ -162,7 +168,7 @@ class error():
         """Return a pymongo document"""
         return {'true':self.true,'emission':self.emission,'read':str(self.read.seq),
                 'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
-                'leftFlank':self.before(5),'rightFlank':self.after(5),'type':self.errorType,
+                'leftFlank':self.before(10),'rightFlank':self.after(10),'type':self.errorType,
                 'qual':self.qual}
 
 
@@ -365,7 +371,7 @@ class errorReader():
 
 
 
-from query import errordb
+
 class counter(): 
     """ 
     Takes a list of errors or samfile and does some kmer counting
@@ -424,12 +430,11 @@ class counter():
         self.__countErrorKmerRun = False
         self.setup(opt)
         ## Connection to mongoDB, runs without for now.
-        try:
-            self.errordb = errordb()
-            self.errorList = self.errordb.addErrors(self.errorList)
-            self.logger.info("Connection to DB succesful")
-        except:
-            self.logger.error(getDBError())
+        self.errordb = errordb()
+        self.errordb.deleteAll()
+        self.errorList = self.errordb.addErrors(self.errorList)
+        
+
 
 
     def setup(self,opt):
@@ -594,7 +599,9 @@ class counter():
                 count += t[1]
         return count
 
-    def getCount(self,truth=None,emission=None,kmer='',after=False):
+    def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
+                type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],
+                qualRange=[],returnList=False):
         """
         Gets the count for a given {truth,emmision,kmer}
 
@@ -605,15 +612,30 @@ class counter():
             truth base(s)
         emission : string
             emmited base(s)
-        kmer : string
-            preceding or following kmer
-        after : bool
-            Default False. If True kmer is before, if False kmer is after
+        kmerBefore : string
+            preceding kmer
+        kmerAfter : string
+            following kmer
+        type : string
+            type of error SNP Insertion or Deletion
+        maxAlignedDist : int
+            maximum aligned distance e.g. maxAlignedDist = 10 returns all errors where the read mapped within 10 bp of where it was sampled from 
+        readPosRange : list or tuple of ints
+            list or tuple of two elements range of error position along read. e.g. [0,10] returns all errors in the first 10bp of read
+        readPerRange : list or tuple of ints
+            list or tuple of two elements range of error percentage along read. e.g. [0,10] returns all errors in the first 10percent of read
+        qualRange : list or tuple of ints
+            list or tuple of two elements range of quality of error e.g. [10,10] returns all errors with quality score 10
+        returnList : bool
+            default False. If true returns list of error documents as an additional argument
+
 
         Returns
         ----------
-        int
+        returnList = False int
             Count of errors matching Parameter query
+        returnList = True int,list
+            Count of errors matching Parameter query, list of error documents
 
         Examples
         --------
@@ -641,58 +663,105 @@ class counter():
 
         ## This function is a bit hacky, come back and rewrite later.
         ## If flexible querys are priorty, maybe create mongo db of error objects?
-        if not self.__countErrorKmerRun:
-            self.countErrorKmer()
-        if after:
-            dic = self.res['kmerCounts']['after']
+
+
+        ########### Monogo DB Verison
+        #{'true':self.true,'emission':self.emission,'read':str(self.read.seq),
+                # 'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
+                # 'leftFlank':self.before(5),'rightFlank':self.after(5),'type':self.errorType,
+                # 'qual':self.qual}
+        query = {}
+        if truth:
+            query['true'] = truth
+        if emission:
+            query['emission'] = emission
+        if kmerBefore:
+            query['leftFlank'] = {'$regex':kmerBefore+'$','$options': 'i'}
+        if kmerAfter:
+            query['rightFlank'] = {'$regex':'^'+kmerAfter, '$options': 'i'}
+        if type:
+            query['type'] = type
+        if maxAlignedDist:
+            query['alignedDist'] = {'$lte':maxAlignedDist}
+        if readPosRange:
+            query['readPos'] = {'$lte':readPosRange[1],'$gte':readPosRange[0]}
+        if readPerRange:
+            query['readPer'] = {'$lte':readPerRange[1],'$gte':readPerRange[0]}
+        if qualRange:
+            query['qual'] = {'$lte':qualRange[1],'$gte':qualRange[0]}
+        mongoPointer = self.errordb.find(query)
+        if returnList:
+            documentList = [post for post in mongoPointer]
+            errorList = []
+            for document in documentList:
+                read = AlignedRead()
+                read.seq = str(document['read'])
+                errorList.append(error(true=document['true'],
+                                        emission=document['emission'],
+                                        read=read,readPos=document['readPos']))
+
+            return mongoPointer.count(),errorList
         else:
-            dic = self.res['kmerCounts']['before']
+            return mongoPointer.count()
 
-        if truth and emission and kmer:
-            ##For particular transistion and kmer
-            return dic[truth][emission][kmer]
-        elif truth is None and emission is None:
-            ## We have to iterate through everything 
-            countOut = 0 
-            for emmitedDic in dic.values():
-                for kmerDic in emmitedDic.values():
-                    if kmer:
-                        ## If only one kmer
-                        countOut += kmerDic.get(kmer,0)
-                    else:
-                        ## Otherwise count them all
-                        for count in kmerDic.values():
-                            countOut += count
 
-            return countOut
-        elif not truth is None and emission is None:
-            tmpDic = dic[truth]
-            countOut = 0 
-            for kmerDic in tmpDic.values():
-                    if kmer:
-                        ## If only one kmer
-                        countOut += kmerDic.get(kmer,0)
-                    else:
-                        ## Otherwise count them all
-                        for count in kmerDic.values():
-                            countOut += count
-            if countOut == {}:
-                return 0
-            else:
-                return countOut
-        elif truth is None and not emission is None:
-            countOut = 0 
-            for emmitedDic in dic.values():
-                kmerDic =  emmitedDic[emission]
-                if kmer:
-                    ## If only one kmer
-                    countOut += kmerDic.get(kmer,0)
-                else:
-                    ## Otherwise count them all
-                    for count in kmerDic.values():
-                        countOut += count
 
-            return countOut
+
+        ###########
+
+
+        # if not self.__countErrorKmerRun:
+        #     self.countErrorKmer()
+        # if after:
+        #     dic = self.res['kmerCounts']['after']
+        # else:
+        #     dic = self.res['kmerCounts']['before']
+
+        # if truth and emission and kmer:
+        #     ##For particular transistion and kmer
+        #     return dic[truth][emission][kmer]
+        # elif truth is None and emission is None:
+        #     ## We have to iterate through everything 
+        #     countOut = 0 
+        #     for emmitedDic in dic.values():
+        #         for kmerDic in emmitedDic.values():
+        #             if kmer:
+        #                 ## If only one kmer
+        #                 countOut += kmerDic.get(kmer,0)
+        #             else:
+        #                 ## Otherwise count them all
+        #                 for count in kmerDic.values():
+        #                     countOut += count
+
+        #     return countOut
+        # elif not truth is None and emission is None:
+        #     tmpDic = dic[truth]
+        #     countOut = 0 
+        #     for kmerDic in tmpDic.values():
+        #             if kmer:
+        #                 ## If only one kmer
+        #                 countOut += kmerDic.get(kmer,0)
+        #             else:
+        #                 ## Otherwise count them all
+        #                 for count in kmerDic.values():
+        #                     countOut += count
+        #     if countOut == {}:
+        #         return 0
+        #     else:
+        #         return countOut
+        # elif truth is None and not emission is None:
+        #     countOut = 0 
+        #     for emmitedDic in dic.values():
+        #         kmerDic =  emmitedDic[emission]
+        #         if kmer:
+        #             ## If only one kmer
+        #             countOut += kmerDic.get(kmer,0)
+        #         else:
+        #             ## Otherwise count them all
+        #             for count in kmerDic.values():
+        #                 countOut += count
+
+        #     return countOut
 
 
 
