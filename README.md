@@ -5,7 +5,9 @@
 ##Requirements##
 Install requirements with
 
-*sudo pip install -r requirements.txt*
+*pip install -r requirements.txt*
+
+*sh nonPiprequirements.sh*
 ### Tests ###
 To run tests run:
 

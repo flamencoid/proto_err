@@ -8,6 +8,7 @@ from proto_err.fastaIO import *
 from proto_err import align
 from optparse import Values
 from proto_err.query import *
+from proto_err.plot import *
 import random
 
 
@@ -116,6 +117,34 @@ def testbasicQuery():
     a.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
     errorObj = error('A','T',a,0)
     errorObj = database.addError(error=errorObj)
+
+def testPlotting():
+    """Test the plotting module"""
+    r = ro.r
+    x = ro.IntVector(range(10))
+    y = r.rnorm(10)
+
+    grdevices = importr('grDevices')
+    grdevices.png(file="tests/img/test.png", width=512, height=512)
+    r.layout(r.matrix(ro.IntVector([1,2,3,2]), nrow=2, ncol=2))
+    r.plot(r.runif(10), y, xlab="runif", ylab="foo/bar", col="red")
+    grdevices.dev_off()
+
+    mtcars = datasets.__rdata__.fetch('mtcars')['mtcars']
+    rnorm = stats.rnorm
+    dataf_rnorm = ro.DataFrame({'value': rnorm(300, mean=0) + rnorm(100, mean=3),
+                                  'other_value': rnorm(300, mean=0) + rnorm(100, mean=3),
+                                  'mean': ro.IntVector([0, ]*300 + [3, ] * 100)})
+    gp = ggplot2.ggplot(mtcars)
+
+    pp = gp + \
+         ggplot2.aes_string(x='wt', y='mpg') + \
+         ggplot2.geom_point()
+    grdevices.png(file="tests/img/test2.png", width=512, height=512)
+    pp.plot()
+    grdevices.dev_off()
+
+
 
 
   

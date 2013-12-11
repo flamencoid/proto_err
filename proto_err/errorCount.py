@@ -220,6 +220,8 @@ class errorReader():
         self.readCounter['Mapped'] = 0
         self.readCounter['perfectAlignments'] = 0
         self.readCounter['mismatchedAlignments'] = 0
+        self.readCounter['totalAlignedBases'] = 0
+        self.readCounter['totalBases'] = 0
         self.errorList = []
 
     def __iter__(self):
@@ -239,10 +241,12 @@ class errorReader():
         ## If there are errors left in the read 
         self.__read = self.__samfile.next()
         self.readCounter['Total'] += 1
+        self.readCounter['totalBases'] += self.__read.rlen
         if self.__read.is_unmapped:
             self.readCounter['UnMapped'] += 1
         else:
             self.readCounter['Mapped'] += 1
+            self.readCounter['totalAlignedBases'] += self.__read.alen
             self.__checkRead()
 
     def next(self):
@@ -414,8 +418,10 @@ class counter():
             self.logger.error("counter takes errorList or samfile, at least one and not both")
         if samfile and not errorList:
             self.errorList = []
-            for error in errorReader(samfile,ref):
+            reader = errorReader(samfile,ref)
+            for error in reader:
                 self.errorList.append(error)
+            self.readCounter = reader.readCounter
         else:
             self.errorList = errorList
         # the results dictionary

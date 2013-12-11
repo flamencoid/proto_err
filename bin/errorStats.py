@@ -22,33 +22,30 @@ parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned rea
 opt.maxKmerLength = 3 
 
 ref = getRef(opt.refFilename)
-# logging.info("Finding and aggregating errors
-reader = errorReader(opt.samfile,ref)
-for error in reader:
-	print error
-print reader.readCounter
 
 logging.info("Doing some kmer counting")
 errorCounter = counter(ref,opt,samfile=opt.samfile)
+for name,count in errorCounter.readCounter.iteritems():
+	logging.info('### Count of %s == %i' % (name,count))
 errorCounter.countRefKmer()
 errorCounter.countErrorKmer(1)
 
+
+
 # for post in errorCounter.errordb.find():
 # 	print post
-print errorCounter.getCount(), len(errorCounter.errorList)
-print errorCounter.getCount(kmerBefore='A')
-print errorCounter.getCount(maxAlignedDist=10)
-print errorCounter.getCount(readPosRange=[0,10])
-count,errorList = errorCounter.getCount(qualRange=[10,10],returnList=True)
-for error in errorList:
-	print error
-print count,len(errorList)
+# print errorCounter.getCount(), len(errorCounter.errorList)
+# print errorCounter.getCount(kmerBefore='A')
+# print errorCounter.getCount(maxAlignedDist=10)
+# print errorCounter.getCount(readPosRange=[0,10])
+# count,errorList = errorCounter.getCount(qualRange=[10,10],returnList=True)
+# for error in errorList:
+# 	print error
+# print count,len(errorList)
 # errorCounter.res['qualCounter']
 
 
 
-# errorAggregation = aggregator(errorCounter)
-# print errorAggregation.precedingKmersCount('TTC')
 
 # logging.info("Doing read comparision")
 # compare = comparison(ref)

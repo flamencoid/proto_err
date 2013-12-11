@@ -2,6 +2,7 @@
 *~
 proto_err.sublime-project
 proto_err.sublime-workspace
+tests/img
 /data/*
 *.sam
 *.fa
