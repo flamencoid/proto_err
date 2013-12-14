@@ -81,6 +81,7 @@ class error():
         self.true = true
         self.emission = emission
         assert true != '' or emission != ''
+        assert true != emission
         self.read = read
         self.readPos = readPos # position on read where error starts 
         self.readPer = float(readPos) / float(len(read.seq))
@@ -437,9 +438,12 @@ class counter():
         self.__countErrorKmerRun = False
         self.setup(opt)
         ## Connection to mongoDB, runs without for now.
-        self.errordb = errordb()
-        self.errordb.deleteAll()
-        self.errorList = self.errordb.addErrors(self.errorList)
+        self.errordb = {}
+        self.errordb['errors'] = errordb('errors')
+        self.errordb['simulatedErrors'] = errordb(collection='simulatedErrors')
+
+        self.errordb['errors'].deleteAll()
+        self.errorList = self.errordb['errors'].addErrors(self.errorList)
         
 
 
@@ -630,37 +634,36 @@ class counter():
         # tmpDic =  self.res['errorMode']
         observedDic = {}
         expectedDic = {}
+        simulatedDic = {}
         multi = AutoVivification()
         for t in getAlphabet():
             for e in getAlphabet():
                 if t != e:
                     observed = self.getCount(truth=t,emission=e)
                     expected = self.getExpectedCount(truth=t,emission=e)
+                    simulated = self.getSimulatedCount(truth=t,emission=e)
                     observedDic[t + '->' + e] = observed
                     expectedDic[t + '->' + e] = expected
-                    multi[t + '->' + e]['Expected'] = expected
+                    simulatedDic[t + '->' + e] = simulated
+                    # multi[t + '->' + e]['Expected'] = expected
                     multi[t + '->' + e]['Observed'] = observed
+                    multi[t + '->' + e]['Simulated'] = simulated
         histPlotter(dic=observedDic,opt=self.opt,filename="SNP_observed_transition").plot()
         histPlotter(dic=expectedDic,opt=self.opt,filename="SNP_expected_transition").plot()
+        histPlotter(dic=simulatedDic,opt=self.opt,filename="SNP_simulated_transition").plot()
         multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
-
+        # multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_simulated_transition").plot()
         ## Count deletion kmers
-        dic = {}
-        for error in self.getCount(type='Deletion',returnList=True)[1]:
-            try:
-                dic[error.true] += 1
-            except:
-                dic[error.true] = 1
-        histPlotter(dic=dic,opt=self.opt,filename="deletedKmer").plot()
+        dicO = self.__countToDic(self.getCount(type='Deletion',returnList=True)[1])
+        histPlotter(dic=dicO,opt=self.opt,filename="deleted_kmer_observed").plot()
+        dicS = self.__countToDic(self.getSimulatedCount(type='Deletion',returnList=True)[1])
+        histPlotter(dic=dicS,opt=self.opt,filename="deleted_kmer_simulated").plot()
 
         ## Count insterted kmers
-        dic = {}
-        for error in self.getCount(type='Insertion',returnList=True)[1]:
-            try:
-                dic[error.emission] += 1
-            except:
-                dic[error.emission] = 1
-        histPlotter(dic=dic,opt=self.opt,filename="insertedKmer").plot()
+        dicO = self.__countToDic(self.getCount(type='Insertion',returnList=True)[1])
+        histPlotter(dic=dicO,opt=self.opt,filename="inserted_kmer_observed").plot()
+        dicS = self.__countToDic(self.getSimulatedCount(type='Insertion',returnList=True)[1])
+        histPlotter(dic=dicS,opt=self.opt,filename="inserted_kmer_simulated").plot()
 
         ## Count kmers
         for order in [i+1 for i in range(self.opt.maxKmerLength)]:
@@ -676,7 +679,40 @@ class counter():
                         dicAfter[errorType][kmer] = count 
                 histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmer_before_%s_order_%s"%(errorType,order)).plot()
                 histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmer_after_%s_order_%s"%(errorType,order)).plot() 
+    # def __dicListToNestedDic(self,dicList):
+    #     """Convience funciton to help with converting dictonaries to a single nested dictonary for plotting
 
+    #     Parameters
+    #     ----------
+    #     dicList : list
+    #         list of dictonaries
+
+    #     Returns
+    #     ----------
+    #     dic
+    #         nested dictonary of counts
+    #     """
+
+    def __countToDic(self,errorList):
+        """Convience funciton to help with converting counts to dic for plotting
+
+        Parameters
+        ----------
+        errorList : list
+            list of error objects 
+
+        Returns
+        ----------
+        dic
+            dictonary of counts
+        """
+        dic = {}
+        for error in errorList:
+            try:
+                dic[error.true] += 1
+            except:
+                dic[error.true] = 1 
+        return dic         
 
     def getExpectedCount(self,truth,emission):
         """
@@ -714,6 +750,70 @@ class counter():
 
         return round(expectedCount)
 
+    def getSimulatedCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
+                type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],
+                qualRange=[],returnList=False):
+        """
+        Gets the count of simulated errors.
+
+        Parameters
+        ----------
+        truth : string
+            truth base(s)
+        emission : string
+            emmited base(s)
+        kmerBefore : string
+            preceding kmer
+        kmerAfter : string
+            following kmer
+        type : string
+            type of error SNP Insertion or Deletion
+        maxAlignedDist : int
+            maximum aligned distance e.g. maxAlignedDist = 10 returns all errors where the read mapped within 10 bp of where it was sampled from 
+        readPosRange : list or tuple of ints
+            list or tuple of two elements range of error position along read. e.g. [0,10] returns all errors in the first 10bp of read
+        readPerRange : list or tuple of ints
+            list or tuple of two elements range of error percentage along read. e.g. [0,10] returns all errors in the first 10percent of read
+        qualRange : list or tuple of ints
+            list or tuple of two elements range of quality of error e.g. [10,10] returns all errors with quality score 10
+        returnList : bool
+            default False. If true returns list of error documents as an additional argument
+
+        Returns
+        ----------
+        returnList = False int
+            Count of errors matching Parameter query
+        returnList = True int,list
+            Count of errors matching Parameter query, list of error documents
+
+        Examples
+        --------
+            >>> from errorCount import counter
+            >>> errorCounter = counter(ref,samfile)
+            >>> #### Count all the errors    
+            >>>print errorCounter.getSimulatedCount()
+            1234
+            >>> ####   Count all the errors preceded by kmer 'A'
+            >>> print errorCounter.getSimulatedCount(kmerBefore='AA')
+            123
+            >>> ####  Count all the errors followed by kmer 'AA'
+            >>> print errorCounter.getSimulatedCount(kmerAfter='AA')
+            12
+            >>> ####     Count all the errors for truth 'A' preceded by an A
+            >>> print errorCounter.getSimulatedCount(truth='A',kmerBefore'A')
+            123
+            >>> ####     Count all the errors A->T preceded by A
+            >>> print errorCounter.getSimulatedCount(truth='A',emission='T', kmerBefore='A')
+            12
+            >>> ####  Count all the errors where the emmited base is 'A' preceded by any kmer
+            >>> print errorCounter.getSimulatedCount(emission='A')
+            2
+        """
+        return self.getCount(truth,emission,kmerBefore,kmerAfter,
+                type,maxAlignedDist,readPosRange,readPerRange,
+                qualRange,returnList,collection='simulatedErrors')
+
+
     def probKmer(self,kmer):
         """
         Gets the fraction of 
@@ -732,7 +832,7 @@ class counter():
 
     def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
                 type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],
-                qualRange=[],returnList=False):
+                qualRange=[],returnList=False,collection='errors'):
         """
         Gets the count for a given {truth,emmision,kmer}
 
@@ -816,7 +916,7 @@ class counter():
             query['readPer'] = {'$lte':readPerRange[1],'$gte':readPerRange[0]}
         if qualRange:
             query['qual'] = {'$lte':qualRange[1],'$gte':qualRange[0]}
-        mongoPointer = self.errordb.find(query)
+        mongoPointer = self.errordb[collection].find(query)
         if returnList:
             documentList = [post for post in mongoPointer]
             errorList = []

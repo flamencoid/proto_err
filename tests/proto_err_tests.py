@@ -45,11 +45,11 @@ def testComplexErrorSim():
     errorSim.snp(N,'T')
     assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
     assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTATACCTCGCATCGATCGATCG'+randomRightFlank)
-    errorSim.ins(N+3,'TTT')
+    errorSim.ins(N+3,'CCC')
     assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.15,0.15,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
-    assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTATTTTACCTCGCATCGATCGATCG'+randomRightFlank)
+    assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTACCCTACCTCGCATCGATCGATCG'+randomRightFlank)
     errorSim.deletion(N+17,5)
-    assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTATTTTACCTCGCATGATCG'+randomRightFlank)
+    assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTACCCTACCTCGCATGATCG'+randomRightFlank)
 
     ## Write these to a fasta file
     refFilename = 'tests/ref.fa'
@@ -66,7 +66,6 @@ def testComplexErrorSim():
     reader = errorReader(samfile=samfileName,ref=ref)
     errorList = []
     for error in reader:
-        print error.read.cigar
         assert_equal(error.read.cigarstring,'M%sI3M%sD5M%s'%(N+4,10,N+5))
         errorList.append(error)
     assert_equal(len(errorList),3)  
@@ -82,7 +81,7 @@ def testComplexErrorSim():
     assert_equal(error2.isInsertion,True)
     assert_equal(error2.errorType,'Insertion')
     assert_equal(error2.true,'')
-    assert_equal(error2.emission,'TTT') 
+    assert_equal(error2.emission,'CCC') 
     assert_equal(error2.after(3),'TAC')
     assert_equal(error2.before(3),'GTA')  
 
@@ -113,7 +112,7 @@ def testComplexErrorSim():
 def testbasicQuery():
     """Test DB stuff"""
     ## testing db stuff
-    database = errordb()
+    database = errordb('testErrors')
     database.deleteAll()
     a = AlignedRead()
     a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"

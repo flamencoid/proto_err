@@ -21,6 +21,8 @@ class AutoVivification(dict):
             return value
 def asciiToInt(s):
     return ord(s) - 32
+def intToAscii(i):
+    return chr(i + 32 )
 def popLong(l,i,j):
     """Pops along multiple index"""
     return [l.pop(0) for _ in l[i:j]]

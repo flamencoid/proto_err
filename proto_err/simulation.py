@@ -6,6 +6,9 @@ import math
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from copy import copy
+from errorCount import error
+from pysam import AlignedRead
+from query import errordb
 # A python module for simulating errors in reads.
 class simulateError():
 	"""Class of objects to simulate errors in a SeqRecord"""
@@ -19,9 +22,11 @@ class simulateError():
 	def snp(self,pos,rl):
 		"""function to induce a SNP"""
 		seq = list(self.seq)
+		truth = str(seq[pos])
 		seq[pos] = rl
 		self.seq = Seq("".join(seq))
 		self.id += 's%s,%s' % (str(pos),str(rl))
+		return error(true=truth,emission=rl,read=self.alignedRead,readPos=pos)
 
 	def ins(self,pos,rl):
 		"""function to induce a insertion"""
@@ -31,6 +36,7 @@ class simulateError():
 		self.errorProb = self.errorProb[:pos+1] + [self.errorProb[pos] for _ in list(rl)]  +self.errorProb[pos+1:]
 		self.seq = Seq("".join(seq))
 		self.id += 'i%s,%s' % (str(pos),str(rl))
+		return error(true='',emission=rl,read=self.alignedRead,readPos=pos)
 
 	def deletion(self,pos,dlen):
 		"""function to induce a deletion"""
@@ -40,23 +46,38 @@ class simulateError():
 		self.errorProb = self.errorProb[:pos] + self.errorProb[pos+dlen:]
 		self.seq = Seq("".join(seq))
 		self.id += 'd%s,%s' % (str(pos),str(dlen))
+		return error(true="".join(seq[pos:pos+dlen]),emission='',read=self.alignedRead,readPos=pos)
 
 	def indel(self,pos):
 		"""function to induce an INDEL"""
-		indelSize = int(round(random.gauss(self.opt.indelMean,self.opt.indelSd)))
+		indelSize = 0
+		while indelSize < 1:
+			indelSize = int(round(random.gauss(self.opt.indelMean,self.opt.indelSd)))
 		if random.random() < 0.5:
-			self.ins(pos,rl="".join([random.choice(self.alphabet) for _ in range(indelSize)]))
+			return self.ins(pos,rl="".join([random.choice(self.alphabet) for _ in range(indelSize)]))
 		else:
-			self.deletion(pos,dlen=indelSize)
+			return self.deletion(pos,dlen=indelSize)
+	@property
+	def alignedRead(self):
+		"""Returns an alignedRead object of a the subsampled read aligned perfectley to ref"""
+		aRead = AlignedRead()
+		aRead.seq=str(self.seq)
+		aRead.qual = self.qscore('ascii')
+		return aRead
 
 	@property 
 	def record(self):
 		"""Return a Bio.SeqRecord"""
-		return SeqRecord(self.seq,self.id,letter_annotations={'phred_quality':self.qscore})
+		return SeqRecord(self.seq,self.id,letter_annotations={'phred_quality':self.qscore()})
 
-	@property
-	def qscore(self):
-		return [int(-10 * math.log10(p+0.000001)) for p in self.errorProb]
+	def qscore(self,t='int'):
+		qscores =[int(-10 * math.log10(p+0.000001)) for p in self.errorProb]
+		if t=='int':
+			return qscores
+		elif t=='ascii':
+			return "".join([intToAscii(i) for i in qscores])
+			
+
 
 class singleSNP(simulateError):
 	def __init__(self,record,opt,id):
@@ -88,16 +109,16 @@ class complexError(simulateError):
 		"""Function to induce and error"""
 		## iterate through the probability list
 		for pos,prob in enumerate(self.errorProb):
-			if random.random() < prob and pos < len(self.errorProb):
+			if random.random() <= prob and pos <= len(self.errorProb):
 				letter = self.seq[pos]
 				alphabet = copy(self.alphabet)
 				reducedAlphabet = alphabet
 				reducedAlphabet.remove(letter)
 				replaceLetter = random.choice(reducedAlphabet)
-				if random.random() < self.opt.SnpIndelRatio:
-					self.snp(pos,replaceLetter)
+				if random.random() <= self.opt.SnpIndelRatio:
+					return self.snp(pos,replaceLetter)
 				else:
-					self.indel(pos)
+					return self.indel(pos)
 			
 
 def subsample(ref,opt,errorSimulator=complexError):
@@ -107,6 +128,8 @@ def subsample(ref,opt,errorSimulator=complexError):
 	"""
 	refLength =  len(ref)
 	seqList = []
+	simulatedErrorDB = errordb('simulatedErrors')
+	simulatedErrorDB.deleteAll()
 	for i in range(opt.numReads):
 		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
 		start = random.randrange(refLength)
@@ -114,12 +137,15 @@ def subsample(ref,opt,errorSimulator=complexError):
 		recordId = 'st=%s&l=%s' % (str(start),str(seqLength))
 		seq = ref[start:start+seqLength]
 		record=SeqRecord(seq,recordId,'','')
+		## Randomly generate errors
+		simulatedErrors = errorSimulator(record,opt,id = recordId)
+		err = simulatedErrors.error()
+		print err
+		simulatedErrorDB.addError(err)
+		record = simulatedErrors.record
 		## Take the read from the reverse stand x% of the time
 		if random.random() > opt.strandBias:
 			record = record.reverse_complement()
-		## Randomly generate errors
-		simulatedErrors = errorSimulator(record,opt,id = recordId)
-		simulatedErrors.error()
-		record = simulatedErrors.record
+
 		seqList.append(record)
 	return seqList

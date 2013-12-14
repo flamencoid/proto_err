@@ -4,7 +4,7 @@ import logging
 from utils import *
 class errordb():
 	"""docstring for db"""
-	def __init__(self):
+	def __init__(self,collection='errors'):
 		self.logger = logging
 		try:
 			self.client = MongoClient('localhost', 27017)
@@ -18,7 +18,7 @@ class errordb():
 				logging.error(getDBError())
 
 		self.db = self.client.proto_err
-		self.errors = self.db.errors
+		self.errors = self.db[collection]
 
 	def addErrors(self,errorList):
 		"""

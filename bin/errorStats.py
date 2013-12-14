@@ -38,6 +38,7 @@ logging.info("Doing some kmer counting")
 errorCounter = counter(ref,opt,samfile=opt.samfile)
 for name,count in errorCounter.readCounter.iteritems():
 	logging.info('### Count of %s == %i' % (name,count))
+
 # errorCounter.countRefKmer()
 # errorCounter.countErrorKmer(1)
 errorCounter.plotHist()
