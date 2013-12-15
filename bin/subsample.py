@@ -56,6 +56,8 @@ if not opt.indelSd:
 if not opt.snpFreqSd:
 	opt.snpFreqSd = float(opt.snpFreq)/10
 
+opt.simID = 'tmp'
+
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fq' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")

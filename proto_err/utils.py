@@ -29,6 +29,9 @@ def popLong(l,i,j):
 def getDBError():
     return """ ########################################\n####### Is a pymongo instance running at 27017? ##### \n####### Install mongodb and run mongod from shell ####\n########################################"""
 
+def getKeysFromValuesObject(opt):
+    """Function to extract keys from a Values object"""
+    return [key for key in dir(opt) if not key in ['__cmp__', '__doc__', '__init__', '__module__', '__repr__', '__str__', '_update', '_update_careful', '_update_loose', 'ensure_value', 'read_file', 'read_module']]
 # def cigarIntToString(i):
 #     dic = {0:'M',1:'I',''}
 

@@ -40,10 +40,17 @@ class errordb():
 		return error
 	def find_one(self):
 		return self.errors.find_one()
-	def find(self,query):
-		return self.errors.find(query)
+	def find(self,query,filt=None):
+		if filt:
+			return self.errors.find(query,filt)
+		else:
+			return self.errors.find(query)
 	def deleteAll(self):
 		self.errors.remove()
+	# def addOptionsDocument(self,opt):
+	# 	# self.creationTime = 
+	# 	for key in getKeysFromValuesObject(opt):
+	# 		print key
 
 
 

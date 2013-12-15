@@ -128,7 +128,8 @@ def subsample(ref,opt,errorSimulator=complexError):
 	"""
 	refLength =  len(ref)
 	seqList = []
-	simulatedErrorDB = errordb('simulatedErrors')
+	simulatedErrorDB = errordb('simulatedErrors%s'%(opt.simID))
+	
 	simulatedErrorDB.deleteAll()
 	for i in range(opt.numReads):
 		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
@@ -140,7 +141,6 @@ def subsample(ref,opt,errorSimulator=complexError):
 		## Randomly generate errors
 		simulatedErrors = errorSimulator(record,opt,id = recordId)
 		err = simulatedErrors.error()
-		print err
 		simulatedErrorDB.addError(err)
 		record = simulatedErrors.record
 		## Take the read from the reverse stand x% of the time

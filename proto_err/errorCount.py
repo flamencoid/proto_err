@@ -95,7 +95,7 @@ class error():
                 curInt = s.pop(0)
                 tempList.append(curInt)
             sampPos = int("".join(tempList[:-1]))
-            self.alignedDist =  abs(sampPos - self.read.positions[0])
+            self.alignedDist =  int(abs(sampPos - self.read.positions[0]))
         except:
             self.alignedDist = None
         if self.alignedDist is None:
@@ -166,12 +166,16 @@ class error():
         """Return quality score of the base where the error occured"""
         return asciiToInt(self.read.qqual[self.readPos])
     @property 
+    def tlen(self):
+        """Return the length of the error"""
+        return  max([len(self.emission),len(self.true)])
+    @property 
     def doc(self):
         """Return a pymongo document"""
         return {'true':self.true,'emission':self.emission,'read':str(self.read.seq),
                 'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
                 'leftFlank':self.before(10),'rightFlank':self.after(10),'type':self.errorType,
-                'qual':self.qual}
+                'qual':self.qual,'tlen' :self.tlen}
 
 
 class errorReader():
@@ -224,6 +228,8 @@ class errorReader():
         self.readCounter['mismatchedAlignments'] = 0
         self.readCounter['totalAlignedBases'] = 0
         self.readCounter['totalBases'] = 0
+        for c in list('MIDNSHP=X'):
+            self.readCounter[c] = 0
         self.errorList = []
 
     def __iter__(self):
@@ -283,7 +289,7 @@ class errorReader():
                 self.__checkSNPs(N=numBases)
                 self.__readPos += numBases
                 self.__readPosIndex += numBases
-            elif cigarInt == 1:
+            elif cigarInt == 1:                
                 ## Insertion to the reference
                 self.__checkInsertion(N=numBases)
                 self.__readPos += numBases
@@ -314,7 +320,7 @@ class errorReader():
         """
         Checks read segment for SNP errors. called when cigarstring = M:N 
         """
-
+        self.readCounter['M'] += N
         readSeg = popLong(self.__currentReadList,0,N)
         refSeg = popLong(self.__currentRefReadList,0,N)
         assert len(readSeg) == len(refSeg)
@@ -328,49 +334,56 @@ class errorReader():
         """
         Checks Insertion read segment for errors. called when cigarstring = I:N 
         """
+        self.readCounter['I'] += N
         insSeg = popLong(self.__currentReadList,0,N)
         self.errorList.append(error(true='',emission="".join(insSeg),read=self.__read,readPos=self.__readPos))
     def __checkDeletion(self,N):
         """
-        Checks Deletionread segment for  errors. called when cigarstring = D:N 
+        Checks Deletion read segment for  errors. called when cigarstring = D:N 
         """
+        self.readCounter['D'] += N
         i = self.__read.positions[self.__readPosIndex-1] + 1
         j =  self.__read.positions[self.__readPosIndex]        
         delSeg = str(self.__ref[i:j])
-
         self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos))
     def __checkSkipped(self,N):
         """
         Checks skipped read segment for errors. called when cigarstring = N:N 
         """
+        self.readCounter['N'] += N
         logging.error("Haven't written a handler for this case yet")
         0/0
     def __checkSoftClipped(self,N):
         """
         Checks SoftClipped read segment for errors. called when cigarstring = S:N 
         """
+        self.readCounter['S'] += N
         del self.__currentReadList[0:N]
     def __checkHardClipped(self,N):
         """
         Checks HardClipped read segment for errors. called when cigarstring = H:N 
         """
-        pass
+        self.readCounter['H'] += N
+        
     def __checkPadding(self,N):
         """
         Checks Padding read segment for errors. called when cigarstring = P:N 
         """
+        self.readCounter['P'] += N
         logging.error("Haven't written a handler for this case yet")
         0/0
     def __checkSeqMismatch(self,N):
         """
         Checks SeqMismatch read segment for errors. called when cigarstring = =:N 
         """
+        self.readCounter['='] += N
         logging.error("Haven't written a handler for this case yet")
         0/0
     def __checkSkipped(self,N):
         """
         Checks Skipped read segment for errors. called when cigarstring = X:N 
         """
+        self.readCounter['X'] += N
         logging.error("Haven't written a handler for this case yet")
         0/0
 
@@ -414,7 +427,7 @@ class counter():
     >>> errorCounter.countRefKmer()
     """
 
-    def __init__(self,ref,opt,errorList=None,samfile=None):
+    def __init__(self,ref,opt,errorList=None,samfile=None,makeDB=False):
         self.logger     = logging.getLogger()
         if (not errorList and not samfile) or (errorList and samfile):
             self.logger.error("counter takes errorList or samfile, at least one and not both")
@@ -441,9 +454,13 @@ class counter():
         self.errordb = {}
         self.errordb['errors'] = errordb('errors')
         self.errordb['simulatedErrors'] = errordb(collection='simulatedErrors')
-
-        self.errordb['errors'].deleteAll()
-        self.errorList = self.errordb['errors'].addErrors(self.errorList)
+        if makeDB:
+            self.logger.info("### Wiping and repopulating error DB")
+            self.errordb['errors'].deleteAll()
+            self.errorList = self.errordb['errors'].addErrors(self.errorList)
+        else:
+            self.logger.warning("""### Using pre-generated database.""")
+            self.logger.warning("""### Initiate counter with makeDB=True to wipe and repopulate""")
         
 
 
@@ -654,16 +671,35 @@ class counter():
         multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
         # multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_simulated_transition").plot()
         ## Count deletion kmers
-        dicO = self.__countToDic(self.getCount(type='Deletion',returnList=True)[1])
-        histPlotter(dic=dicO,opt=self.opt,filename="deleted_kmer_observed").plot()
-        dicS = self.__countToDic(self.getSimulatedCount(type='Deletion',returnList=True)[1])
-        histPlotter(dic=dicS,opt=self.opt,filename="deleted_kmer_simulated").plot()
+        # get maximum deletion length
+        observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
+        simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
+        densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
+                                opt=self.opt,filename="deletion_size_hist_dens").plot(geom='dens')
+        densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
+                                opt=self.opt,filename="deletion_size_bar").plot(geom='bar')
+        maxLen = max(observedSize + simulatedSize) 
+        for order in [i+1 for i in range(maxLen)]:
+            dic = self.__countToDic(self.getCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
+            histPlotter(dic=dic,opt=self.opt,filename="deleted_kmer_observed_order_%i" % (order)).plot()
+            dic = self.__countToDic(self.getSimulatedCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
+            histPlotter(dic=dic,opt=self.opt,filename="deleted_kmer_simulated_order_%i" % (order)).plot()
 
-        ## Count insterted kmers
-        dicO = self.__countToDic(self.getCount(type='Insertion',returnList=True)[1])
-        histPlotter(dic=dicO,opt=self.opt,filename="inserted_kmer_observed").plot()
-        dicS = self.__countToDic(self.getSimulatedCount(type='Insertion',returnList=True)[1])
-        histPlotter(dic=dicS,opt=self.opt,filename="inserted_kmer_simulated").plot()
+        ## Count insterted kmers 
+        t = 'Insertion'
+        observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : t}, {'tlen':1} )]
+        simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : t}, {'tlen':1} )]
+        densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
+                                opt=self.opt,filename="inserted_size_hist_dens").plot(geom='dens')
+        densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
+                                opt=self.opt,filename="inserted_size_hist_bar").plot(geom='bar')
+        maxLen = max(observedSize + simulatedSize) 
+        for order in [i+1 for i in range(maxLen)]:
+            dic = self.__countToDic(self.getCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
+            histPlotter(dic=dic,opt=self.opt,filename="inserted_kmer_observed_order_%i" % (order)).plot()
+            dic = self.__countToDic(self.getSimulatedCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
+            histPlotter(dic=dic,opt=self.opt,filename="inserted_kmer_simulated_order_%i" % (order)).plot()
+
 
         ## Count kmers
         for order in [i+1 for i in range(self.opt.maxKmerLength)]:
@@ -679,21 +715,8 @@ class counter():
                         dicAfter[errorType][kmer] = count 
                 histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmer_before_%s_order_%s"%(errorType,order)).plot()
                 histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmer_after_%s_order_%s"%(errorType,order)).plot() 
-    # def __dicListToNestedDic(self,dicList):
-    #     """Convience funciton to help with converting dictonaries to a single nested dictonary for plotting
 
-    #     Parameters
-    #     ----------
-    #     dicList : list
-    #         list of dictonaries
-
-    #     Returns
-    #     ----------
-    #     dic
-    #         nested dictonary of counts
-    #     """
-
-    def __countToDic(self,errorList):
+    def __countToDic(self,errorList,attribute):
         """Convience funciton to help with converting counts to dic for plotting
 
         Parameters
@@ -708,10 +731,16 @@ class counter():
         """
         dic = {}
         for error in errorList:
-            try:
-                dic[error.true] += 1
-            except:
-                dic[error.true] = 1 
+            if attribute == 'true':
+                try:
+                    dic[error.true] += 1
+                except:
+                    dic[error.true] = 1
+            elif attribute == 'emmision':
+                try:
+                    dic[error.emission] += 1
+                except:
+                    dic[error.emission] = 1                
         return dic         
 
     def getExpectedCount(self,truth,emission):
@@ -752,7 +781,7 @@ class counter():
 
     def getSimulatedCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
                 type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],
-                qualRange=[],returnList=False):
+                qualRange=[],tlenRange=[],returnList=False):
         """
         Gets the count of simulated errors.
 
@@ -809,9 +838,11 @@ class counter():
             >>> print errorCounter.getSimulatedCount(emission='A')
             2
         """
-        return self.getCount(truth,emission,kmerBefore,kmerAfter,
-                type,maxAlignedDist,readPosRange,readPerRange,
-                qualRange,returnList,collection='simulatedErrors')
+        return self.getCount(truth=truth,emission=emission,kmerBefore=kmerBefore,
+                            kmerAfter=kmerAfter,type=type,maxAlignedDist=maxAlignedDist,
+                            readPosRange=readPosRange,readPerRange=readPerRange,
+                            qualRange=qualRange,tlenRange=tlenRange,returnList=returnList,
+                            collection='simulatedErrors')
 
 
     def probKmer(self,kmer):
@@ -830,9 +861,17 @@ class counter():
         """
         return float(self.ref.count(kmer)) / len(self.ref)
 
+    def summary(self):
+        self.logger.info("### Total SNP errors observed = %i" % (self.getCount(type='SNP')) )
+        self.logger.info("### Total SNP errors simulated = %i" % (self.getSimulatedCount(type='SNP')))
+        self.logger.info("### Total Insertion errors observed = %i" % (self.getCount(type='Insertion')))
+        self.logger.info("### Total Insertion errors simulated = %i" % (self.getSimulatedCount(type='Insertion')))
+        self.logger.info("### Total Deletion errors observed = %i" % (self.getCount(type='Deletion')))
+        self.logger.info("### Total Deletion errors simulated = %i" % (self.getSimulatedCount(type='Deletion')))
+
     def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
                 type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],
-                qualRange=[],returnList=False,collection='errors'):
+                qualRange=[],tlenRange=[],returnList=False,collection='errors'):
         """
         Gets the count for a given {truth,emmision,kmer}
 
@@ -857,6 +896,8 @@ class counter():
             list or tuple of two elements range of error percentage along read. e.g. [0,10] returns all errors in the first 10percent of read
         qualRange : list or tuple of ints
             list or tuple of two elements range of quality of error e.g. [10,10] returns all errors with quality score 10
+        tlenRange : int or list or tuple
+            int list or tuple of two elements range of quality of error e.g. [10,10] returns all errors with quality score 10 equivalent to 10
         returnList : bool
             default False. If true returns list of error documents as an additional argument
 
@@ -916,6 +957,10 @@ class counter():
             query['readPer'] = {'$lte':readPerRange[1],'$gte':readPerRange[0]}
         if qualRange:
             query['qual'] = {'$lte':qualRange[1],'$gte':qualRange[0]}
+        if tlenRange is list or tlenRange is tuple:
+            query['tlen'] = {'$lte':tlenRange[1],'$gte':tlenRange[0]}
+        elif tlenRange is int:
+            query['tlen'] = tlenRange
         mongoPointer = self.errordb[collection].find(query)
         if returnList:
             documentList = [post for post in mongoPointer]
