@@ -151,6 +151,10 @@ def testPlottingMore():
     opt = Values()
     opt.imgDir = "tests/img/"
     opt.jsonDir = "tests/json/"
+    if not os.path.exists(opt.jsonDir):
+        os.makedirs(opt.jsonDir)
+    if not os.path.exists(opt.imgDir):
+        os.makedirs(opt.imgDir)
     testPlotter = plotter(opt)
     dic = {'TTT':10,'AAA':5}
     testHistPlotter = histPlotter(dic,opt,filename="testHist")
