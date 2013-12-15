@@ -31,20 +31,21 @@ if not os.path.exists(opt.imgDir):
     os.makedirs(opt.imgDir)
 if not os.path.exists(opt.jsonDir):
     os.makedirs(opt.jsonDir)
-
+opt.simulatedErrorDBName = 'simulatedErrors'
+opt.observedErrorDBName = 'errors'
 ref = getRef(opt.refFilename)
 
 logging.info("Doing some kmer counting")
-errorCounter = counter(ref,opt,samfile=opt.samfile)
+errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
 for name,count in errorCounter.readCounter.iteritems():
 	logging.info('### Count of %s == %i' % (name,count))
 errorCounter.summary()
-
+errorCounter.plotHist()
 # errorCounter.countRefKmer()
 # errorCounter.countErrorKmer(1)
-# errorCounter.plotHist()
-print errorCounter.getSimulatedCount(truth='A',emission='T')
-print errorCounter.getCount(truth='A',emission='T')
+
+# print errorCounter.getSimulatedCount(truth='A',emission='T')
+# print errorCounter.getCount(truth='A',emission='T')
 
 
 # for post in errorCounter.errordb.find():

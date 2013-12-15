@@ -10,6 +10,7 @@ from optparse import Values
 from proto_err.query import *
 from proto_err.plot import *
 import random
+import os
 
 
 def testErrorClassBasic():
@@ -99,7 +100,7 @@ def testComplexErrorSim():
 
     ## Test counter
     opt.maxKmerLength = 4
-    errorCounter = counter(ref,opt,errorList)
+    errorCounter = counter(ref,opt,errorList,makeDB=True)
     assert_equal(errorCounter.probKmer('A') +  errorCounter.probKmer('T') +
                     errorCounter.probKmer('C')  +errorCounter.probKmer('G') ,1)
     count,errorQueryList = errorCounter.getCount(returnList=True)

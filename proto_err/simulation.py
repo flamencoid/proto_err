@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 from utils import *
-import random 
-import numpy as np
-import math
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+import random 
+import math
 from copy import copy
 from errorCount import error
 from pysam import AlignedRead
-from query import errordb
 # A python module for simulating errors in reads.
 class simulateError():
 	"""Class of objects to simulate errors in a SeqRecord"""
@@ -18,6 +16,7 @@ class simulateError():
 		self.id = id
 		self.opt = opt
 		self.errorProb = [0]*len(self.seq)
+
 
 	def snp(self,pos,rl):
 		"""function to induce a SNP"""
@@ -41,12 +40,13 @@ class simulateError():
 	def deletion(self,pos,dlen):
 		"""function to induce a deletion"""
 		seq = list(self.seq)
-		seq = seq[:pos] + seq[pos+dlen:]
+		newSeq = seq[:pos] + seq[pos+dlen:]
+		deletedSeq = "".join(seq[pos:pos+dlen])
 		## Also need to delete the equivalent qscores
 		self.errorProb = self.errorProb[:pos] + self.errorProb[pos+dlen:]
-		self.seq = Seq("".join(seq))
+		self.seq = Seq("".join(newSeq))
 		self.id += 'd%s,%s' % (str(pos),str(dlen))
-		return error(true="".join(seq[pos:pos+dlen]),emission='',read=self.alignedRead,readPos=pos)
+		return error(true=deletedSeq,emission='',read=self.alignedRead,readPos=pos)
 
 	def indel(self,pos):
 		"""function to induce an INDEL"""
@@ -106,46 +106,22 @@ class complexError(simulateError):
 			self.errorProb = [random.gauss(opt.snpFreq, 0.01) for _ in self.seq]
 
 	def error(self):
-		"""Function to induce and error"""
+		"""Function to induce errors"""
 		## iterate through the probability list
+		errorList = []
 		for pos,prob in enumerate(self.errorProb):
-			if random.random() <= prob and pos <= len(self.errorProb):
+			if random.random() < prob and pos < len(self.errorProb):
 				letter = self.seq[pos]
 				alphabet = copy(self.alphabet)
 				reducedAlphabet = alphabet
 				reducedAlphabet.remove(letter)
 				replaceLetter = random.choice(reducedAlphabet)
 				if random.random() <= self.opt.SnpIndelRatio:
-					return self.snp(pos,replaceLetter)
+					e = self.snp(pos,replaceLetter)
+					errorList.append(e)
 				else:
-					return self.indel(pos)
+					e = self.indel(pos)
+					errorList.append( e)
+		return errorList
 			
 
-def subsample(ref,opt,errorSimulator=complexError):
-	"""
-	Function to take a fasta file subsample reads and generate a list of 
-	subsampled reads
-	"""
-	refLength =  len(ref)
-	seqList = []
-	simulatedErrorDB = errordb('simulatedErrors%s'%(opt.simID))
-	
-	simulatedErrorDB.deleteAll()
-	for i in range(opt.numReads):
-		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
-		start = random.randrange(refLength)
-		## randomly subsample from reference
-		recordId = 'st=%s&l=%s' % (str(start),str(seqLength))
-		seq = ref[start:start+seqLength]
-		record=SeqRecord(seq,recordId,'','')
-		## Randomly generate errors
-		simulatedErrors = errorSimulator(record,opt,id = recordId)
-		err = simulatedErrors.error()
-		simulatedErrorDB.addError(err)
-		record = simulatedErrors.record
-		## Take the read from the reverse stand x% of the time
-		if random.random() > opt.strandBias:
-			record = record.reverse_complement()
-
-		seqList.append(record)
-	return seqList

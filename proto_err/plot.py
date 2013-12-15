@@ -160,9 +160,6 @@ class multiHistPlotter(histPlotter):
     	histPlotter.__init__(self,dic,opt,filename)
     def plot(self):
     	"""Method to call plot"""
-
-    	
-    	
     	kmerList = []
     	countList = []
     	countType = []

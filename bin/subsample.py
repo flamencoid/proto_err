@@ -7,10 +7,18 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
 from fastaIO import getRef,writeFasta,writeFastq
-from simulation import subsample
+from simulation import complexError
 from optparse import OptionParser
 import align
 import pysam
+from query import errordb
+from utils import *
+import numpy as np
+import math
+import random 
+from Bio.SeqRecord import SeqRecord
+
+
 
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
@@ -56,12 +64,47 @@ if not opt.indelSd:
 if not opt.snpFreqSd:
 	opt.snpFreqSd = float(opt.snpFreq)/10
 
-opt.simID = 'tmp'
+opt.simulatedErrorDBName = 'simulatedErrors'
+opt.simID = ''
+
+def subsample(ref,opt,errorSimulator=complexError):
+	"""
+	Function to take a fasta file subsample reads and generate a list of 
+	subsampled reads
+	"""
+	refLength =  len(ref)
+	seqList = []
+	simulatedErrorDB = errordb(collection=opt.simulatedErrorDBName)
+	counter = AutoVivification()
+	
+	simulatedErrorDB.deleteAll()
+	for i in range(opt.numReads):
+		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
+		start = random.randrange(refLength)
+		## randomly subsample from reference
+		recordId = 'st=%s&l=%s' % (str(start),str(seqLength))
+		seq = ref[start:start+seqLength]
+		record=SeqRecord(seq,recordId,'','')
+		## Randomly generate errors
+		simulatedErrors = errorSimulator(record,opt,id = recordId)
+		errs = simulatedErrors.error()
+		logging.info("### generated %i errors in a read of length %i" % (len(errs),seqLength))
+		simulatedErrorDB.addErrors(errs)
+		record = simulatedErrors.record
+		## Take the read from the reverse stand x% of the time
+		if random.random() > opt.strandBias:
+			record = record.reverse_complement()
+
+		seqList.append(record)
+	return seqList
 
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fq' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")
 seqList = subsample(ref,opt)
+
+
+
 logging.info("Writing Fasta file of subsampled reads")
 writeFastq(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
@@ -71,6 +114,7 @@ align.refIndex(file=opt.refFilename)
 logging.info("Aligning reads to reference")
 samfileName = opt.readFilename + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
+
 
 
 
