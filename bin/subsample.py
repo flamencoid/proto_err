@@ -17,7 +17,7 @@ import numpy as np
 import math
 import random 
 from Bio.SeqRecord import SeqRecord
-
+import csv
 
 
 parser = OptionParser()
@@ -58,7 +58,7 @@ parser.add_option("--IndelSizeSD", dest="indelSd",help="""INDEL size is
 parser.add_option("--errorBiasFile", dest="errorBiasFile",help="""File 
 					containing information about error biases 
 					(Optional) default all errors occur with probability 
-					--errorFreqMean""",default=None,type='int')
+					--errorFreqMean""",default=None)
 (opt, args) = parser.parse_args()
 ## Need a mean and a SD
 if not opt.readSd :
@@ -67,6 +67,16 @@ if not opt.indelSd:
 	opt.indelSd = float(opt.indelMean)/2
 if not opt.snpFreqSd:
 	opt.snpFreqSd = float(opt.snpFreq)/10
+if opt.errorBiasFile:
+	errorBias = AutoVivification()
+	with open(opt.errorBiasFile,'rb') as errorFile:
+		reader = csv.reader(errorFile,delimiter='\t')
+		for row in reader:
+			if not row[0] =='#' :
+				errorBias[row[0]][row[1]][row[2]] = row[3]
+print errorBias
+
+
 
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.simID = ''
