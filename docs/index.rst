@@ -110,6 +110,14 @@ Api
    :undoc-members:
    :show-inheritance:
 
+:mod:`proto_err.errorCount` -- Error Object
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. automodule:: proto_err.error
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 :mod:`proto_err.errorCount` -- Error Counting
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

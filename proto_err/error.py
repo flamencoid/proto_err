@@ -77,13 +77,14 @@ class error():
         ## Was the read aligned correctly? 
         try:
             ## messy way of extracting read length
-            s = list(self.read.qname.split('st=')[1])
-            curInt = '0'
-            tempList = []
-            while curInt.isdigit():
-                curInt = s.pop(0)
-                tempList.append(curInt)
-            sampPos = int("".join(tempList[:-1]))
+            # s = list(self.read.qname.split('st=')[1])
+            # curInt = '0'
+            # tempList = []
+            # while curInt.isdigit():
+            #     curInt = s.pop(0)
+            #     tempList.append(curInt)
+            sampPos = int(self.read.qname.split('st=')[1])
+            # sampPos = int("".join(tempList[:-1]))
             self.alignedDist =  int(abs(sampPos - self.read.positions[0]))
         except:
             self.alignedDist = None

@@ -1,6 +1,7 @@
 from nose.tools import *
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
+from proto_err.error import error
 from proto_err.errorCount import *
 from  proto_err.simulation import simulateError,complexError
 from pysam import AlignedRead
@@ -95,6 +96,7 @@ def testComplexErrorSim():
     assert_equal(error3.after(3),'GAT')
     assert_equal(error3.before(3),'CAT') 
 
+    print error1.alignedCorrectly,error1.read.positions[0],error1.read.qname.split('st=')[1]
     assert_equal(error1.alignedCorrectly,True)
     assert_equal(error1.alignedDist,0)
 
