@@ -10,6 +10,7 @@ from optparse import Values
 from proto_err.query import *
 from proto_err.plot import *
 import random
+import os
 
 
 def testErrorClassBasic():
@@ -99,7 +100,7 @@ def testComplexErrorSim():
 
     ## Test counter
     opt.maxKmerLength = 4
-    errorCounter = counter(ref,opt,errorList)
+    errorCounter = counter(ref,opt,errorList,makeDB=True)
     assert_equal(errorCounter.probKmer('A') +  errorCounter.probKmer('T') +
                     errorCounter.probKmer('C')  +errorCounter.probKmer('G') ,1)
     count,errorQueryList = errorCounter.getCount(returnList=True)
@@ -151,6 +152,10 @@ def testPlottingMore():
     opt = Values()
     opt.imgDir = "tests/img/"
     opt.jsonDir = "tests/json/"
+    if not os.path.exists(opt.jsonDir):
+        os.makedirs(opt.jsonDir)
+    if not os.path.exists(opt.imgDir):
+        os.makedirs(opt.imgDir)
     testPlotter = plotter(opt)
     dic = {'TTT':10,'AAA':5}
     testHistPlotter = histPlotter(dic,opt,filename="testHist")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+1;2c#!/usr/bin/env python
 ## A script to take a sam file of aligned reads and do some stats on errors
 
 import sys
@@ -31,20 +31,31 @@ if not os.path.exists(opt.imgDir):
     os.makedirs(opt.imgDir)
 if not os.path.exists(opt.jsonDir):
     os.makedirs(opt.jsonDir)
-
+opt.simulatedErrorDBName = 'simulatedErrors'
+opt.observedErrorDBName = 'errors'
 ref = getRef(opt.refFilename)
 
 logging.info("Doing some kmer counting")
+
 errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
+
+
+
 for name,count in errorCounter.readCounter.iteritems():
 	logging.info('### Count of %s == %i' % (name,count))
 errorCounter.summary()
-
+errorCounter.plotHist()
 # errorCounter.countRefKmer()
 # errorCounter.countErrorKmer(1)
+<<<<<<< HEAD
 errorCounter.plotHist()
 print errorCounter.getSimulatedCount(truth='A',emission='T')
 print errorCounter.getCount(truth='A',emission='T')
+=======
+
+# print errorCounter.getSimulatedCount(truth='A',emission='T')
+# print errorCounter.getCount(truth='A',emission='T')
+>>>>>>> a94336c4038d00fa5dac555d20c2bb5fa9ef4d52
 
 
 # for post in errorCounter.errordb.find():

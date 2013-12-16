@@ -121,7 +121,7 @@ class densityPlotterFromLists(plotter):
         else:
             pp = gp + \
                  ggplot2.aes_string(x='value',fill='factor(name)') + \
-            ggplot2.geom_histogram(position='dodge') + \
+            ggplot2.geom_histogram(position='dodge',binwidth=1) + \
             ggplot2.theme_bw()+\
             ggplot2.theme(**{'axis.text.x': ggplot2.element_text(angle = 90,hjust = 1)})
         grdevices.png(file=self.imgFilename, width=512, height=512)
@@ -160,9 +160,6 @@ class multiHistPlotter(histPlotter):
     	histPlotter.__init__(self,dic,opt,filename)
     def plot(self):
     	"""Method to call plot"""
-
-    	
-    	
     	kmerList = []
     	countList = []
     	countType = []
