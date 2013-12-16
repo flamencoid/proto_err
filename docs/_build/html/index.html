@@ -46,22 +46,42 @@
             
   <div class="section" id="welcome-to-proto-err-s-documentation">
 <h1>Welcome to proto_err&#8217;s documentation!<a class="headerlink" href="#welcome-to-proto-err-s-documentation" title="Permalink to this headline">¶</a></h1>
-</div>
 <div class="section" id="requirements">
-<h1>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h1>
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p>Install requirements with</p>
 <p><strong>pip install -r requirements.txt</strong></p>
 <p><strong>sh nonPiprequirements.sh</strong></p>
 <p>nonPiprequirements installs bwa, R and required R packages. Comment out unneeded lines before running.</p>
 </div>
 <div class="section" id="tests">
-<h1>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h1>
+<h2>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
 <p>To run tests run:</p>
 <p><strong>nosetests</strong></p>
 <p>from the top directory.</p>
 </div>
 <div class="section" id="sample-usage">
-<h1>Sample Usage<a class="headerlink" href="#sample-usage" title="Permalink to this headline">¶</a></h1>
+<h2>Sample Usage<a class="headerlink" href="#sample-usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="simulating-reads-with-errors">
+<h3>Simulating reads with errors<a class="headerlink" href="#simulating-reads-with-errors" title="Permalink to this headline">¶</a></h3>
+<p><strong>python subsample.py -r referenceFile.fa</strong></p>
+<p>subsample.py supports many optional arguments. Run <strong>subsample.py -h</strong> to see options.</p>
+<div class="section" id="context-specific-errors">
+<h4>Context specific errors<a class="headerlink" href="#context-specific-errors" title="Permalink to this headline">¶</a></h4>
+<p>In order to change the error frequencey based on a given nucleotide context run.</p>
+<p><strong>subsample.py &#8211;errorBiasFile path/to/errorBias.dat</strong></p>
+<p>errorBias.dat is a tab delimited text file with 4 columns</p>
+<p>e.g.</p>
+<p>kmerBefore  errorBase   kmerAfter   probability</p>
+<p>AA \t A \t \t 0.3</p>
+<p>changes the probability of an error to occur at the 3rd base of in an AAA nucleotide context.
+the context is searched via regex and can be included in the errorBias file.</p>
+<p>e.g.</p>
+<p>A.T \t \t \t 0.2</p>
+<p>changes the probability of an error occuring after ATT|AGT|ACT|AAT to 20%.</p>
+</div>
+</div>
+<div class="section" id="counting-errors-in-a-samfile">
+<h3>Counting errors in a samfile<a class="headerlink" href="#counting-errors-in-a-samfile" title="Permalink to this headline">¶</a></h3>
 <p>To iterate through errors in samfile</p>
 <div class="highlight-python"><pre>from errorCount import errorReader
 for error in errorReader(ref,samfile):
@@ -74,7 +94,7 @@ Deletion error(GC to )</pre>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="n">Values</span>
 <span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
 <span class="kn">from</span> <span class="nn">fastaIO</span> <span class="kn">import</span> <span class="n">getRef</span>
-<span class="c">## Alternatively pass these from OptionParser</span>
+<span class="c">## Alternatively pass these from OptionParser see https://github.com/flamencoid/proto_err/blob/master/bin/errorStats.py</span>
 <span class="n">opt</span> <span class="o">=</span> <span class="n">Values</span><span class="p">()</span>
 <span class="n">opt</span><span class="o">.</span><span class="n">maxKmerLength</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">opt</span><span class="o">.</span><span class="n">outDir</span> <span class="o">=</span> <span class="s">&#39;results/&#39;</span>
@@ -91,13 +111,10 @@ Deletion error(GC to )</pre>
 </div>
 <p>See <a class="reference internal" href="#module-proto_err.errorCount" title="proto_err.errorCount"><tt class="xref py py-class docutils literal"><span class="pre">errorCount</span></tt></a> for more methods</p>
 </div>
+</div>
 <div class="section" id="api">
-<h1>Api<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="proto-err-main-package">
-<h2><a class="reference internal" href="#module-proto_err" title="proto_err"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err</span></tt></a> &#8211; Main package<a class="headerlink" href="#proto-err-main-package" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="module-proto_err"></span><div class="section" id="proto-err-simulation-simulating-error-reads">
-<h3><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.simulation</span></tt> &#8211; Simulating Error Reads<a class="headerlink" href="#proto-err-simulation-simulating-error-reads" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
+<h2>Api<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-proto_err"></span><dl class="class">
 <dt id="proto_err.simulation.simulateError">
 <em class="property">class </em><tt class="descclassname">proto_err.simulation.</tt><tt class="descname">simulateError</tt><big>(</big><em>record</em>, <em>opt</em>, <em>id</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class of objects to simulate errors in a SeqRecord</p>
@@ -117,11 +134,20 @@ Deletion error(GC to )</pre>
 <tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">ins</span></tt></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">snp</span></tt></td>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">qscore</span></tt></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">snp</span></tt></td>
 <td></td>
 </tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="proto_err.simulation.simulateError.alignedRead">
+<tt class="descname">alignedRead</tt><em class="property"> None</em><a class="headerlink" href="#proto_err.simulation.simulateError.alignedRead" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an alignedRead object of a the subsampled read aligned perfectley to ref</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="proto_err.simulation.simulateError.deletion">
 <tt class="descname">deletion</tt><big>(</big><em>pos</em>, <em>dlen</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.deletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.deletion" title="Permalink to this definition">¶</a></dt>
@@ -140,9 +166,9 @@ Deletion error(GC to )</pre>
 <dd><p>function to induce a insertion</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="method">
 <dt id="proto_err.simulation.simulateError.qscore">
-<tt class="descname">qscore</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.qscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.qscore" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">qscore</tt><big>(</big><em>t='int'</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.qscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.qscore" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -159,12 +185,9 @@ Deletion error(GC to )</pre>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-proto_err.errorCount">
-<span id="proto-err-errorcount-error-counting"></span><h3><a class="reference internal" href="#module-proto_err.errorCount" title="proto_err.errorCount"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.errorCount</span></tt></a> &#8211; Error Counting<a class="headerlink" href="#module-proto_err.errorCount" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
+<span class="target" id="module-proto_err.errorCount"></span><dl class="class">
 <dt id="proto_err.errorCount.counter">
-<em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">counter</tt><big>(</big><em>ref</em>, <em>opt</em>, <em>errorList=None</em>, <em>samfile=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">counter</tt><big>(</big><em>ref</em>, <em>opt</em>, <em>errorList=None</em>, <em>samfile=None</em>, <em>makeDB=False</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes a list of errors or samfile and does some kmer counting</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -192,7 +215,7 @@ Deletion error(GC to )</pre>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#proto_err.errorCount.error" title="proto_err.errorCount.error"><tt class="xref py py-obj docutils literal"><span class="pre">error</span></tt></a>, <a class="reference internal" href="#proto_err.errorCount.errorReader" title="proto_err.errorCount.errorReader"><tt class="xref py py-obj docutils literal"><span class="pre">errorReader</span></tt></a></p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">error</span></tt>, <a class="reference internal" href="#proto_err.errorCount.errorReader" title="proto_err.errorCount.errorReader"><tt class="xref py py-obj docutils literal"><span class="pre">errorReader</span></tt></a></p>
 </div>
 <p class="rubric">Examples</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">samfile</span><span class="p">)</span>
@@ -244,14 +267,20 @@ Deletion error(GC to )</pre>
 <tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.getExpectedCount" title="proto_err.errorCount.counter.getExpectedCount"><tt class="xref py py-obj docutils literal"><span class="pre">getExpectedCount</span></tt></a>(truth,&nbsp;emission)</td>
 <td>Gets the expected count of a transition.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.plotHist" title="proto_err.errorCount.counter.plotHist"><tt class="xref py py-obj docutils literal"><span class="pre">plotHist</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.getSimulatedCount" title="proto_err.errorCount.counter.getSimulatedCount"><tt class="xref py py-obj docutils literal"><span class="pre">getSimulatedCount</span></tt></a>([truth,&nbsp;emission,&nbsp;...])</td>
+<td>Gets the count of simulated errors.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.plotHist" title="proto_err.errorCount.counter.plotHist"><tt class="xref py py-obj docutils literal"><span class="pre">plotHist</span></tt></a>()</td>
 <td>Plots histograms</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.probKmer" title="proto_err.errorCount.counter.probKmer"><tt class="xref py py-obj docutils literal"><span class="pre">probKmer</span></tt></a>(kmer)</td>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.probKmer" title="proto_err.errorCount.counter.probKmer"><tt class="xref py py-obj docutils literal"><span class="pre">probKmer</span></tt></a>(kmer)</td>
 <td>Gets the fraction of</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.setup" title="proto_err.errorCount.counter.setup"><tt class="xref py py-obj docutils literal"><span class="pre">setup</span></tt></a>(opt)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.setup" title="proto_err.errorCount.counter.setup"><tt class="xref py py-obj docutils literal"><span class="pre">setup</span></tt></a>(opt)</td>
 <td>Pass options from OptionParser</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.summary" title="proto_err.errorCount.counter.summary"><tt class="xref py py-obj docutils literal"><span class="pre">summary</span></tt></a>()</td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -369,8 +398,138 @@ Maximum kmer length</p>
 
 <dl class="method">
 <dt id="proto_err.errorCount.counter.getCount">
-<tt class="descname">getCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmerBefore=None</em>, <em>kmerAfter=None</em>, <em>type=None</em>, <em>maxAlignedDist=None</em>, <em>readPosRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>readPerRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>qualRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>returnList=False</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.getCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.getCount" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmerBefore=None</em>, <em>kmerAfter=None</em>, <em>type=None</em>, <em>maxAlignedDist=None</em>, <em>readPosRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>readPerRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>qualRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>tlenRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>returnList=False</em>, <em>collection='errors'</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.getCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.getCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the count for a given {truth,emmision,kmer}</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>truth</strong> : string</p>
+<blockquote>
+<div><p>truth base(s)</p>
+</div></blockquote>
+<p><strong>emission</strong> : string</p>
+<blockquote>
+<div><p>emmited base(s)</p>
+</div></blockquote>
+<p><strong>kmerBefore</strong> : string</p>
+<blockquote>
+<div><p>preceding kmer</p>
+</div></blockquote>
+<p><strong>kmerAfter</strong> : string</p>
+<blockquote>
+<div><p>following kmer</p>
+</div></blockquote>
+<p><strong>type</strong> : string</p>
+<blockquote>
+<div><p>type of error SNP Insertion or Deletion</p>
+</div></blockquote>
+<p><strong>maxAlignedDist</strong> : int</p>
+<blockquote>
+<div><p>maximum aligned distance e.g. maxAlignedDist = 10 returns all errors where the read mapped within 10 bp of where it was sampled from</p>
+</div></blockquote>
+<p><strong>readPosRange</strong> : list or tuple of ints</p>
+<blockquote>
+<div><p>list or tuple of two elements range of error position along read. e.g. [0,10] returns all errors in the first 10bp of read</p>
+</div></blockquote>
+<p><strong>readPerRange</strong> : list or tuple of ints</p>
+<blockquote>
+<div><p>list or tuple of two elements range of error percentage along read. e.g. [0,10] returns all errors in the first 10percent of read</p>
+</div></blockquote>
+<p><strong>qualRange</strong> : list or tuple of ints</p>
+<blockquote>
+<div><p>list or tuple of two elements range of quality of error e.g. [10,10] returns all errors with quality score 10</p>
+</div></blockquote>
+<p><strong>tlenRange</strong> : int or list or tuple</p>
+<blockquote>
+<div><p>int list or tuple of two elements range of quality of error e.g. [10,10] returns all errors with quality score 10 equivalent to 10</p>
+</div></blockquote>
+<p><strong>returnList</strong> : bool</p>
+<blockquote>
+<div><p>default False. If true returns list of error documents as an additional argument</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>returnList = False int</strong> :</p>
+<blockquote>
+<div><p>Count of errors matching Parameter query</p>
+</div></blockquote>
+<p><strong>returnList = True int,list</strong> :</p>
+<blockquote class="last">
+<div><p>Count of errors matching Parameter query, list of error documents</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">#### Count all the errors    </span>
+<span class="go">&gt;&gt;&gt;print errorCounter.getCount()</span>
+<span class="go">1234</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####   Count all the errors preceded by kmer &#39;A&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">kmerBefore</span><span class="o">=</span><span class="s">&#39;AA&#39;</span><span class="p">)</span>
+<span class="go">123</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####  Count all the errors followed by kmer &#39;AA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">kmerAfter</span><span class="o">=</span><span class="s">&#39;AA&#39;</span><span class="p">)</span>
+<span class="go">12</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####     Count all the errors for truth &#39;A&#39; preceded by an A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">kmerBefore</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">123</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####     Count all the errors A-&gt;T preceded by A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;T&#39;</span><span class="p">,</span> <span class="n">kmerBefore</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">12</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">####  Count all the errors where the emmited base is &#39;A&#39; preceded by any kmer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.getExpectedCount">
+<tt class="descname">getExpectedCount</tt><big>(</big><em>truth</em>, <em>emission</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.getExpectedCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the expected count of a transition.</p>
+<p>E[true,emmision] = (frequency of truth in reference) * (Observed SNP Count) * (Probability of emmision | SNP ).</p>
+<p>i.e for a random reference E[true,emission] = 1/4 * numSnps * 1/3</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>truth</strong> : string</p>
+<blockquote>
+<div><p>truth base(s)</p>
+</div></blockquote>
+<p><strong>emission</strong> : string</p>
+<blockquote>
+<div><p>emmited base(s)</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>int</strong> :</p>
+<blockquote class="last">
+<div><p>Expected count</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getExpectedCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;T&#39;</span><span class="p">)</span>
+<span class="go">100.36</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;T&#39;</span><span class="p">)</span>
+<span class="go">111</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.getSimulatedCount">
+<tt class="descname">getSimulatedCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmerBefore=None</em>, <em>kmerAfter=None</em>, <em>type=None</em>, <em>maxAlignedDist=None</em>, <em>readPosRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>readPerRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>qualRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>tlenRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>returnList=False</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.getSimulatedCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the count of simulated errors.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -433,62 +592,23 @@ Maximum kmer length</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c">#### Count all the errors    </span>
-<span class="go">&gt;&gt;&gt;print errorCounter.getCount()</span>
+<span class="go">&gt;&gt;&gt;print errorCounter.getSimulatedCount()</span>
 <span class="go">1234</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c">####   Count all the errors preceded by kmer &#39;A&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">kmer</span><span class="o">=</span><span class="s">&#39;AA&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getSimulatedCount</span><span class="p">(</span><span class="n">kmerBefore</span><span class="o">=</span><span class="s">&#39;AA&#39;</span><span class="p">)</span>
 <span class="go">123</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c">####  Count all the errors followed by kmer &#39;AA&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">kmer</span><span class="o">=</span><span class="s">&#39;AA&#39;</span><span class="p">,</span><span class="n">after</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getSimulatedCount</span><span class="p">(</span><span class="n">kmerAfter</span><span class="o">=</span><span class="s">&#39;AA&#39;</span><span class="p">)</span>
 <span class="go">12</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c">####     Count all the errors for truth &#39;A&#39; preceded by an A</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">kmer</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getSimulatedCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">kmerBefore</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
 <span class="go">123</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c">####     Count all the errors A-&gt;T preceded by A</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;T&#39;</span><span class="p">,</span> <span class="n">kmer</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getSimulatedCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;T&#39;</span><span class="p">,</span> <span class="n">kmerBefore</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
 <span class="go">12</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c">####  Count all the errors where the emmited base is &#39;A&#39; preceded by any kmer</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getSimulatedCount</span><span class="p">(</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">)</span>
 <span class="go">2</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="method">
-<dt id="proto_err.errorCount.counter.getExpectedCount">
-<tt class="descname">getExpectedCount</tt><big>(</big><em>truth</em>, <em>emission</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.getExpectedCount" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the expected count of a transition.</p>
-<p>E[true,emmision] = (frequency of truth in reference) * (Observed SNP Count) * (Probability of emmision | SNP ).</p>
-<p>i.e for a random reference E[true,emission] = 1/4 * numSnps * 1/3</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>truth</strong> : string</p>
-<blockquote>
-<div><p>truth base(s)</p>
-</div></blockquote>
-<p><strong>emission</strong> : string</p>
-<blockquote>
-<div><p>emmited base(s)</p>
-</div></blockquote>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>int</strong> :</p>
-<blockquote class="last">
-<div><p>Expected count</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">errorCount</span> <span class="kn">import</span> <span class="n">counter</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">errorCounter</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span><span class="n">samfile</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getExpectedCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;T&#39;</span><span class="p">)</span>
-<span class="go">100.36</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">errorCounter</span><span class="o">.</span><span class="n">getCount</span><span class="p">(</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;T&#39;</span><span class="p">)</span>
-<span class="go">111</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -550,179 +670,10 @@ Maximum kmer length</p>
 <dd><p>Pass options from OptionParser</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="class">
-<dt id="proto_err.errorCount.error">
-<em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">error</tt><big>(</big><em>true</em>, <em>emission</em>, <em>read</em>, <em>readPos</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Information about the errors in a read</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>true: string</strong> :</p>
-<blockquote>
-<div><p>reference base(s)</p>
-</div></blockquote>
-<p><strong>emission: string</strong> :</p>
-<blockquote>
-<div><p>read base(s)</p>
-</div></blockquote>
-<p><strong>read: AlignedRead</strong> :</p>
-<blockquote>
-<div><p>pysam AlignedRead object from which error was derived</p>
-</div></blockquote>
-<p><strong>readPos: int</strong> :</p>
-<blockquote class="last">
-<div><p>position along read where error occured / length of read sequence</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#proto_err.errorCount.counter" title="proto_err.errorCount.counter"><tt class="xref py py-obj docutils literal"><span class="pre">counter</span></tt></a></p>
-</div>
-<p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pysam</span> <span class="kn">import</span> <span class="n">AlignedRead</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="kn">import</span> <span class="n">proto_err</span><span class="o">.</span><span class="n">errorCount</span> <span class="kn">import</span> <span class="nn">error</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">AlignedRead</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">read</span><span class="o">.</span><span class="n">seq</span><span class="o">=</span><span class="s">&quot;AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">read</span><span class="o">.</span><span class="n">qual</span> <span class="o">=</span> <span class="s">&#39;++))++)+*)******)))+)**+*+++)**)*+)&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">proto_err</span><span class="o">.</span><span class="n">errorCount</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">,</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">read</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">isSnp</span>
-<span class="go">True</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">isIndel</span>
-<span class="go">False</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">qual</span>
-<span class="go">11</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">before</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="go">NN </span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="go">GC </span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">qscore</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c">## equivalent to error.qual</span>
-<span class="go">11</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">qscore</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="go">9</span>
-</pre></div>
-</div>
-<p class="rubric">Attributes</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="12%" />
-<col width="9%" />
-<col width="80%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>true</td>
-<td>string</td>
-<td>reference bases</td>
-</tr>
-<tr class="row-even"><td>emission</td>
-<td>string</td>
-<td>Read bases</td>
-</tr>
-<tr class="row-odd"><td>read</td>
-<td>AlignedRead</td>
-<td>pysam AlignedRead object from which error was derived</td>
-</tr>
-<tr class="row-even"><td>readPos</td>
-<td>int</td>
-<td>position along read where error occured</td>
-</tr>
-<tr class="row-odd"><td>readPer</td>
-<td>float</td>
-<td>position along read where error occured / length of read sequence</td>
-</tr>
-<tr class="row-even"><td>alignedDist</td>
-<td>int or None</td>
-<td>number of bases between position of start of alignment and where read was sampled None if sampled position n/a</td>
-</tr>
-<tr class="row-odd"><td>alignedCorrectly</td>
-<td>bool or None</td>
-<td>If the alignedDist is less then the read length True else False None is alignedDist is None</td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.error.after" title="proto_err.errorCount.error.after"><tt class="xref py py-obj docutils literal"><span class="pre">after</span></tt></a>(j)</td>
-<td>Return the following j bases,return N when bases missing</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.error.before" title="proto_err.errorCount.error.before"><tt class="xref py py-obj docutils literal"><span class="pre">before</span></tt></a>(j)</td>
-<td>Return the preceding j bases,return N when bases missing</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.error.qscore" title="proto_err.errorCount.error.qscore"><tt class="xref py py-obj docutils literal"><span class="pre">qscore</span></tt></a>(i)</td>
-<td>Return the quality score at a base +i i from the error start position</td>
-</tr>
-</tbody>
-</table>
 <dl class="method">
-<dt id="proto_err.errorCount.error.after">
-<tt class="descname">after</tt><big>(</big><em>j</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#error.after"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.after" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the following j bases,return N when bases missing</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="proto_err.errorCount.error.before">
-<tt class="descname">before</tt><big>(</big><em>j</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#error.before"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.before" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the preceding j bases,return N when bases missing</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="proto_err.errorCount.error.doc">
-<tt class="descname">doc</tt><em class="property"> None</em><a class="headerlink" href="#proto_err.errorCount.error.doc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a pymongo document</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="proto_err.errorCount.error.errorType">
-<tt class="descname">errorType</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.errorType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.errorType" title="Permalink to this definition">¶</a></dt>
-<dd><p>The type of read error SNP, Insertion or Deletion</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="proto_err.errorCount.error.isDeletion">
-<tt class="descname">isDeletion</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.isDeletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.isDeletion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return whether or not the error is a deletion</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="proto_err.errorCount.error.isIndel">
-<tt class="descname">isIndel</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.isIndel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.isIndel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return whether or not the error is a INDEL</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="proto_err.errorCount.error.isInsertion">
-<tt class="descname">isInsertion</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.isInsertion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.isInsertion" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return whether or not the error is an insertion</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="proto_err.errorCount.error.isSnp">
-<tt class="descname">isSnp</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.isSnp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.isSnp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return whether or not the error is a SNP</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="proto_err.errorCount.error.qscore">
-<tt class="descname">qscore</tt><big>(</big><em>i</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#error.qscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.qscore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the quality score at a base +i i from the error start position
-error.qscore(0) is equivalent to error.qual</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="proto_err.errorCount.error.qual">
-<tt class="descname">qual</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/errorCount.html#error.qual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.error.qual" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return quality score of the base where the error occured</p>
-</dd></dl>
+<dt id="proto_err.errorCount.counter.summary">
+<tt class="descname">summary</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -748,7 +699,7 @@ error.qscore(0) is equivalent to error.qual</p>
 </table>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#proto_err.errorCount.error" title="proto_err.errorCount.error"><tt class="xref py py-obj docutils literal"><span class="pre">error</span></tt></a>, <a class="reference internal" href="#proto_err.errorCount.counter" title="proto_err.errorCount.counter"><tt class="xref py py-obj docutils literal"><span class="pre">counter</span></tt></a></p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">error</span></tt>, <a class="reference internal" href="#proto_err.errorCount.counter" title="proto_err.errorCount.counter"><tt class="xref py py-obj docutils literal"><span class="pre">counter</span></tt></a></p>
 </div>
 <p class="rubric">Examples</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">proto_err.errorCount</span> <span class="kn">import</span> <span class="n">errorReader</span>
@@ -799,9 +750,54 @@ error.qscore(0) is equivalent to error.qual</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-proto_err.plot">
-<span id="proto-err-plot-plotting"></span><h3><a class="reference internal" href="#module-proto_err.plot" title="proto_err.plot"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.plot</span></tt></a> &#8211; Plotting<a class="headerlink" href="#module-proto_err.plot" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-proto_err.plot"></span><dl class="class">
+<dt id="proto_err.plot.densityPlotterFromLists">
+<em class="property">class </em><tt class="descclassname">proto_err.plot.</tt><tt class="descname">densityPlotterFromLists</tt><big>(</big><em>dic</em>, <em>opt</em>, <em>filename</em><big>)</big><a class="headerlink" href="#proto_err.plot.densityPlotterFromLists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#proto_err.plot.plotter" title="proto_err.plot.plotter"><tt class="xref py py-class docutils literal"><span class="pre">proto_err.plot.plotter</span></tt></a></p>
+<p>Plots a histogram</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dic :</strong> :</p>
+<blockquote>
+<div><p>a dictonary of lists</p>
+</div></blockquote>
+<p><strong>opt</strong> : Value</p>
+<blockquote>
+<div><p>options passed from OptionsParser()</p>
+</div></blockquote>
+<p><strong>filename</strong> : string</p>
+<blockquote class="last">
+<div><p>name of output</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.plot.densityPlotterFromLists.plot" title="proto_err.plot.densityPlotterFromLists.plot"><tt class="xref py py-obj docutils literal"><span class="pre">plot</span></tt></a>([geom])</td>
+<td>Method to call plot</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">setup</span></tt>(opt)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="proto_err.plot.densityPlotterFromLists.plot">
+<tt class="descname">plot</tt><big>(</big><em>geom='dens'</em><big>)</big><a class="headerlink" href="#proto_err.plot.densityPlotterFromLists.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to call plot</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="proto_err.plot.histPlotter">
 <em class="property">class </em><tt class="descclassname">proto_err.plot.</tt><tt class="descname">histPlotter</tt><big>(</big><em>dic</em>, <em>opt</em>, <em>filename</em><big>)</big><a class="reference internal" href="_modules/proto_err/plot.html#histPlotter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.plot.histPlotter" title="Permalink to this definition">¶</a></dt>
@@ -943,12 +939,9 @@ error.qscore(0) is equivalent to error.qual</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-proto_err.query">
-<span id="proto-err-query-working-with-mongodb"></span><h3><a class="reference internal" href="#module-proto_err.query" title="proto_err.query"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.query</span></tt></a> &#8211; Working with MongoDB<a class="headerlink" href="#module-proto_err.query" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
+<span class="target" id="module-proto_err.query"></span><dl class="class">
 <dt id="proto_err.query.errordb">
-<em class="property">class </em><tt class="descclassname">proto_err.query.</tt><tt class="descname">errordb</tt><a class="reference internal" href="_modules/proto_err/query.html#errordb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">proto_err.query.</tt><tt class="descname">errordb</tt><big>(</big><em>database='proto_err'</em>, <em>collection='errors'</em><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb" title="Permalink to this definition">¶</a></dt>
 <dd><p>docstring for db</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
@@ -966,10 +959,13 @@ error.qscore(0) is equivalent to error.qual</p>
 <tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.deleteAll" title="proto_err.query.errordb.deleteAll"><tt class="xref py py-obj docutils literal"><span class="pre">deleteAll</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.find" title="proto_err.query.errordb.find"><tt class="xref py py-obj docutils literal"><span class="pre">find</span></tt></a>(query)</td>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.find" title="proto_err.query.errordb.find"><tt class="xref py py-obj docutils literal"><span class="pre">find</span></tt></a>(query[,&nbsp;filt])</td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.find_one" title="proto_err.query.errordb.find_one"><tt class="xref py py-obj docutils literal"><span class="pre">find_one</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.find_errors" title="proto_err.query.errordb.find_errors"><tt class="xref py py-obj docutils literal"><span class="pre">find_errors</span></tt></a>(query[,&nbsp;filt])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.find_one" title="proto_err.query.errordb.find_one"><tt class="xref py py-obj docutils literal"><span class="pre">find_one</span></tt></a>()</td>
 <td></td>
 </tr>
 </tbody>
@@ -993,7 +989,12 @@ error.qscore(0) is equivalent to error.qual</p>
 
 <dl class="method">
 <dt id="proto_err.query.errordb.find">
-<tt class="descname">find</tt><big>(</big><em>query</em><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb.find" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find</tt><big>(</big><em>query</em>, <em>filt=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb.find" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="proto_err.query.errordb.find_errors">
+<tt class="descname">find_errors</tt><big>(</big><em>query</em>, <em>filt=None</em><big>)</big><a class="headerlink" href="#proto_err.query.errordb.find_errors" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1003,10 +1004,7 @@ error.qscore(0) is equivalent to error.qual</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-proto_err.fastaIO">
-<span id="proto-err-fastaio-working-with-fasta-files"></span><h3><a class="reference internal" href="#module-proto_err.fastaIO" title="proto_err.fastaIO"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.fastaIO</span></tt></a> &#8211; Working with Fasta Files<a class="headerlink" href="#module-proto_err.fastaIO" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
+<span class="target" id="module-proto_err.fastaIO"></span><dl class="function">
 <dt id="proto_err.fastaIO.getRef">
 <tt class="descclassname">proto_err.fastaIO.</tt><tt class="descname">getRef</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/proto_err/fastaIO.html#getRef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.fastaIO.getRef" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1023,10 +1021,7 @@ error.qscore(0) is equivalent to error.qual</p>
 <dd><p>Function to take list of Seq objects and write a fasta file</p>
 </dd></dl>
 
-</div>
-<div class="section" id="module-proto_err.align">
-<span id="proto-err-align-aligning-reads"></span><h3><a class="reference internal" href="#module-proto_err.align" title="proto_err.align"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.align</span></tt></a> &#8211; Aligning Reads<a class="headerlink" href="#module-proto_err.align" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
+<span class="target" id="module-proto_err.align"></span><dl class="class">
 <dt id="proto_err.align.BwaMemAlignCommandline">
 <em class="property">class </em><tt class="descclassname">proto_err.align.</tt><tt class="descname">BwaMemAlignCommandline</tt><big>(</big><em>cmd='bwa'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proto_err/align.html#BwaMemAlignCommandline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.align.BwaMemAlignCommandline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">Bio.Application.AbstractCommandline</span></tt></p>
@@ -1074,115 +1069,14 @@ or via the Python subprocess module, as described in the Biopython tutorial.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-proto_err.utils">
-<span id="proto-err-utils-convinience-functions"></span><h3><a class="reference internal" href="#module-proto_err.utils" title="proto_err.utils"><tt class="xref py py-mod docutils literal"><span class="pre">proto_err.utils</span></tt></a> &#8211; Convinience functions<a class="headerlink" href="#module-proto_err.utils" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="proto_err.utils.AutoVivification">
-<em class="property">class </em><tt class="descclassname">proto_err.utils.</tt><tt class="descname">AutoVivification</tt><a class="reference internal" href="_modules/proto_err/utils.html#AutoVivification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.utils.AutoVivification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">dict</span></tt></p>
-<p>Implementation of perl&#8217;s autovivification feature.</p>
-<p class="rubric">Methods</p>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">clear</span></tt>(()&nbsp;-&gt;&nbsp;None.&nbsp;&nbsp;Remove&nbsp;all&nbsp;items&nbsp;from&nbsp;D.)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">copy</span></tt>(()&nbsp;-&gt;&nbsp;a&nbsp;shallow&nbsp;copy&nbsp;of&nbsp;D)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">fromkeys</span></tt>(...)</td>
-<td>v defaults to None.</td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">get</span></tt>((k[,d])&nbsp;-&gt;&nbsp;D[k]&nbsp;if&nbsp;k&nbsp;in&nbsp;D,&nbsp;...)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">has_key</span></tt>((k)&nbsp;-&gt;&nbsp;True&nbsp;if&nbsp;D&nbsp;has&nbsp;a&nbsp;key&nbsp;k,&nbsp;else&nbsp;False)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">items</span></tt>(()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D&#8217;s&nbsp;(key,&nbsp;value)&nbsp;pairs,&nbsp;...)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">iteritems</span></tt>(()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;(key,&nbsp;...)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">iterkeys</span></tt>(()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;keys&nbsp;of&nbsp;D)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">itervalues</span></tt>(...)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">keys</span></tt>(()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D&#8217;s&nbsp;keys)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">pop</span></tt>((k[,d])&nbsp;-&gt;&nbsp;v,&nbsp;...)</td>
-<td>If key is not found, d is returned if given, otherwise KeyError is raised</td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">popitem</span></tt>(()&nbsp;-&gt;&nbsp;(k,&nbsp;v),&nbsp;...)</td>
-<td>2-tuple; but raise KeyError if D is empty.</td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">setdefault</span></tt>((k[,d])&nbsp;-&gt;&nbsp;D.get(k,d),&nbsp;...)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">update</span></tt>(([E,&nbsp;...)</td>
-<td>If E present and has a .keys() method, does:     for k in E: D[k] = E[k]</td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">values</span></tt>(()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D&#8217;s&nbsp;values)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">viewitems</span></tt>(...)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">viewkeys</span></tt>(...)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">viewvalues</span></tt>(...)</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="proto_err.utils.asciiToInt">
-<tt class="descclassname">proto_err.utils.</tt><tt class="descname">asciiToInt</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/proto_err/utils.html#asciiToInt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.utils.asciiToInt" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proto_err.utils.getAlphabet">
-<tt class="descclassname">proto_err.utils.</tt><tt class="descname">getAlphabet</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/utils.html#getAlphabet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.utils.getAlphabet" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proto_err.utils.getDBError">
-<tt class="descclassname">proto_err.utils.</tt><tt class="descname">getDBError</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/utils.html#getDBError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.utils.getDBError" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proto_err.utils.kmerCombo">
-<tt class="descclassname">proto_err.utils.</tt><tt class="descname">kmerCombo</tt><big>(</big><em>r</em><big>)</big><a class="reference internal" href="_modules/proto_err/utils.html#kmerCombo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.utils.kmerCombo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function to return all combinations of kmer length r in alphabet</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="proto_err.utils.popLong">
-<tt class="descclassname">proto_err.utils.</tt><tt class="descname">popLong</tt><big>(</big><em>l</em>, <em>i</em>, <em>j</em><big>)</big><a class="reference internal" href="_modules/proto_err/utils.html#popLong"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.utils.popLong" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pops along multiple index</p>
-</dd></dl>
-
-</div>
-</div>
-</div>
 <div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
 <li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
 <li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
 </ul>
+</div>
 </div>
 
 
@@ -1193,36 +1087,23 @@ or via the Python subprocess module, as described in the Biopython tutorial.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to proto_err&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#">Welcome to proto_err&#8217;s documentation!</a><ul>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#tests">Tests</a></li>
-<li><a class="reference internal" href="#sample-usage">Sample Usage</a></li>
+<li><a class="reference internal" href="#sample-usage">Sample Usage</a><ul>
+<li><a class="reference internal" href="#simulating-reads-with-errors">Simulating reads with errors</a><ul>
+<li><a class="reference internal" href="#context-specific-errors">Context specific errors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#counting-errors-in-a-samfile">Counting errors in a samfile</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#api">Api</a><ul>
-<li><a class="reference internal" href="#proto-err-main-package"><tt class="docutils literal"><span class="pre">proto_err</span></tt> &#8211; Main package</a><ul>
-<li><a class="reference internal" href="#proto-err-simulation-simulating-error-reads"><tt class="docutils literal"><span class="pre">proto_err.simulation</span></tt> &#8211; Simulating Error Reads</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-proto_err.errorCount"><tt class="docutils literal"><span class="pre">proto_err.errorCount</span></tt> &#8211; Error Counting</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-proto_err.plot"><tt class="docutils literal"><span class="pre">proto_err.plot</span></tt> &#8211; Plotting</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-proto_err.query"><tt class="docutils literal"><span class="pre">proto_err.query</span></tt> &#8211; Working with MongoDB</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-proto_err.fastaIO"><tt class="docutils literal"><span class="pre">proto_err.fastaIO</span></tt> &#8211; Working with Fasta Files</a></li>
-<li><a class="reference internal" href="#module-proto_err.align"><tt class="docutils literal"><span class="pre">proto_err.align</span></tt> &#8211; Aligning Reads</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#module-proto_err.utils"><tt class="docutils literal"><span class="pre">proto_err.utils</span></tt> &#8211; Convinience functions</a><ul>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
 </ul>
 
   <h3>This Page</h3>
