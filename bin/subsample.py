@@ -55,6 +55,10 @@ parser.add_option("--meanIndelSize", dest="indelMean",help="""INDEL size is
 parser.add_option("--IndelSizeSD", dest="indelSd",help="""INDEL size is 
 					sampled from a normal with this SD (Optional defaults to 
 						meanIndelSize/2)""",default=None,type='int')
+parser.add_option("--errorBiasFile", dest="errorBiasFile",help="""File 
+					containing information about error biases 
+					(Optional) default all errors occur with probability 
+					--errorFreqMean""",default=None,type='int')
 (opt, args) = parser.parse_args()
 ## Need a mean and a SD
 if not opt.readSd :

@@ -47,15 +47,12 @@ errorCounter.summary()
 errorCounter.plotHist()
 # errorCounter.countRefKmer()
 # errorCounter.countErrorKmer(1)
-<<<<<<< HEAD
 errorCounter.plotHist()
 print errorCounter.getSimulatedCount(truth='A',emission='T')
 print errorCounter.getCount(truth='A',emission='T')
-=======
 
 # print errorCounter.getSimulatedCount(truth='A',emission='T')
 # print errorCounter.getCount(truth='A',emission='T')
->>>>>>> a94336c4038d00fa5dac555d20c2bb5fa9ef4d52
 
 
 # for post in errorCounter.errordb.find():
