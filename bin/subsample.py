@@ -74,7 +74,7 @@ if opt.errorBiasFile:
 		for row in reader:
 			if not row[0] =='#' :
 				errorBias[row[0]][row[1]][row[2]] = row[3]
-print errorBias
+	print errorBias
 
 
 
