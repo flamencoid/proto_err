@@ -5,7 +5,7 @@ from Bio.SeqRecord import SeqRecord
 import random 
 import math
 from copy import copy
-from errorCount import error
+from error import error
 from pysam import AlignedRead
 # A python module for simulating errors in reads.
 class simulateError():
