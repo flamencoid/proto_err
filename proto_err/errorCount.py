@@ -288,7 +288,7 @@ class counter():
         self.errordb['errors'] = errordb('errors')
         self.errordb['simulatedErrors'] = errordb(collection='simulatedErrors')
         if makeDB:
-            self.logger.info("### Wiping and repopulating error DB")
+            
             self.errordb['errors'].deleteAll()
             self.errorList = self.errordb['errors'].addErrors(self.errorList)
         else:
@@ -495,43 +495,46 @@ class counter():
                     observedDic[t + '->' + e] = observed
                     expectedDic[t + '->' + e] = expected
                     simulatedDic[t + '->' + e] = simulated
-                    # multi[t + '->' + e]['Expected'] = expected
+                    multi[t + '->' + e]['Expected'] = expected
                     multi[t + '->' + e]['Observed'] = observed
                     multi[t + '->' + e]['Simulated'] = simulated
         histPlotter(dic=observedDic,opt=self.opt,filename="SNP_observed_transition").plot()
         histPlotter(dic=expectedDic,opt=self.opt,filename="SNP_expected_transition").plot()
         histPlotter(dic=simulatedDic,opt=self.opt,filename="SNP_simulated_transition").plot()
-        multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
-        # multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_simulated_transition").plot()
+        # multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
+        multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_simulated_expected_transition").plot()
         ## Count deletion kmers
         # get maximum deletion length
         observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
         simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
-        densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
+        if observedSize and simulatedSize:
+            densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
                                 opt=self.opt,filename="deletion_size_hist_dens").plot(geom='dens')
-        densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
+            densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
                                 opt=self.opt,filename="deletion_size_bar").plot(geom='bar')
-        maxLen = max(observedSize + simulatedSize) 
-        for order in [i+1 for i in range(maxLen)]:
-            dic = self.__countToDic(self.getCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
-            histPlotter(dic=dic,opt=self.opt,filename="deleted_kmer_observed_order_%i" % (order)).plot()
-            dic = self.__countToDic(self.getSimulatedCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
-            histPlotter(dic=dic,opt=self.opt,filename="deleted_kmer_simulated_order_%i" % (order)).plot()
+
+            maxLen = max(observedSize + simulatedSize) 
+            for order in [i+1 for i in range(maxLen)]:
+                dic = self.__countToDic(self.getCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
+                histPlotter(dic=dic,opt=self.opt,filename="deleted_kmer_observed_order_%i" % (order)).plot()
+                dic = self.__countToDic(self.getSimulatedCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
+                histPlotter(dic=dic,opt=self.opt,filename="deleted_kmer_simulated_order_%i" % (order)).plot()
 
         ## Count insterted kmers 
         t = 'Insertion'
         observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : t}, {'tlen':1} )]
         simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : t}, {'tlen':1} )]
-        densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
+        if observedSize and simulatedSize:
+            densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
                                 opt=self.opt,filename="inserted_size_hist_dens").plot(geom='dens')
-        densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
+            densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
                                 opt=self.opt,filename="inserted_size_hist_bar").plot(geom='bar')
-        maxLen = max(observedSize + simulatedSize) 
-        for order in [i+1 for i in range(maxLen)]:
-            dic = self.__countToDic(self.getCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
-            histPlotter(dic=dic,opt=self.opt,filename="inserted_kmer_observed_order_%i" % (order)).plot()
-            dic = self.__countToDic(self.getSimulatedCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
-            histPlotter(dic=dic,opt=self.opt,filename="inserted_kmer_simulated_order_%i" % (order)).plot()
+            maxLen = max(observedSize + simulatedSize) 
+            for order in [i+1 for i in range(maxLen)]:
+                dic = self.__countToDic(self.getCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
+                histPlotter(dic=dic,opt=self.opt,filename="inserted_kmer_observed_order_%i" % (order)).plot()
+                dic = self.__countToDic(self.getSimulatedCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
+                histPlotter(dic=dic,opt=self.opt,filename="inserted_kmer_simulated_order_%i" % (order)).plot()
 
 
         ## Count kmers

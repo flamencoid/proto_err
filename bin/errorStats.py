@@ -35,11 +35,7 @@ opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
 ref = getRef(opt.refFilename)
 
-logging.info("Doing some kmer counting")
-
 errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
-
-
 
 for name,count in errorCounter.readCounter.iteritems():
 	logging.info('### Count of %s == %i' % (name,count))

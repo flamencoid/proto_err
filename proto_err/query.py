@@ -58,6 +58,7 @@ class errordb():
                                         read=read,readPos=document['readPos']))
         return errorList
     def deleteAll(self):
+        self.logger.info("### Wiping error DB")
         self.errors.remove()
     # def addOptionsDocument(self,opt):
     #     # self.creationTime = 

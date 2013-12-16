@@ -80,7 +80,7 @@ if opt.errorBiasFile:
 					## This is incase of the regular expression matching the 
 					## start or end of a line
 					patternKey = re.compile(row[0]+'.'+row[2])
-				errorBias[patternKey] = (len(row[0]),int(row[3]))
+				errorBias[patternKey] = (len(row[0]),float(row[3]))
 else:
 	errorBias = None
 
@@ -104,7 +104,7 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
 		start = random.randrange(refLength)
 		## randomly subsample from reference
-		recordId = 'st=%s&l=%s' % (str(start),str(seqLength))
+		recordId = 'st=%s' % (str(start))
 		seq = ref[start:start+seqLength]
 		record=SeqRecord(seq,recordId,'','')
 		## Randomly generate errors
@@ -113,7 +113,7 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 		logging.info("### generated %i errors in a read of length %i" % (len(errs),seqLength))
 		simulatedErrorDB.addErrors(errs)
 		record = simulatedErrors.record
-		## Take the read from the reverse stand x% of the time
+		## Take the read from the reverse stand opt.strandBias% of the time
 		if random.random() > opt.strandBias:
 			record = record.reverse_complement()
 

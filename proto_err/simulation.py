@@ -24,7 +24,7 @@ class simulateError():
         truth = str(seq[pos])
         seq[pos] = rl
         self.seq = Seq("".join(seq))
-        self.id += 's%s,%s' % (str(pos),str(rl))
+        # self.id += 's%s,%s' % (str(pos),str(rl))
         return error(true=truth,emission=rl,read=self.alignedRead,readPos=pos)
 
     def ins(self,pos,rl):
@@ -34,7 +34,7 @@ class simulateError():
         ## Also need to insert the equivalent qscores
         self.errorProb = self.errorProb[:pos+1] + [self.errorProb[pos] for _ in list(rl)]  +self.errorProb[pos+1:]
         self.seq = Seq("".join(seq))
-        self.id += 'i%s,%s' % (str(pos),str(rl))
+        # self.id += 'i%s,%s' % (str(pos),str(rl))
         return error(true='',emission=rl,read=self.alignedRead,readPos=pos)
 
     def deletion(self,pos,dlen):
@@ -45,7 +45,7 @@ class simulateError():
         ## Also need to delete the equivalent qscores
         self.errorProb = self.errorProb[:pos] + self.errorProb[pos+dlen:]
         self.seq = Seq("".join(newSeq))
-        self.id += 'd%s,%s' % (str(pos),str(dlen))
+        # self.id += 'd%s,%s' % (str(pos),str(dlen))
         return error(true=deletedSeq,emission='',read=self.alignedRead,readPos=pos)
 
     def indel(self,pos):
