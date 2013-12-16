@@ -6,7 +6,7 @@ from pysam import AlignedRead
 from error import error
 class errordb():
     """docstring for db"""
-    def __init__(self,collection='errors'):
+    def __init__(self,database='proto_err',collection='errors'):
         self.logger = logging
         try:
             self.client = MongoClient('localhost', 27017)
@@ -19,7 +19,7 @@ class errordb():
                 MongoClient('localhost', 27017)
                 logging.error(getDBError())
 
-        self.db = self.client.proto_err
+        self.db = self.client[database]
         self.collection = collection
         self.errors = self.db[self.collection]
 

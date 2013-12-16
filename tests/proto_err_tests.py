@@ -25,8 +25,8 @@ def testErrorClassBasic():
     assert_equal(errorObj.after(2),'GC')
     assert_equal(errorObj.isSnp,True)
     assert_equal(errorObj.isIndel,False)
-    assert_equal(errorObj.qual,11)
-    assert_equal(errorObj.qscore(2),9)
+    assert_equal(errorObj.qual,10)
+    assert_equal(errorObj.qscore(2),8)
 
 
 def testComplexErrorSim():

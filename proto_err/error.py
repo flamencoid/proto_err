@@ -158,6 +158,7 @@ class error():
             ## return the previous position instead ?? 
             return None
         else:
+            # print self.read.qqual
             return asciiToInt(self.read.qqual[self.readPos])
     @property 
     def tlen(self):

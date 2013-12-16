@@ -18,7 +18,7 @@ import math
 import random 
 from Bio.SeqRecord import SeqRecord
 import csv
-
+import re
 
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
@@ -36,7 +36,7 @@ parser.add_option("--errorFreqMean", dest="snpFreq",help="""Probablity of an err
 parser.add_option("--errorFreqSD", dest="snpFreqSd",help="""Probablity of an error 
 					at a base occurs is sampled from a normal with SD 
 					of this value (Optional defaults to 
-						errorFreqMean/10)""",default=None,type='float')
+						errorFreqMean/5)""",default=None,type='float')
 parser.add_option("--strandBias", dest="strandBias",help="""Ratio of reads 
 					sampled from forward or reverse strand. 1 samples only from 
 					forward, 0 only from reverse.(Optional defaults to .5)""",
@@ -66,22 +66,30 @@ if not opt.readSd :
 if not opt.indelSd:
 	opt.indelSd = float(opt.indelMean)/2
 if not opt.snpFreqSd:
-	opt.snpFreqSd = float(opt.snpFreq)/10
+	opt.snpFreqSd = float(opt.snpFreq)/5
 if opt.errorBiasFile:
 	errorBias = AutoVivification()
 	with open(opt.errorBiasFile,'rb') as errorFile:
+		pattern = re.compile("#")
 		reader = csv.reader(errorFile,delimiter='\t')
 		for row in reader:
-			if not row[0] =='#' :
-				errorBias[row[0]][row[1]][row[2]] = row[3]
-	print errorBias
+			if not pattern.search(row[0]):
+				if row[1]:
+					patternKey = re.compile(row[0]+row[1]+row[2])
+				else:
+					## This is incase of the regular expression matching the 
+					## start or end of a line
+					patternKey = re.compile(row[0]+'.'+row[2])
+				errorBias[patternKey] = (len(row[0]),int(row[3]))
+else:
+	errorBias = None
 
 
 
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.simID = ''
 
-def subsample(ref,opt,errorSimulator=complexError):
+def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 	"""
 	Function to take a fasta file subsample reads and generate a list of 
 	subsampled reads
@@ -100,7 +108,7 @@ def subsample(ref,opt,errorSimulator=complexError):
 		seq = ref[start:start+seqLength]
 		record=SeqRecord(seq,recordId,'','')
 		## Randomly generate errors
-		simulatedErrors = errorSimulator(record,opt,id = recordId)
+		simulatedErrors = errorSimulator(record,opt,id = recordId,errorBias=errorBias)
 		errs = simulatedErrors.error()
 		logging.info("### generated %i errors in a read of length %i" % (len(errs),seqLength))
 		simulatedErrorDB.addErrors(errs)
@@ -115,7 +123,7 @@ def subsample(ref,opt,errorSimulator=complexError):
 opt.readFilename = opt.refFilename[:-3] + '.subsampled.fq' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")
-seqList = subsample(ref,opt)
+seqList = subsample(ref,opt,errorBias=errorBias)
 
 
 
