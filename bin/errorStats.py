@@ -35,14 +35,14 @@ if not os.path.exists(opt.jsonDir):
 ref = getRef(opt.refFilename)
 
 logging.info("Doing some kmer counting")
-errorCounter = counter(ref,opt,samfile=opt.samfile)
+errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
 for name,count in errorCounter.readCounter.iteritems():
 	logging.info('### Count of %s == %i' % (name,count))
 errorCounter.summary()
 
 # errorCounter.countRefKmer()
 # errorCounter.countErrorKmer(1)
-# errorCounter.plotHist()
+errorCounter.plotHist()
 print errorCounter.getSimulatedCount(truth='A',emission='T')
 print errorCounter.getCount(truth='A',emission='T')
 
@@ -51,6 +51,8 @@ print errorCounter.getCount(truth='A',emission='T')
 # 	print post
 # print errorCounter.getCount(), len(errorCounter.errorList)
 # print errorCounter.getCount(kmerBefore='A')
+
+
 # print errorCounter.getCount(maxAlignedDist=10)
 # print errorCounter.getCount(readPosRange=[0,10])
 # count,errorList = errorCounter.getCount(qualRange=[10,10],returnList=True)
