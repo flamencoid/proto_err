@@ -1,4 +1,4 @@
-1;2c#!/usr/bin/env python
+#!/usr/bin/env python
 ## A script to take a sam file of aligned reads and do some stats on errors
 
 import sys
