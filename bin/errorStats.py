@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath('../proto_err'))
 from optparse import OptionParser
 from errorCount import errorReader,counter
 from fastaIO import getRef
-
+from query import errordb
 
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
@@ -40,6 +40,9 @@ opt.dbName = 'proto_err' + opt.simID
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
 ref = getRef(opt.refFilename)
+errordb(database=opt.dbName).addMetaData(opt=opt,t='counting')
+
+
 if opt.force:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
 else:
@@ -51,8 +54,9 @@ errorCounter.summary()
 errorCounter.plotHist()
 # errorCounter.countRefKmer()
 # errorCounter.countErrorKmer(1)
-errorCounter.plotHist()
+
 print errorCounter.getSimulatedCount(truth='A',emission='T')
+print errorCounter.getExpectedCount(truth='A',emission='T')
 print errorCounter.getCount(truth='A',emission='T')
 
 # print errorCounter.getSimulatedCount(truth='A',emission='T')

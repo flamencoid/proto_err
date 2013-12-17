@@ -73,7 +73,11 @@ class simulateError():
         return SeqRecord(self.seq,self.id,letter_annotations={'phred_quality':self.qscore()})
 
     def qscore(self,t='int'):
-        qscores =[int(-10 * math.log10(p+0.000001)) for p in self.errorProb]
+        qscores = []
+        for p in self.errorProb:
+            if p < 0:
+                p = 0
+            qscores.append(int(-10 * math.log10(p+0.000001)))
         if t=='int':
             return qscores
         elif t=='ascii':

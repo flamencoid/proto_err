@@ -287,6 +287,7 @@ class counter():
         self.errordb = {}
         self.errordb['errors'] = errordb(database=opt.dbName,collection=opt.observedErrorDBName)
         self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
+        self.errordb['metaData'] = errordb(database=opt.dbName,collection='metaData')
         if makeDB:
             
             self.errordb['errors'].deleteAll()
@@ -608,10 +609,13 @@ class counter():
             >>> print errorCounter.getCount(truth='A',emission='T')
             111
         """
+        simulationMetaData =  self.errordb['metaData'].find_one({'type':'simulation'},{'snpFreq':1,'readMean':1,'numReads':1,'SnpIndelRatio':1})
         probBaseIsTruth = self.probKmer(truth)
-        SNPCount = float(self.getCount(type='SNP'))
+        # print simulationMetaData
+        # ExpectedSNPCount = self.readCounter['totalAlignedBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
+        ExpectedSNPCount = self.readCounter['totalBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
         probEmmission = float(1)/float(3)
-        expectedCount = probBaseIsTruth * SNPCount * probEmmission
+        expectedCount = probBaseIsTruth * ExpectedSNPCount * probEmmission
 
         return round(expectedCount)
 

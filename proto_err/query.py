@@ -18,16 +18,18 @@ class errordb():
             except:
                 MongoClient('localhost', 27017)
                 logging.error(getDBError())
-
+        self.database = database
         self.db = self.client[database]
         self.collection = collection
         self.errors = self.db[self.collection]
+        
 
     def addErrors(self,errorList):
         """
         Add errors from errorList to database
         """
-        self.logger.info('Uploading errors to database "proto_err.%s" for downstream querying'%(self.collection))
+
+        self.logger.info('Uploading errors to database "%s.%s" for downstream querying'%(self.database,self.collection))
         errorListOut = []
         for error in errorList:
             errorListOut.append(self.addError(error))
@@ -36,14 +38,20 @@ class errordb():
         """
         Add an error to the database
         """
+        self.errors = self.db[self.collection]
         if not type(error) is dict:
             post = error.doc
         postID = self.errors.insert(post)
         error.dbID = postID
         return error
-    def find_one(self):
-        return self.errors.find_one()
+    def find_one(self,query,filt=None):
+        self.errors = self.db[self.collection]
+        if filt:
+            return self.errors.find_one(query,filt)
+        else:
+            return self.errors.find_one(query)
     def find(self,query,filt=None):
+        self.errors = self.db[self.collection]
         if filt:
             return self.errors.find(query,filt)
         else:
@@ -61,8 +69,28 @@ class errordb():
         self.logger.info("### Wiping error DB")
         self.errors.remove()
 
-    # def addMetaData(self,opt):
+    def addMetaData(self,opt,t,errorBias=None):
+        self.md = self.db['metaData']
+        self.logger.info('Uploading %s metaData to database "%s.metaData"'%(t,self.database))
+        document = vars(opt)
+        document['type'] = t
+        if self.md.find({'type':t}).count() > 0:
+            self.logger.warning("### Metadata already found removing and re uploading")
+            self.md.remove({'type':t})
+        self.md.insert(document) 
         
+        if errorBias:
+            errorBiasDocument = {}
+            for pattern,tup in errorBias.iteritems():
+                errorBiasDocument[pattern.pattern] = tup
+            errorBiasDocument['type'] = 'errorBias'
+            if self.md.find({'type':'errorBias'}).count() > 0:
+                self.logger.warning("### Errorbias metadata already found removing and re uploading")
+                self.md.remove({'type':'errorBias'})
+            self.md.insert(errorBiasDocument)
+
+
+
 
 
 
