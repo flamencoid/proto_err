@@ -91,6 +91,14 @@ class errordb():
                 self.logger.warning("### Errorbias metadata already found removing and re uploading")
                 self.md.remove({'type':'errorBias'})
             self.md.insert(errorBiasDocument)
+    def getMetaData(self):
+        """
+        Return the metadata associated with current database
+        """
+        results = []
+        for res in self.db['metaData'].find():
+            results.append(res)
+        return results
 
 
 
