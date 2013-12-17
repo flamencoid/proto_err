@@ -10,7 +10,7 @@ import itertools
 from query import errordb
 from plot import *
 from error import error
-
+import os
 class errorReader():
     """ 
     Iterable over errors in aligned reads
@@ -285,8 +285,8 @@ class counter():
         self.setup(opt)
         ## Connection to mongoDB, runs without for now.
         self.errordb = {}
-        self.errordb['errors'] = errordb('errors')
-        self.errordb['simulatedErrors'] = errordb(collection='simulatedErrors')
+        self.errordb['errors'] = errordb(database=opt.dbName,collection=opt.observedErrorDBName)
+        self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
         if makeDB:
             
             self.errordb['errors'].deleteAll()
@@ -516,9 +516,9 @@ class counter():
             maxLen = max(observedSize + simulatedSize) 
             for order in [i+1 for i in range(maxLen)]:
                 dic = self.__countToDic(self.getCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
-                histPlotter(dic=dic,opt=self.opt,filename="deleted_kmer_observed_order_%i" % (order)).plot()
+                histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_observed_order_%i" % (order)).plot()
                 dic = self.__countToDic(self.getSimulatedCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
-                histPlotter(dic=dic,opt=self.opt,filename="deleted_kmer_simulated_order_%i" % (order)).plot()
+                histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_simulated_order_%i" % (order)).plot()
 
         ## Count insterted kmers 
         t = 'Insertion'
@@ -530,14 +530,14 @@ class counter():
             densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
                                 opt=self.opt,filename="inserted_size_hist_bar").plot(geom='bar')
             maxLen = max(observedSize + simulatedSize) 
-            for order in [i+1 for i in range(maxLen)]:
+            for order in [i+1 for i in range(maxLen)]:              
                 dic = self.__countToDic(self.getCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
-                histPlotter(dic=dic,opt=self.opt,filename="inserted_kmer_observed_order_%i" % (order)).plot()
+                histPlotter(dic=dic,opt=self.opt,filename="insKmerCount/inserted_kmer_observed_order_%i" % (order)).plot()
                 dic = self.__countToDic(self.getSimulatedCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
-                histPlotter(dic=dic,opt=self.opt,filename="inserted_kmer_simulated_order_%i" % (order)).plot()
+                histPlotter(dic=dic,opt=self.opt,filename="insKmerCount/inserted_kmer_simulated_order_%i" % (order)).plot()
 
 
-        ## Count kmers
+        ## Count kmers      
         for order in [i+1 for i in range(self.opt.maxKmerLength)]:
             dicBefore = AutoVivification()
             dicAfter = AutoVivification()
@@ -549,8 +549,8 @@ class counter():
                     count = self.getCount(kmerAfter = kmer,type=errorType)
                     if count != 0:
                         dicAfter[errorType][kmer] = count 
-                histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmer_before_%s_order_%s"%(errorType,order)).plot()
-                histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmer_after_%s_order_%s"%(errorType,order)).plot() 
+                histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmerBeforeCount/kmer_before_%s_order_%s"%(errorType,order)).plot()
+                histPlotter(dic=dicBefore[errorType],opt=self.opt,filename="kmerAfterCount/kmer_after_%s_order_%s"%(errorType,order)).plot() 
 
     def __countToDic(self,errorList,attribute):
         """Convience funciton to help with converting counts to dic for plotting

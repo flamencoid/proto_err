@@ -18,11 +18,15 @@ parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned rea
 						default="../data/ref.subsampled.fq.sam")
 parser.add_option("--outDir", dest="outDir",help="Path to output directory (Optional)",
 						default="../results")
+parser.add_option("-f","--forceMakeDB",action="store_true", dest="force",help="Remake database (Optional: default False)",
+						default=False)
+parser.add_option("-i","--id",dest="simID",help="simulation identifier",
+						default='')
 (opt, args) = parser.parse_args()
 
 ## Hardcode some options
 opt.maxKmerLength = 3 
-opt.outDir = opt.outDir + '/'
+opt.outDir = opt.outDir + '/' + opt.simID + '/'
 opt.imgDir = opt.outDir+'img/'
 opt.jsonDir = opt.outDir +'json/'
 if not os.path.exists(opt.outDir):
@@ -31,11 +35,15 @@ if not os.path.exists(opt.imgDir):
     os.makedirs(opt.imgDir)
 if not os.path.exists(opt.jsonDir):
     os.makedirs(opt.jsonDir)
+
+opt.dbName = 'proto_err' + opt.simID
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
 ref = getRef(opt.refFilename)
-
-errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
+if opt.force:
+	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
+else:
+	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
 
 for name,count in errorCounter.readCounter.iteritems():
 	logging.info('### Count of %s == %i' % (name,count))

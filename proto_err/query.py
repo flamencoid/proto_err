@@ -60,10 +60,9 @@ class errordb():
     def deleteAll(self):
         self.logger.info("### Wiping error DB")
         self.errors.remove()
-    # def addOptionsDocument(self,opt):
-    #     # self.creationTime = 
-    #     for key in getKeysFromValuesObject(opt):
-    #         print key
+
+    # def addMetaData(self,opt):
+        
 
 
 

@@ -25,6 +25,7 @@ class simulateError():
         seq[pos] = rl
         self.seq = Seq("".join(seq))
         # self.id += 's%s,%s' % (str(pos),str(rl))
+
         return error(true=truth,emission=rl,read=self.alignedRead,readPos=pos)
 
     def ins(self,pos,rl):
@@ -32,9 +33,10 @@ class simulateError():
         seq = list(self.seq)
         seq = seq[:pos+1] + list(rl) + seq[pos+1:]
         ## Also need to insert the equivalent qscores
-        self.errorProb = self.errorProb[:pos+1] + [self.errorProb[pos] for _ in list(rl)]  +self.errorProb[pos+1:]
+        self.errorProb = self.errorProb[:pos+1] + [self.opt.snpFreq for _ in list(rl)]  +self.errorProb[pos+1:]
         self.seq = Seq("".join(seq))
         # self.id += 'i%s,%s' % (str(pos),str(rl))
+        self.pos += len(rl) # need to jump pos to avoid putting errors in inserted seq
         return error(true='',emission=rl,read=self.alignedRead,readPos=pos)
 
     def deletion(self,pos,dlen):
@@ -100,6 +102,7 @@ class complexError(simulateError):
     def __init__(self,record,opt,id,baseErrorProb=None,errorBias=None):
         simulateError.__init__(self,record,opt,id)
         self.errorBias = errorBias
+        self.pos = 0
         if baseErrorProb:
             self.errorProb = baseErrorProb
         else:
@@ -109,8 +112,8 @@ class complexError(simulateError):
                 for pattern,prob in self.errorBias.iteritems():
                     results = pattern.finditer(str(self.seq))
                     for result in results:
-                    	# prob is a tuple (+pos to effected base,prob)
-                    	self.errorProb[result.start(0)+prob[0]] = random.gauss(prob[1], opt.snpFreqSd) 
+                    	# prob is a tuple (+pos to effected base,prob,sd)
+                    	self.errorProb[result.start(0)+prob[0]] = random.gauss(prob[1], prob[2]) 
 
             else:
             	self.errorProb = [random.gauss(opt.snpFreq, opt.snpFreqSd) for _ in self.seq]
@@ -121,19 +124,32 @@ class complexError(simulateError):
         """Function to induce errors"""
         ## iterate through the probability list
         errorList = []
-        for pos,prob in enumerate(self.errorProb):
-            if random.random() < prob and pos < len(self.errorProb):
-                letter = self.seq[pos]
+        while self.pos < len(self.errorProb):
+            r = random.random()
+            prob = self.errorProb[self.pos]
+            if r < prob:
+                # print self.pos,[(e,l) for e,l in zip(self.errorProb,self.seq) if e !=0]
+                letter = self.seq[self.pos]
                 alphabet = copy(self.alphabet)
                 reducedAlphabet = alphabet
                 reducedAlphabet.remove(letter)
                 replaceLetter = random.choice(reducedAlphabet)
                 if random.random() <= self.opt.SnpIndelRatio:
-                    e = self.snp(pos,replaceLetter)
+                    e = self.snp(self.pos,replaceLetter)
                     errorList.append(e)
                 else:
-                    e = self.indel(pos)
+                    e = self.indel(self.pos)
                     errorList.append( e)
+            
+                
+            self.pos +=1
         return errorList
+
+            
+
+        # for pos,prob in enumerate(self.errorProb):
+        #     if  < prob and pos < len(self.errorProb):
+
+                
             
 

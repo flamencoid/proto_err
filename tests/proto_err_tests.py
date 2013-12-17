@@ -41,6 +41,7 @@ def testComplexErrorSim():
     refRecord=SeqRecord(Seq(ref),'Chromosome dna:chromosome chromosome:ASM19595v1:Chromosome:1:4411532:1','','')
     record=SeqRecord(Seq(seq),'st=%s'%(100000),'','')
     opt = Values()
+    opt.snpFreq = 0.1
     rep = [0.1]*N
     errorSim = complexError(record,opt,id = 'st=%s'%(100000),baseErrorProb = rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
     assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
@@ -48,7 +49,7 @@ def testComplexErrorSim():
     assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
     assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTATACCTCGCATCGATCGATCG'+randomRightFlank)
     errorSim.ins(N+3,'CCC')
-    assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.15,0.15,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
+    assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.1,0.1,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
     assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTACCCTACCTCGCATCGATCGATCG'+randomRightFlank)
     errorSim.deletion(N+17,5)
     assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTACCCTACCTCGCATGATCG'+randomRightFlank)
@@ -96,13 +97,15 @@ def testComplexErrorSim():
     assert_equal(error3.after(3),'GAT')
     assert_equal(error3.before(3),'CAT') 
 
-    print error1.alignedCorrectly,error1.read.positions[0],error1.read.qname.split('st=')[1]
     assert_equal(error1.alignedCorrectly,True)
     assert_equal(error1.alignedDist,0)
 
     ## Test counter
     opt.maxKmerLength = 4
-    errorCounter = counter(ref,opt,errorList,makeDB=True)
+    opt.dbName = 'proto_errTEST'
+    opt.observedErrorDBName = 'errors'
+    opt.simulatedErrorDBName = 'simulatedErrors'
+    errorCounter = counter(ref=ref,opt=opt,errorList=errorList,makeDB=True)
     assert_equal(errorCounter.probKmer('A') +  errorCounter.probKmer('T') +
                     errorCounter.probKmer('C')  +errorCounter.probKmer('G') ,1)
     count,errorQueryList = errorCounter.getCount(returnList=True)
@@ -166,6 +169,9 @@ def testPlottingMore():
     testMultiHistPlotter = multiHistPlotter(dic,opt,filename="testMultiHist")
     testMultiHistPlotter.plot()
 
+def testOther():
+    record = SeqRecord(Seq('ATCGATCG'),'id','','')
+    assert_equal(str(record.reverse_complement().seq),'CGATCGAT')
     
 
 

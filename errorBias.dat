@@ -1,4 +1,4 @@
 ## This file contains context specific error probabilities. 
 ## The default probability is set by --errorFreqMean
-##kmerBefore	base	kmerAfter	prob
-	A		.3
+##kmerBefore	base	kmerAfter	probability 	sd
+	A		.2	0

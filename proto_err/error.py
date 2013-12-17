@@ -74,6 +74,13 @@ class error():
         self.read = read
         self.readPos = readPos # position on read where error starts 
         self.readPer = float(readPos) / float(len(read.seq))
+
+        ## If the read is on the reverse stand then 
+        if self.read.is_reverse:
+            self.true = reverse_complement(self.true)
+            self.emission = reverse_complement(self.emission)
+
+
         ## Was the read aligned correctly? 
         try:
             ## messy way of extracting read length

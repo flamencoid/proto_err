@@ -23,6 +23,8 @@ import re
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 					default="../data/ref.fa")
+parser.add_option("-i","--id",dest="simID",help="simulation identifier",
+						default='')
 parser.add_option("--numReads", dest="numReads",help="""Number of reads to 
 					sample from referecnce (Optional defaults to 1000)""",
 					default=1000,type='int')
@@ -80,14 +82,13 @@ if opt.errorBiasFile:
 					## This is incase of the regular expression matching the 
 					## start or end of a line
 					patternKey = re.compile(row[0]+'.'+row[2])
-				errorBias[patternKey] = (len(row[0]),float(row[3]))
+				errorBias[patternKey] = (len(row[0]),float(row[3]),float(row[4]))
 else:
 	errorBias = None
 
-
-
+opt.dbName = 'proto_err' + opt.simID	
 opt.simulatedErrorDBName = 'simulatedErrors'
-opt.simID = ''
+
 
 def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 	"""
@@ -96,8 +97,12 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 	"""
 	refLength =  len(ref)
 	seqList = []
-	simulatedErrorDB = errordb(collection=opt.simulatedErrorDBName)
+	simulatedErrorDB = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
 	counter = AutoVivification()
+
+	## Add options to errorDB
+	optionsErrorDB = errordb(database=opt.dbName,collection='metaData')
+
 	
 	simulatedErrorDB.deleteAll()
 	for i in range(opt.numReads):
@@ -107,16 +112,15 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 		recordId = 'st=%s' % (str(start))
 		seq = ref[start:start+seqLength]
 		record=SeqRecord(seq,recordId,'','')
+		## Take the read from the reverse stand opt.strandBias% of the time
+		if random.random() > opt.strandBias:
+			record = record.reverse_complement()
 		## Randomly generate errors
 		simulatedErrors = errorSimulator(record,opt,id = recordId,errorBias=errorBias)
 		errs = simulatedErrors.error()
 		logging.info("### generated %i errors in a read of length %i" % (len(errs),seqLength))
 		simulatedErrorDB.addErrors(errs)
 		record = simulatedErrors.record
-		## Take the read from the reverse stand opt.strandBias% of the time
-		if random.random() > opt.strandBias:
-			record = record.reverse_complement()
-
 		seqList.append(record)
 	return seqList
 

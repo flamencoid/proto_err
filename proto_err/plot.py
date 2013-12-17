@@ -5,6 +5,7 @@ import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 import logging
 import json
+import os
 base = importr('base')
 stats = importr('stats')
 datasets = importr('datasets')
@@ -63,6 +64,12 @@ class histPlotter(plotter):
         self.dic = dic
         self.imgFilename = self.imgDir + filename+ ".png"
         self.jsonFilename = self.jsonDir + filename+ ".json"
+        topLevelDir = "/".join(self.imgFilename.split('/')[:-1])
+        if not os.path.exists(topLevelDir):
+            os.makedirs(topLevelDir)  
+        topLevelDir = "/".join(self.jsonFilename.split('/')[:-1])
+        if not os.path.exists(topLevelDir):
+            os.makedirs(topLevelDir) 
     def plot(self):
     	"""Method to call plot"""
         dataf= ro.DataFrame({'kmer': ro.StrVector(tuple(self.dic.keys())), 

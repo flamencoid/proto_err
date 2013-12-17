@@ -1,5 +1,6 @@
 import itertools
-
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
 def getAlphabet():
     return ['A','T','C','G']
 
@@ -34,5 +35,8 @@ def getKeysFromValuesObject(opt):
     return [key for key in dir(opt) if not key in ['__cmp__', '__doc__', '__init__', '__module__', '__repr__', '__str__', '_update', '_update_careful', '_update_loose', 'ensure_value', 'read_file', 'read_module']]
 # def cigarIntToString(i):
 #     dic = {0:'M',1:'I',''}
+def reverse_complement(string):
+    record  = SeqRecord(Seq(string),'','','')
+    return str(record.reverse_complement().seq)
 
 
