@@ -36,7 +36,7 @@ if not os.path.exists(opt.imgDir):
 if not os.path.exists(opt.jsonDir):
     os.makedirs(opt.jsonDir)
 
-opt.dbName = 'proto_err' + opt.simID
+opt.dbName = 'proto_err_' + opt.simID
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
 ref = getRef(opt.refFilename)

@@ -4,6 +4,7 @@ import logging
 from utils import *
 from pysam import AlignedRead
 from error import error
+import datetime
 class errordb():
     """docstring for db"""
     def __init__(self,database='proto_err',collection='errors'):
@@ -74,6 +75,8 @@ class errordb():
         self.logger.info('Uploading %s metaData to database "%s.metaData"'%(t,self.database))
         document = vars(opt)
         document['type'] = t
+        document['date'] = str(datetime.date.today())
+        document['time'] = str(datetime.datetime.today().hour) + ':'+str(datetime.datetime.today().minute)
         if self.md.find({'type':t}).count() > 0:
             self.logger.warning("### Metadata already found removing and re uploading")
             self.md.remove({'type':t})

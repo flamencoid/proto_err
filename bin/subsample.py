@@ -86,7 +86,7 @@ if opt.errorBiasFile:
 else:
 	errorBias = None
 
-opt.dbName = 'proto_err' + opt.simID	
+opt.dbName = 'proto_err_' + opt.simID	
 opt.simulatedErrorDBName = 'simulatedErrors'
 
 errordb(database=opt.dbName).addMetaData(opt=opt,t='simulation',errorBias=errorBias)
