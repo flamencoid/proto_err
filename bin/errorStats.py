@@ -18,8 +18,8 @@ parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned rea
 						default="../data/ref.subsampled.fq.sam")
 parser.add_option("--outDir", dest="outDir",help="Path to output directory (Optional)",
 						default="../results")
-parser.add_option("-f","--forceMakeDB",action="store_true", dest="force",help="Remake database (Optional: default False)",
-						default=False)
+parser.add_option("-f","--forceUseCurrentDB",action="store_false", dest="force",help="Don't Remake database (Optional: default wipes and repopulates database)",
+						default=True)
 parser.add_option("-i","--id",dest="simID",help="simulation identifier",
 						default='')
 (opt, args) = parser.parse_args()
