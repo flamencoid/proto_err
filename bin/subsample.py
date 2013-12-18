@@ -125,7 +125,7 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 		seqList.append(record)
 	return seqList
 
-opt.readFilename = opt.refFilename[:-3] + '.subsampled.fq' 
+opt.readFilename = opt.refFilename[:-3] +'.subsampled.'+ opt.simID+'.fq' 
 ref = getRef(opt.refFilename)
 logging.info("Subsampling reads from reference")
 seqList = subsample(ref,opt,errorBias=errorBias)
@@ -139,7 +139,7 @@ logging.info("Indexing reference")
 align.refIndex(file=opt.refFilename)
 # ## Align reads to the reference
 logging.info("Aligning reads to reference")
-samfileName = opt.readFilename + '.sam'
+samfileName = opt.refFilename[:-3] +'.subsampled.'+ opt.simID + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
 
 
