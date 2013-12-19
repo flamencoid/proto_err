@@ -89,7 +89,8 @@ else:
 opt.dbName = 'proto_err_' + opt.simID	
 opt.simulatedErrorDBName = 'simulatedErrors'
 
-errordb(database=opt.dbName).addMetaData(opt=opt,t='simulation',errorBias=errorBias)
+# errordb(database=opt.dbName).addMetaData(opt=opt,t='simulation',errorBias=errorBias)
+errordb(database=opt.dbName).addMetaData(opt=opt,t='simulation')
 
 def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 	"""
