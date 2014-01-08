@@ -19,7 +19,8 @@ import random
 from Bio.SeqRecord import SeqRecord
 import csv
 import re
-
+import time
+start = time.clock()
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 					default="../data/ref.fa")
@@ -27,7 +28,7 @@ parser.add_option("-i","--id",dest="simID",help="simulation identifier",
 						default='')
 parser.add_option("--numReads", dest="numReads",help="""Number of reads to 
 					sample from referecnce (Optional defaults to 1000)""",
-					default=1000,type='int')
+					default=100,type='int')
 parser.add_option("--meanReadLength", dest="readMean",help="""Read length is 
 					sampled from a normal of this mean (Optional defaults to 
 						1000)""",default=1000,type='int')
@@ -147,7 +148,8 @@ align.refIndex(file=opt.refFilename)
 logging.info("Aligning reads to reference")
 samfileName = opt.refFilename[:-3] +'.subsampled.'+ opt.simID + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
-
+end = time.clock()
+logging.info("subsampled.py took %i seconds to run" % (end-start))
 
 
 
