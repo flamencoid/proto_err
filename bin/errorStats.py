@@ -35,7 +35,10 @@ if not os.path.exists(opt.imgDir):
     os.makedirs(opt.imgDir)
 if not os.path.exists(opt.jsonDir):
     os.makedirs(opt.jsonDir)
-
+## Make run ID mandatory
+if not opt.simID:
+	logging.error("Please specify a run ID with -i '''id''' ")
+	raise ValueError("-i option is mandatory")
 opt.dbName = 'proto_err_' + opt.simID
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'

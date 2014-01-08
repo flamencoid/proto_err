@@ -86,6 +86,11 @@ if opt.errorBiasFile:
 else:
 	errorBias = None
 
+## Make run ID mandatory
+if not opt.simID:
+	logging.error("Please specify a run ID with -i '''id''' ")
+	raise ValueError("-i option is mandatory")
+
 opt.dbName = 'proto_err_' + opt.simID	
 opt.simulatedErrorDBName = 'simulatedErrors'
 
