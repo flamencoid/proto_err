@@ -504,8 +504,8 @@ class counter():
         histPlotter(dic=simulatedDic,opt=self.opt,filename="SNP_simulated_transition").plot()
         # multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
         multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_simulated_expected_transition").plot()
-        ## Count deletion kmers
-        # get maximum deletion length
+        # # Count deletion kmers
+        # # get maximum deletion length
         observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
         simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
         if observedSize and simulatedSize:
@@ -515,27 +515,31 @@ class counter():
                                 opt=self.opt,filename="deletion_size_bar").plot(geom='bar')
 
             maxLen = max(observedSize + simulatedSize) 
-            for order in [i+1 for i in range(maxLen)]:
+            # for order in [i+1 for i in range(maxLen)]:
+            for order in [i+1 for i in range(5)]:
                 dic = self.__countToDic(self.getCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
+                print 'Deletion\n',dic
                 histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_observed_order_%i" % (order)).plot()
                 dic = self.__countToDic(self.getSimulatedCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
                 histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_simulated_order_%i" % (order)).plot()
 
         ## Count insterted kmers 
-        t = 'Insertion'
-        observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : t}, {'tlen':1} )]
-        simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : t}, {'tlen':1} )]
+        observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Insertion'}, {'tlen':1} )]
+        simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Insertion'}, {'tlen':1} )]
         if observedSize and simulatedSize:
             densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
-                                opt=self.opt,filename="inserted_size_hist_dens").plot(geom='dens')
+                                opt=self.opt,filename="insertion_size_hist_dens").plot(geom='dens')
             densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
-                                opt=self.opt,filename="inserted_size_hist_bar").plot(geom='bar')
+                                opt=self.opt,filename="insertion_size_bar").plot(geom='bar')
+
             maxLen = max(observedSize + simulatedSize) 
-            for order in [i+1 for i in range(maxLen)]:              
-                dic = self.__countToDic(self.getCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
-                histPlotter(dic=dic,opt=self.opt,filename="insKmerCount/inserted_kmer_observed_order_%i" % (order)).plot()
-                dic = self.__countToDic(self.getSimulatedCount(type=t,tlenRange=order,returnList=True)[1],attribute='emission')
-                histPlotter(dic=dic,opt=self.opt,filename="insKmerCount/inserted_kmer_simulated_order_%i" % (order)).plot()
+            # for order in [i+1 for i in range(maxLen)]:
+            for order in [i+1 for i in range(5)]:
+                dic = self.__countToDic(self.getCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
+                print 'insertion\n',dic
+                histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_observed_order_%i" % (order)).plot()
+                dic = self.__countToDic(self.getSimulatedCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
+                histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_simulated_order_%i" % (order)).plot()
 
 
         ## Count kmers      
@@ -566,6 +570,7 @@ class counter():
         dic
             dictonary of counts
         """
+        print len(errorList)
         dic = {}
         for error in errorList:
             if attribute == 'true':
@@ -798,7 +803,7 @@ class counter():
                 query['tlen'] = {'$lte':tlenRange[1],'$gte':tlenRange[0]}
             else:
                 query['tlen'] = tlenRange
-            
+        
         mongoPointer = self.errordb[collection].find(query)
         if returnList:
             errorList = self.errordb[collection].find_errors(query)
