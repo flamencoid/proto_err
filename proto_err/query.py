@@ -31,10 +31,11 @@ class errordb():
         """
 
         self.logger.info('Uploading errors to database "%s.%s" for downstream querying'%(self.database,self.collection))
-        errorListOut = []
-        for error in errorList:
-            errorListOut.append(self.addError(error))
-        return errorListOut
+        self.errors = self.db[self.collection]
+        posts = [error.doc for error in errorList]
+        postID = self.errors.insert(posts)
+        error.dbID = postID
+        return error
     def addError(self,error):
         """
         Add an error to the database

@@ -10,6 +10,8 @@ from optparse import OptionParser
 from errorCount import errorReader,counter
 from fastaIO import getRef
 from query import errordb
+import time
+start = time.clock()
 
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
@@ -96,5 +98,7 @@ print errorCounter.getCount(truth='A',emission='T')
 # print compare.res
 # for ee in compare.errorList:
 # 	print ee.true,ee.emission,ee.seq
+end = time.clock()
+logging.info("errorStats.py took %i seconds to run" % (end-start))
 
 
