@@ -33,9 +33,8 @@ class errordb():
         self.logger.info('Uploading errors to database "%s.%s" for downstream querying'%(self.database,self.collection))
         self.errors = self.db[self.collection]
         posts = [error.doc for error in errorList]
-        postID = self.errors.insert(posts)
-        error.dbID = postID
-        return error
+        self.errors.insert(posts)
+
     def addError(self,error):
         """
         Add an error to the database
@@ -60,7 +59,6 @@ class errordb():
             return self.errors.find(query)
     def find_errors(self,query,filt=None):
         errorList = []
-        print query,filt
         for document in self.find(query,filt):
             read = AlignedRead()
             read.seq = str(document['read'])

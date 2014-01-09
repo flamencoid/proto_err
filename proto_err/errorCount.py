@@ -518,7 +518,6 @@ class counter():
             # for order in [i+1 for i in range(maxLen)]:
             for order in [i+1 for i in range(5)]:
                 dic = self.__countToDic(self.getCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
-                print 'Deletion\n',dic
                 histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_observed_order_%i" % (order)).plot()
                 dic = self.__countToDic(self.getSimulatedCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
                 histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_simulated_order_%i" % (order)).plot()
@@ -536,7 +535,6 @@ class counter():
             # for order in [i+1 for i in range(maxLen)]:
             for order in [i+1 for i in range(5)]:
                 dic = self.__countToDic(self.getCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
-                print 'insertion\n',dic
                 histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_observed_order_%i" % (order)).plot()
                 dic = self.__countToDic(self.getSimulatedCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
                 histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_simulated_order_%i" % (order)).plot()
@@ -570,7 +568,6 @@ class counter():
         dic
             dictonary of counts
         """
-        print len(errorList)
         dic = {}
         for error in errorList:
             if attribute == 'true':

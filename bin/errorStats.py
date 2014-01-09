@@ -16,8 +16,8 @@ start = time.clock()
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 					default="../data/ref.fa")
-parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned reads",
-						default="../data/ref.subsampled.fq.sam")
+# parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned reads",
+# 						default="../data/ref.subsampled.fq.sam")
 parser.add_option("--outDir", dest="outDir",help="Path to output directory (Optional)",
 						default="../results")
 parser.add_option("-f","--forceUseCurrentDB",action="store_false", dest="force",help="Don't Remake database (Optional: default wipes and repopulates database)",
@@ -42,6 +42,7 @@ if not opt.simID:
 	logging.error("Please specify a run ID with -i '''id''' ")
 	raise ValueError("-i option is mandatory")
 opt.dbName = 'proto_err_' + opt.simID
+opt.samfile = "../data/ref.subsampled."+opt.simID+".sam"
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
 ref = getRef(opt.refFilename)
@@ -57,8 +58,6 @@ for name,count in errorCounter.readCounter.iteritems():
 	logging.info('### Count of %s == %i' % (name,count))
 errorCounter.summary()
 errorCounter.plotHist()
-# errorCounter.countRefKmer()
-# errorCounter.countErrorKmer(1)
 
 print errorCounter.getSimulatedCount(truth='A',emission='T')
 print errorCounter.getExpectedCount(truth='A',emission='T')
