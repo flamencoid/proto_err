@@ -127,7 +127,7 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 		simulatedErrors = errorSimulator(record,opt,id = recordId,errorBias=errorBias)
 		errs = simulatedErrors.error()
 		logging.info("### generated %i errors in a read of length %i" % (len(errs),seqLength))
-		simulatedErrorDB.addErrors(errs)
+		# simulatedErrorDB.addErrors(errs)
 		record = simulatedErrors.record
 		seqList.append(record)
 	return seqList
