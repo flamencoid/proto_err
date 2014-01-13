@@ -70,18 +70,22 @@ class simulateError():
     @property 
     def record(self):
         """Return a Bio.SeqRecord"""
-        return SeqRecord(self.seq,self.id,letter_annotations={'phred_quality':self.qscore()})
+        return SeqRecord(self.seq,self.id,letter_annotations={'phred_quality':self.qscore(t='int')})
 
     def qscore(self,t='int'):
         qscores = []
-        for p in self.errorProb:
-            if p < 0:
-                p = 0
-            qscores.append(int(-10 * math.log10(p+0.000001)))
         if t=='int':
+            for p in self.errorProb:
+                if p < 0:
+                    p = 0
+                qscores.append(int(-10 * math.log10(p+0.000001)))
             return qscores
         elif t=='ascii':
-            return "".join([intToAscii(i) for i in qscores])
+            for p in self.errorProb:
+                if p < 0:
+                    p = 0
+                qscores.append(chr( 33 + int(-10 * math.log10(p+0.000001))))
+            return "".join(qscores)
             
 
 
