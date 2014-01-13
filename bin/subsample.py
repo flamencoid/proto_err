@@ -28,7 +28,7 @@ parser.add_option("-i","--id",dest="simID",help="simulation identifier",
 						default='')
 parser.add_option("--numReads", dest="numReads",help="""Number of reads to 
 					sample from referecnce (Optional defaults to 1000)""",
-					default=100,type='int')
+					default=500,type='int')
 parser.add_option("--meanReadLength", dest="readMean",help="""Read length is 
 					sampled from a normal of this mean (Optional defaults to 
 						5000)""",default=1000,type='int')
@@ -92,7 +92,7 @@ if not opt.simID:
 	logging.error("Please specify a run ID with -i '''id''' ")
 	raise ValueError("-i option is mandatory")
 
-opt.dbName = 'proto_err_' + opt.simID	
+opt.dbName = 'proto_err_' + opt.simID.replace('.','_')	
 opt.simulatedErrorDBName = 'simulatedErrors'
 
 # errordb(database=opt.dbName).addMetaData(opt=opt,t='simulation',errorBias=errorBias)
@@ -143,14 +143,14 @@ seqList = subsample(ref,opt,errorBias=errorBias)
 logging.info("Writing Fasta file of subsampled reads")
 writeFastq(filename = opt.readFilename,seqList = seqList)
 # ## Index to the reference
-logging.info("Indexing reference")
-align.refIndex(file=opt.refFilename)
-# ## Align reads to the reference
-logging.info("Aligning reads to reference")
-samfileName = opt.refFilename[:-3] +'.subsampled.'+ opt.simID + '.sam'
-aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
-end = time.clock()
-logging.info("subsampled.py took %i seconds to run" % (end-start))
+# logging.info("Indexing reference")
+# align.refIndex(file=opt.refFilename)
+# # ## Align reads to the reference
+# logging.info("Aligning reads to reference")
+# samfileName = opt.refFilename[:-3] +'.subsampled.'+ opt.simID + '.sam'
+# aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
+# end = time.clock()
+# logging.info("subsampled.py took %i seconds to run" % (end-start))
 
 
 
