@@ -114,6 +114,7 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 	
 	simulatedErrorDB.deleteAll()
 	for i in range(opt.numReads):
+		logging.info("### Read %i of  %i" % (i,opt.numReads) )
 		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
 		start = random.randrange(refLength)
 		## randomly subsample from reference

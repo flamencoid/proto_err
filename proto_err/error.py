@@ -175,7 +175,11 @@ class error():
     @property 
     def doc(self):
         """Return a pymongo document"""
-        return {'true':self.true,'emission':self.emission,'read':str(self.read.seq),
+        # return {'true':self.true,'emission':self.emission,'read':str(self.read.seq),
+        #         'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
+        #         'leftFlank':self.before(10),'rightFlank':self.after(10),'type':self.errorType,
+        #         'qual':self.qual,'tlen' :self.tlen}
+        return {'true':self.true,'emission':self.emission,
                 'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
                 'leftFlank':self.before(10),'rightFlank':self.after(10),'type':self.errorType,
-                'qual':self.qual,'tlen' :self.tlen}
+                'qual':self.qual,'tlen' :self.tlen}        
