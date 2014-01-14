@@ -126,10 +126,10 @@ class error():
             a = a + 'N'
         return a
 
-    # def qscore(self,i):
-    #     """Return the quality score at a base +i i from the error start position
-    #     error.qscore(0) is equivalent to error.qual """
-    #     return asciiToInt(self.read.qqual[self.readPos+i])
+    def qscore(self,i):
+        """Return the quality score at a base +i i from the error start position
+        error.qscore(0) is equivalent to error.qual """
+        return asciiToInt(self.read.qqual[self.readPos+i])
 
     @property 
     def errorType(self):
