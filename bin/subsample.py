@@ -9,7 +9,6 @@ sys.path.insert(0, os.path.abspath('../proto_err'))
 from fastaIO import getRef,writeFasta,writeFastq
 from simulation import complexError
 from optparse import OptionParser
-import align
 import pysam
 from query import errordb
 from utils import *

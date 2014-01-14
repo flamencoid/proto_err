@@ -6,6 +6,8 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
 from optparse import OptionParser
+import align
+
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 					default="../data/ref.fa")
