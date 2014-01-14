@@ -66,14 +66,16 @@ class error():
     """
     
 
-    def __init__(self,true,emission,read,readPos):
+    def __init__(self,true,emission,read,readPos,readLength=None):
         self.true = true
         self.emission = emission
         assert true != '' or emission != ''
         assert true != emission
         self.read = read
-        self.readPos = readPos # position on read where error starts 
-        self.readPer = float(readPos) / float(len(read.seq))
+        self.readPos = readPos # position on read where error starts
+        if not self.readLength:
+            self.readLength = len(self.read.seq)
+        self.readPer = float(readPos) / float(self.readLength)
 
         ## If the read is on the reverse stand then 
         if self.read.is_reverse:
@@ -182,4 +184,4 @@ class error():
         return {'true':self.true,'emission':self.emission,
                 'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
                 'leftFlank':self.before(10),'rightFlank':self.after(10),'type':self.errorType,
-                'qual':self.qual,'tlen' :self.tlen}        
+                'qual':self.qual,'tlen' :self.tlen,'readLength':self.readLength}        

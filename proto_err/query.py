@@ -66,7 +66,8 @@ class errordb():
             read.seq = ''
             errorList.append(error(true=document['true'],
                                         emission=document['emission'],
-                                        read=read,readPos=document['readPos']))
+                                        read=read,readPos=document['readPos'],
+                                        readLength = document['readLength']))
         return errorList
     def deleteAll(self):
         self.logger.info("### Wiping error DB")
