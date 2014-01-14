@@ -84,7 +84,7 @@ class simulateError():
             for p in self.errorProb:
                 if p < 0:
                     p = 0
-                qscores.append(chr( 33 + int(-10 * math.log10(p+0.000001))))
+                qscores.append(intToAscii(int(-10 * math.log10(p+0.000001))))
             return "".join(qscores)
             
 
