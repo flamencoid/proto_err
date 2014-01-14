@@ -41,7 +41,7 @@ if not os.path.exists(opt.jsonDir):
 if not opt.simID:
 	logging.error("Please specify a run ID with -i '''id''' ")
 	raise ValueError("-i option is mandatory")
-opt.dbName = 'proto_err_' + opt.simID
+opt.dbName = 'proto_err_' + opt.simID.replace('.','_')
 opt.samfile = "../data/ref.subsampled."+opt.simID+".sam"
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
