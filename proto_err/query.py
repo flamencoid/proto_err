@@ -62,7 +62,8 @@ class errordb():
         errorList = []
         for document in self.find(query,filt):
             read = AlignedRead()
-            read.seq = str(document['read'])
+            # read.seq = str(document['read'])
+            read.seq = ''
             errorList.append(error(true=document['true'],
                                         emission=document['emission'],
                                         read=read,readPos=document['readPos']))

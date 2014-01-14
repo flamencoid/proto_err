@@ -136,7 +136,6 @@ class complexError(simulateError):
             r = random.random()
             prob = self.errorProb[self.pos]
             if r < prob:
-                # print self.pos,[(e,l) for e,l in zip(self.errorProb,self.seq) if e !=0]
                 letter = self.seq[self.pos]
                 alphabet = copy(self.alphabet)
                 reducedAlphabet = alphabet
