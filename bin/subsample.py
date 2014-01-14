@@ -141,6 +141,8 @@ seqList = subsample(ref,opt,errorBias=errorBias)
 logging.info("Writing Fasta file of subsampled reads")
 writeFastq(filename = opt.readFilename,seqList = seqList)
 
+end = time.clock()
+logging.info("subsampled.py took %i seconds to run" % (end-start))
 
 
 

@@ -11,6 +11,7 @@ parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 					default="../data/ref.fa")
 parser.add_option("-i","--id",dest="simID",help="simulation identifier",
 						default='')
+(opt, args) = parser.parse_args()
 ## Make run ID mandatory
 if not opt.simID:
 	logging.error("Please specify a run ID with -i '''id''' ")
