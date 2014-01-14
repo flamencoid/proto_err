@@ -20,6 +20,8 @@ if not opt.simID:
 	raise ValueError("-i option is mandatory")
 
 ## Index to the reference
+opt.readFilename = opt.refFilename[:-3] +'.subsampled.'+ opt.simID+'.fq' 
+
 logging.info("Indexing reference")
 align.refIndex(file=opt.refFilename)
 # ## Align reads to the reference
