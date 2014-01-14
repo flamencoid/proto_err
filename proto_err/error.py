@@ -73,7 +73,7 @@ class error():
         assert true != emission
         self.read = read
         self.readPos = readPos # position on read where error starts
-        if not self.readLength:
+        if not readLength:
             self.readLength = len(self.read.seq)
         self.readPer = float(readPos) / float(self.readLength)
 
