@@ -622,7 +622,7 @@ class counter():
         return round(expectedCount)
 
     def getSimulatedCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
-                type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],
+                type=None,maxAlignedDist=None,readLength=None,readPosRange=[],readPerRange=[],
                 qualRange=[],tlenRange=[],returnList=False):
         """
         Gets the count of simulated errors.
@@ -683,7 +683,7 @@ class counter():
         return self.getCount(truth=truth,emission=emission,kmerBefore=kmerBefore,
                             kmerAfter=kmerAfter,type=type,maxAlignedDist=maxAlignedDist,
                             readPosRange=readPosRange,readPerRange=readPerRange,
-                            qualRange=qualRange,tlenRange=tlenRange,returnList=returnList,
+                            qualRange=qualRange,tlenRange=tlenRange,readLength=readLength,returnList=returnList,
                             collection='simulatedErrors')
 
 
@@ -712,7 +712,7 @@ class counter():
         self.logger.info("### Total Deletion errors simulated = %i" % (self.getSimulatedCount(type='Deletion')))
 
     def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
-                type=None,maxAlignedDist=None,readPosRange=[],readPerRange=[],
+                type=None,maxAlignedDist=None,readLength=None,readPosRange=[],readPerRange=[],
                 qualRange=[],tlenRange=[],returnList=False,collection='errors'):
         """
         Gets the count for a given {truth,emmision,kmer}
@@ -793,6 +793,8 @@ class counter():
             query['readPos'] = {'$lte':readPosRange[1],'$gte':readPosRange[0]}
         if readPerRange:
             query['readPer'] = {'$lte':readPerRange[1],'$gte':readPerRange[0]}
+        if readLength:
+            query['readLength'] = readLength
         if qualRange:
             query['qual'] = {'$lte':qualRange[1],'$gte':qualRange[0]}
         if tlenRange:

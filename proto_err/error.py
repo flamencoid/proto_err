@@ -73,8 +73,13 @@ class error():
         assert true != emission
         self.read = read
         self.readPos = readPos # position on read where error starts
-        if not readLength:
-            self.readLength = len(self.read.seq)
+        if readLength:
+            self.readLength = readLength
+        else:
+            self.readLength = self.read.rlen
+        assert self.readLength != None
+       
+            
         self.readPer = float(readPos) / float(self.readLength)
 
         ## If the read is on the reverse stand then 
