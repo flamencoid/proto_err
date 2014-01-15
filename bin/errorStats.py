@@ -53,56 +53,13 @@ else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
 
 summ = summary(opt)
-print summ.numErrors
-print summ.errorDistribution()
+summ.errorDistribution()
+summ.qualDistribution()
+summ.qScoreCalibrationTest()
 
-
-
-
-
-
-# for name,count in errorCounter.readCounter.iteritems():
-# 	logging.info('### Count of %s == %i' % (name,count))
 # errorCounter.summary()
 # errorCounter.plotHist()
-# print errorCounter.getSimulatedCount(truth='A',emission='T')
-# print errorCounter.getExpectedCount(truth='A',emission='T')
-# print errorCounter.getCount(truth='A',emission='T')
 
-# print errorCounter.getSimulatedCount(truth='A',emission='T')
-# print errorCounter.getCount(truth='A',emission='T')
-
-
-# for post in errorCounter.errordb.find():
-# 	print post
-# print errorCounter.getCount(), len(errorCounter.errorList)
-# print errorCounter.getCount(kmerBefore='A')
-
-
-# print errorCounter.getCount(maxAlignedDist=10)
-# print errorCounter.getCount(readPosRange=[0,10])
-# count,errorList = errorCounter.getCount(qualRange=[10,10],returnList=True)
-# for error in errorList:
-# 	print error
-# print count,len(errorList)
-# errorCounter.res['qualCounter']
-
-
-
-
-# logging.info("Doing read comparision")
-# compare = comparison(ref)
-# compare.setup(opt)
-# logging.info("countKmers")
-# compare.countKmers(opt.maxOrder)
-# logging.info("countKmers")
-# logging.info("compareReads")
-
-# compare.compareReads(samfile=opt.samfileName,reffile=opt.readFilename)
-# compare.precedingKmers()
-# print compare.res
-# for ee in compare.errorList:
-# 	print ee.true,ee.emission,ee.seq
 end = time.clock()
 logging.info("errorStats.py took %i seconds to run" % (end-start))
 

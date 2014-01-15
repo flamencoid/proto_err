@@ -11,6 +11,7 @@ from query import errordb
 from plot import *
 from error import error
 import os
+from collections import Counter as listCounter
 class errorReader():
     """ 
     Iterable over errors in aligned reads
@@ -823,6 +824,13 @@ class summary():
         self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
         self.errordb['metaData'] = errordb(database=opt.dbName,collection='metaData')
         self.opt = opt
+        self.qscores = False
+        self.errorQualList = False
+
+    def getAllQualScores(self):
+        "Returns a list of quality scores of all the bases"
+        logging.info("Extracting Qscores from samfile")
+        return [asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.opt.samfile ).fetch()))]
 
     def errorDistribution(self):
         ed =  [doc['readPer'] for doc in self.errordb['errors'].find(query={},filt={'readPer'})]
@@ -834,6 +842,44 @@ class summary():
         if simEd:
             densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_dens').plot()
             densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_hist').plot(geom='hist')
+
+    def errorQualDistribution(self):
+        if not self.errorQualList:
+            self.errorQualList =  [doc['qual'] for doc in self.errordb['errors'].find(query={'type' : {'$ne': 'Deletion'}},filt={'qual'})]
+        print ed
+        if ed:
+            densityPlotterFromLists(dic={'errorQualDistribution':self.errorQualList},opt=self.opt,filename='errorQualDistribution_dens').plot()
+            densityPlotterFromLists(dic={'errorQualDistribution':self.errorQualList},opt=self.opt,filename='errorQualDistribution_hist').plot(geom='hist')
+
+        simEd = [doc['qual'] for doc in self.errordb['simulatedErrors'].find(query={},filt={'qual'})]
+        if simEd:
+            densityPlotterFromLists(dic={'simulatederrorQualDistribution':simEd},opt=self.opt,filename='simulatederrorQualDistribution_dens').plot()
+            densityPlotterFromLists(dic={'simulatederrorQualDistribution':simEd},opt=self.opt,filename='simulatederrorQualDistribution_hist').plot(geom='hist')        
+
+    def qualDistribution(self):
+        if not self.qscores:
+            self.qscores = self.getAllQualScores()
+
+        densityPlotterFromLists(dic={'QualDistribution':self.qscores},opt=self.opt,filename='QualDistribution_dens').plot()
+        densityPlotterFromLists(dic={'QualDistribution':self.qscores},opt=self.opt,filename='QualDistribution_hist').plot(geom='hist')
+
+    def qScoreCalibrationTest(self):
+        "plots assigned qscore versus emperical qscore to assess how well calibrated the quals are"
+        logging.info("Assess qscore calibration")
+        if not self.qscores:
+            self.qscores = self.getAllQualScores()
+        qScoreCounts = listCounter(self.qscores)
+
+        if not self.errorQualList:
+            self.errorQualList =  [doc['qual'] for doc in self.errordb['errors'].find(query={'type' : {'$ne': 'Deletion'}},filt={'qual'})]
+        errorQscoreCounts = listCounter(self.errorQualList)
+        empiricalQscore = []
+        samQscore =  [qual for qual,count in qScoreCounts.iteritems() if count > 100]
+        for qual in samQscore:
+            empiricalQscore.append(probToQscore(float(errorQscoreCounts[qual]) / float(qScoreCounts[qual])))
+        scatterPloter(x=samQscore,y=empiricalQscore,
+                    xlab='known',ylab='empirical',
+                    filename='qscoreCalibration',opt=self.opt).plot()
 
     @property 
     def numErrors(self):

@@ -1,6 +1,7 @@
 import itertools
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
+import math
 def getAlphabet():
     return ['A','T','C','G']
 
@@ -38,5 +39,8 @@ def getKeysFromValuesObject(opt):
 def reverse_complement(string):
     record  = SeqRecord(Seq(string),'','','')
     return str(record.reverse_complement().seq)
+
+def probToQscore(p):
+    return int(-10 * math.log10(p+0.000001))
 
 
