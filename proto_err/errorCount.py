@@ -826,12 +826,14 @@ class summary():
 
     def errorDistribution(self):
         ed =  [doc['readPer'] for doc in self.errordb['errors'].find(query={},filt={'readPer'})]
-        densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_dens').plot()
-        densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_hist').plot(geom='hist')
+        if ed:
+            densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_dens').plot()
+            densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_hist').plot(geom='hist')
 
         simEd = [doc['readPer'] for doc in self.errordb['simulatedErrors'].find(query={},filt={'readPer'})]
-        densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_dens').plot()
-        densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_hist').plot(geom='hist')
+        if simEd:
+            densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_dens').plot()
+            densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_hist').plot(geom='hist')
 
     @property 
     def numErrors(self):
