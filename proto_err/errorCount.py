@@ -201,9 +201,6 @@ class errorReader():
         """
         self.readCounter['H'] += N
         logging.error("We shouldn't have HardClipped bases in samfile skipping read")
-        self.readCounter['UnMapped'] += 1
-        self.readCounter['Mapped'] -= 1
-        self.__readNext()
 
         
     def __checkPadding(self,N):
