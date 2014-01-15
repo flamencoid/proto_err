@@ -200,8 +200,11 @@ class errorReader():
         Checks HardClipped read segment for errors. called when cigarstring = H:N 
         """
         self.readCounter['H'] += N
-        logging.error("We shouldn't have HardClipped bases in samfile")
-        0/0
+        logging.error("We shouldn't have HardClipped bases in samfile skipping read")
+        self.readCounter['UnMapped'] += 1
+        self.readCounter['Mapped'] -= 1
+        self.__readNext()
+
         
     def __checkPadding(self,N):
         """
