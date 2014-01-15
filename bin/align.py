@@ -28,3 +28,4 @@ align.refIndex(file=opt.refFilename)
 logging.info("Aligning reads to reference")
 samfileName = opt.refFilename[:-3] +'.subsampled.'+ opt.simID + '.sam'
 aligned = align.align(reference=opt.refFilename, read_file=opt.readFilename,stdout=samfileName)
+

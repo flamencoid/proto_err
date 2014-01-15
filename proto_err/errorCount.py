@@ -81,11 +81,13 @@ class errorReader():
         """
         ## If there are errors left in the read 
         self.__read = self.__samfile.next()
+        
         self.readCounter['Total'] += 1
         self.readCounter['totalBases'] += self.__read.rlen
         if self.__read.is_unmapped:
             self.readCounter['UnMapped'] += 1
         else:
+            self.currentReadLength = sum([tup[1] for tup in self.__read.cigar])
             self.readCounter['Mapped'] += 1
             self.readCounter['totalAlignedBases'] += self.__read.alen
             self.__checkRead()
@@ -178,7 +180,7 @@ class errorReader():
         i = self.__read.positions[self.__readPosIndex-1] + 1
         j =  self.__read.positions[self.__readPosIndex]        
         delSeg = str(self.__ref[i:j])
-        self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos))
+        self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos,readLength=self.currentReadLength))
     def __checkSkipped(self,N):
         """
         Checks skipped read segment for errors. called when cigarstring = N:N 
@@ -197,6 +199,8 @@ class errorReader():
         Checks HardClipped read segment for errors. called when cigarstring = H:N 
         """
         self.readCounter['H'] += N
+        logging.error("We shouldn't have HardClipped bases in samfile")
+        0/0
         
     def __checkPadding(self,N):
         """
@@ -811,6 +815,28 @@ class counter():
             return mongoPointer.count()
 
 
+class summary():
+    def __init__(self,opt):
+        ## Connection to mongoDB, runs without for now.
+        self.errordb = {}
+        self.errordb['errors'] = errordb(database=opt.dbName,collection=opt.observedErrorDBName)
+        self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
+        self.errordb['metaData'] = errordb(database=opt.dbName,collection='metaData')
+        self.opt = opt
+
+    def errorDistribution(self):
+        ed =  [doc['readPer'] for doc in self.errordb['errors'].find(query={},filt={'readPer'})]
+        densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_dens').plot()
+        densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_hist').plot(geom='hist')
+
+        simEd = [doc['readPer'] for doc in self.errordb['simulatedErrors'].find(query={},filt={'readPer'})]
+        densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_dens').plot()
+        densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_hist').plot(geom='hist')
+
+    @property 
+    def numErrors(self):
+        "Get the number of errors in the database"
+        return self.errordb['errors'].find().count()
 
 
 

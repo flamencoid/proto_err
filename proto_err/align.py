@@ -20,6 +20,7 @@ def align(reference, read_file, stdout,algorithm='bwa-mem'):
 	if algorithm=='bwa-mem':
 		logging.info("Aligning reads to reference with bwa-mem")
         alignCmd = BwaMemAlignCommandline( reference=reference, read_file=read_file)
+        print alignCmd
 
 	return alignCmd(stdout=stdout)
 
@@ -50,7 +51,7 @@ class BwaMemAlignCommandline(AbstractCommandline):
         self.program_name = cmd
         self.parameters = \
                 [
-                    _StaticArgument("mem"),
+                    _StaticArgument("mem -H"),
                     _Argument(["reference"], "Reference file name",
                               filename=True, is_required=True),
                     _Argument(["read_file"], "Read file name",
@@ -120,8 +121,8 @@ class BwaMemAlignCommandline(AbstractCommandline):
                     #         equate=False),
                     # _Switch(["-c", "c"],
                     #         "Reverse query but not complement it, which is required for alignment in the color space."),
-                    # _Switch(["-N", "N"],
-                    #         "Disable iterative search. All hits with no more than maxDiff differences will be found. This mode is much slower than the default."),
+                    _Switch(["-H", "H"],
+                            "Hardclipping off"),
                     # _Switch(["-I", "I"],
                     #         "The input is in the Illumina 1.3+ read format (quality equals ASCII-64)."),
                     # _Switch(["-b", "b"],

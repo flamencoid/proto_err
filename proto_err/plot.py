@@ -128,7 +128,7 @@ class densityPlotterFromLists(plotter):
         else:
             pp = gp + \
                  ggplot2.aes_string(x='value',fill='factor(name)') + \
-            ggplot2.geom_histogram(position='dodge',binwidth=1) + \
+            ggplot2.geom_histogram(position='dodge') + \
             ggplot2.theme_bw()+\
             ggplot2.theme(**{'axis.text.x': ggplot2.element_text(angle = 90,hjust = 1)})
         grdevices.png(file=self.imgFilename, width=512, height=512)
@@ -136,7 +136,7 @@ class densityPlotterFromLists(plotter):
         grdevices.dev_off()
 
         self.logger.info("Image saved to "+ self.imgFilename )
-        with open(self.jsonFilename,'wb') as jsonOutFile:
+        with open(self.jsonFilename+'_'+ geom,'wb') as jsonOutFile:
             json.dump(self.dic,jsonOutFile)
         self.logger.info("Raw data saved to "+ self.jsonFilename )
 

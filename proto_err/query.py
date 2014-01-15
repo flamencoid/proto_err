@@ -52,7 +52,7 @@ class errordb():
             return self.errors.find_one(query,filt)
         else:
             return self.errors.find_one(query)
-    def find(self,query,filt=None):
+    def find(self,query={},filt=None):
         self.errors = self.db[self.collection]
         if filt:
             return self.errors.find(query,filt)

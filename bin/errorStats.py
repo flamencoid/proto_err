@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
 from optparse import OptionParser
-from errorCount import errorReader,counter
+from errorCount import errorReader,counter,summary
 from fastaIO import getRef
 from query import errordb
 import time
@@ -46,22 +46,28 @@ opt.samfile = "../data/ref.subsampled."+opt.simID+".sam"
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
 ref = getRef(opt.refFilename)
-errordb(database=opt.dbName).addMetaData(opt=opt,t='counting')
-
 
 if opt.force:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
 else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
 
-for name,count in errorCounter.readCounter.iteritems():
-	logging.info('### Count of %s == %i' % (name,count))
-errorCounter.summary()
-errorCounter.plotHist()
+summ = summary(opt)
+print summ.numErrors
+print summ.errorDistribution()
 
-print errorCounter.getSimulatedCount(truth='A',emission='T')
-print errorCounter.getExpectedCount(truth='A',emission='T')
-print errorCounter.getCount(truth='A',emission='T')
+
+
+
+
+
+# for name,count in errorCounter.readCounter.iteritems():
+# 	logging.info('### Count of %s == %i' % (name,count))
+# errorCounter.summary()
+# errorCounter.plotHist()
+# print errorCounter.getSimulatedCount(truth='A',emission='T')
+# print errorCounter.getExpectedCount(truth='A',emission='T')
+# print errorCounter.getCount(truth='A',emission='T')
 
 # print errorCounter.getSimulatedCount(truth='A',emission='T')
 # print errorCounter.getCount(truth='A',emission='T')
