@@ -55,13 +55,14 @@ class errorReader():
         self.__ref = ref
         self.__alphabet = getAlphabet()
         self.readCounter = {}
-        self.readCounter['Total'] = 0
+        self.readCounter['TotalReads'] = 0
         self.readCounter['UnMapped'] = 0
         self.readCounter['Mapped'] = 0
         self.readCounter['perfectAlignments'] = 0
         self.readCounter['mismatchedAlignments'] = 0
         self.readCounter['totalAlignedBases'] = 0
         self.readCounter['totalBases'] = 0
+        self.readCounter['HardClippedReads'] = 0
         for c in list('MIDNSHP=X'):
             self.readCounter[c] = 0
         self.errorList = []
@@ -83,7 +84,7 @@ class errorReader():
         ## If there are errors left in the read 
         self.__read = self.__samfile.next()
         
-        self.readCounter['Total'] += 1
+        self.readCounter['TotalReads'] += 1
         self.readCounter['totalBases'] += self.__read.rlen
         if self.__read.is_unmapped:
             self.readCounter['UnMapped'] += 1
@@ -91,6 +92,8 @@ class errorReader():
             self.currentReadLength = sum([tup[1] for tup in self.__read.cigar])
             self.readCounter['Mapped'] += 1
             self.readCounter['totalAlignedBases'] += self.__read.alen
+            if 'H' in list(self.__read.cigarstring):
+                self.readCounter['HardClippedReads'] += 1
             self.__checkRead()
 
     def next(self):
@@ -200,7 +203,7 @@ class errorReader():
         Checks HardClipped read segment for errors. called when cigarstring = H:N 
         """
         self.readCounter['H'] += N
-        logging.error("We shouldn't have HardClipped bases in samfile skipping read")
+        logging.warning("We shouldn't have HardClipped bases in samfile")
 
         
     def __checkPadding(self,N):
@@ -709,12 +712,16 @@ class counter():
         return float(self.ref.count(kmer)) / len(self.ref)
 
     def summary(self):
+        "Log a summary of errors found and samfile counts"
+        for key,value in self.readCounter.iteritems():
+            self.logger.info("### Count of %s in samfile = %i" % (key,value))
         self.logger.info("### Total SNP errors observed = %i" % (self.getCount(type='SNP')) )
         self.logger.info("### Total SNP errors simulated = %i" % (self.getSimulatedCount(type='SNP')))
         self.logger.info("### Total Insertion errors observed = %i" % (self.getCount(type='Insertion')))
         self.logger.info("### Total Insertion errors simulated = %i" % (self.getSimulatedCount(type='Insertion')))
         self.logger.info("### Total Deletion errors observed = %i" % (self.getCount(type='Deletion')))
         self.logger.info("### Total Deletion errors simulated = %i" % (self.getSimulatedCount(type='Deletion')))
+        
 
     def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
                 type=None,maxAlignedDist=None,readLength=None,readPosRange=[],readPerRange=[],

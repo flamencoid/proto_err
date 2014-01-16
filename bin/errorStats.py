@@ -51,13 +51,14 @@ if opt.force:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
 else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
+errorCounter.summary()
 
-summ = summary(opt)
-summ.errorDistribution()
-summ.qualDistribution()
-summ.qScoreCalibrationTest()
+# summ = summary(opt)
+# summ.errorDistribution()
+# summ.qualDistribution()
+# summ.qScoreCalibrationTest()
 
-# errorCounter.summary()
+# 
 # errorCounter.plotHist()
 
 end = time.clock()

@@ -27,10 +27,10 @@ parser.add_option("-i","--id",dest="simID",help="simulation identifier",
 						default='')
 parser.add_option("--numReads", dest="numReads",help="""Number of reads to 
 					sample from referecnce (Optional defaults to 1000)""",
-					default=500,type='int')
+					default=100,type='int')
 parser.add_option("--meanReadLength", dest="readMean",help="""Read length is 
 					sampled from a normal of this mean (Optional defaults to 
-						5000)""",default=5000,type='int')
+						5000)""",default=500,type='int')
 parser.add_option("--errorFreqMean", dest="snpFreq",help="""Probablity of an error 
 					at a base occurs is sampled from a normal with mean 
 					of this Probablity (Optional defaults to 
