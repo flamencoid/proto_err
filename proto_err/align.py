@@ -8,21 +8,21 @@ from Bio.Application import _Option, _Argument, _Switch, AbstractCommandline,_St
 import os
 
 def refIndex(file):
-	"""
-	Function to generate BWA index
-	"""
-	logging.info("Creating BW index of reference")
-	index_cmd = Applications.BwaIndexCommandline(infile=file, algorithm="bwtsw")
-	index_cmd()
-	return 1
+    """
+    Function to generate BWA index
+    """
+    logging.info("Creating BW index of reference")
+    index_cmd = Applications.BwaIndexCommandline(infile=file, algorithm="bwtsw")
+    index_cmd()
+    return 1
 
 def align(reference, read_file, stdout,algorithm='bwa-mem'):
-	if algorithm=='bwa-mem':
-		logging.info("Aligning reads to reference with bwa-mem")
+    if algorithm=='bwa-mem':
+        logging.info("Aligning reads to reference with bwa-mem")
         alignCmd = BwaMemAlignCommandline( reference=reference, read_file=read_file)
         print alignCmd
 
-	return alignCmd(stdout=stdout)
+    return alignCmd(stdout=stdout)
 
 class BwaMemAlignCommandline(AbstractCommandline):
     """Command line wrapper for Burrows Wheeler Aligner (BWA) aln.
@@ -51,7 +51,7 @@ class BwaMemAlignCommandline(AbstractCommandline):
         self.program_name = cmd
         self.parameters = \
                 [
-                    _StaticArgument("mem -B 1 -t 4"),
+                    _StaticArgument("mem -B 1 -t 4 -O 1 -L 9"),
                     _Argument(["reference"], "Reference file name",
                               filename=True, is_required=True),
                     _Argument(["read_file"], "Read file name",

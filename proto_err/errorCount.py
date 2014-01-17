@@ -205,6 +205,7 @@ class errorReader():
         self.readCounter['H'] += N
         logging.warning("We shouldn't have HardClipped bases in samfile")
 
+
         
     def __checkPadding(self,N):
         """
