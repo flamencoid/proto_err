@@ -89,7 +89,6 @@ class errorReader():
         if self.__read.is_unmapped:
             self.readCounter['UnMapped'] += 1
         else:
-            self.currentReadLength = sum([tup[1] for tup in self.__read.cigar])
             self.readCounter['Mapped'] += 1
             self.readCounter['totalAlignedBases'] += self.__read.alen
             if 'H' in list(self.__read.cigarstring):
@@ -126,12 +125,9 @@ class errorReader():
             if cigarInt == 0:
                 ## Match or mismatch
                 self.__checkSNPs(N=numBases)
-                self.__readPos += numBases
-                self.__readPosIndex += numBases
             elif cigarInt == 1:                
                 ## Insertion to the reference
                 self.__checkInsertion(N=numBases)
-                self.__readPos += numBases
             elif cigarInt == 2:
                 ## Deletion from the reference
                 self.__checkDeletion(N=numBases)
@@ -159,6 +155,7 @@ class errorReader():
         """
         Checks read segment for SNP errors. called when cigarstring = M:N 
         """
+
         self.readCounter['M'] += N
         readSeg = popLong(self.__currentReadList,0,N)
         refSeg = popLong(self.__currentRefReadList,0,N)
@@ -168,14 +165,17 @@ class errorReader():
             ## if it's an error, check the preceding  opt.maxOrder bases
             if not true == emission:
                 ## Check preceding bases
-                self.errorList.append(error(true,emission,self.__read,readPos=i+self.__readPos))   
+                self.errorList.append(error(true,emission,self.__read,readPos=i+self.__readPos)) 
+        self.__readPos += N
+        self.__readPosIndex += N  
     def __checkInsertion(self,N):
         """
         Checks Insertion read segment for errors. called when cigarstring = I:N 
         """
         self.readCounter['I'] += N
         insSeg = popLong(self.__currentReadList,0,N)
-        self.errorList.append(error(true='',emission="".join(insSeg),read=self.__read,readPos=self.__readPos))
+        self.errorList.append(error(true='',emission="".join(insSeg),read=self.__read,readPos=self.__readPos)) # -1 as insertion occurs at previous base (if simulating)
+        self.__readPos += N
     def __checkDeletion(self,N):
         """
         Checks Deletion read segment for  errors. called when cigarstring = D:N 
@@ -184,7 +184,7 @@ class errorReader():
         i = self.__read.positions[self.__readPosIndex-1] + 1
         j =  self.__read.positions[self.__readPosIndex]        
         delSeg = str(self.__ref[i:j])
-        self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos,readLength=self.currentReadLength))
+        self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos))
     def __checkSkipped(self,N):
         """
         Checks skipped read segment for errors. called when cigarstring = N:N 
@@ -203,7 +203,7 @@ class errorReader():
         Checks HardClipped read segment for errors. called when cigarstring = H:N 
         """
         self.readCounter['H'] += N
-        logging.warning("We shouldn't have HardClipped bases in samfile")
+        logging.warning("We shouldn't have HardClipped bases in Samfile")
 
 
         
@@ -722,10 +722,17 @@ class counter():
         self.logger.info("### Total Insertion errors simulated = %i" % (self.getSimulatedCount(type='Insertion')))
         self.logger.info("### Total Deletion errors observed = %i" % (self.getCount(type='Deletion')))
         self.logger.info("### Total Deletion errors simulated = %i" % (self.getSimulatedCount(type='Deletion')))
-        
+
+        ## How many errors are from mismapped reads?
+        self.logger.info("### Total errors from reads mapped mapped correctly =%i" % (self.getCount(mappedCorrectly=1)))
+        self.logger.info("### Total errors from mismapped reads =%i" % (self.getCount(mappedCorrectly=0)))
+        self.logger.info("### Percentage of errors from  mismapped reads =%f " % (round(100*(float(self.getCount(mappedCorrectly=0)) / float(self.getCount()) ),2)))
+
+        ## How many errors were correctly recovered?
+
 
     def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
-                type=None,maxAlignedDist=None,readLength=None,readPosRange=[],readPerRange=[],
+                type=None,maxAlignedDist=None,mappedCorrectly=None,readLength=None,readPosRange=[],readPerRange=[],
                 qualRange=[],tlenRange=[],returnList=False,collection='errors'):
         """
         Gets the count for a given {truth,emmision,kmer}
@@ -745,6 +752,8 @@ class counter():
             type of error SNP Insertion or Deletion
         maxAlignedDist : int
             maximum aligned distance e.g. maxAlignedDist = 10 returns all errors where the read mapped within 10 bp of where it was sampled from 
+        mappedCorrectly : bool
+            Mapped distance within read length
         readPosRange : list or tuple of ints
             list or tuple of two elements range of error position along read. e.g. [0,10] returns all errors in the first 10bp of read
         readPerRange : list or tuple of ints
@@ -802,6 +811,8 @@ class counter():
             query['type'] = type
         if maxAlignedDist:
             query['alignedDist'] = {'$lte':maxAlignedDist}
+        if mappedCorrectly is not None:
+            query['mappedCorrectly'] = int(mappedCorrectly)
         if readPosRange:
             query['readPos'] = {'$lte':readPosRange[1],'$gte':readPosRange[0]}
         if readPerRange:
@@ -824,7 +835,7 @@ class counter():
             return mongoPointer.count()
 
 
-class summary():
+class db_summary():
     def __init__(self,opt):
         ## Connection to mongoDB, runs without for now.
         self.errordb = {}
@@ -854,7 +865,6 @@ class summary():
     def errorQualDistribution(self):
         if not self.errorQualList:
             self.errorQualList =  [doc['qual'] for doc in self.errordb['errors'].find(query={'type' : {'$ne': 'Deletion'}},filt={'qual'})]
-        print ed
         if ed:
             densityPlotterFromLists(dic={'errorQualDistribution':self.errorQualList},opt=self.opt,filename='errorQualDistribution_dens').plot()
             densityPlotterFromLists(dic={'errorQualDistribution':self.errorQualList},opt=self.opt,filename='errorQualDistribution_hist').plot(geom='hist')
@@ -895,6 +905,160 @@ class summary():
         return self.errordb['errors'].find().count()
 
 
+
+class samReader():
+    """ Read the same file and return human readable alignments"""
+    def __init__(self,samfile,ref):
+        self.samfile = pysam.Samfile( samfile ).fetch()
+        self.ref = ref
+    def __iter__(self):
+        return self
+    def next(self):
+        """
+        Returns the next read in the samfile aligned read
+        """
+        self.alignedRead = self.samfile.next()
+        if not self.alignedRead.is_unmapped:
+            self.ID = self.getReadID()
+            self.__parseRead()
+            return self
+        else:
+            self.next()
+            
+    def getReadID(self):
+        return int(self.alignedRead.qname.split('id=')[1])
+
+    def __parseRead(self):
+        """
+        parses the read and returns readable alignment
+        """
+        self.currentRead = []
+        self.currentRefRead = []
+
+        self.__currentRefReadList = list(self.__refRead)
+        self.__currentReadList = list(str(self.alignedRead.seq))
+        self.__readPos = 0
+        self.__readPosIndex = 0
+        for tup in self.alignedRead.cigar:
+            cigarInt = tup[0]
+            numBases = tup[1]
+            if cigarInt == 0:
+                ## Match or mismatch
+                self.__checkSNPs(N=numBases)
+            elif cigarInt == 1:                
+                ## Insertion to the reference
+                self.__checkInsertion(N=numBases)
+            elif cigarInt == 2:
+                ## Deletion from the reference
+                self.__checkDeletion(N=numBases)
+            elif cigarInt == 3:
+                ## skipped region from the reference
+                self.__checkSkipped(N=numBases)
+            elif cigarInt == 4:
+                ##  soft clipping (clipped sequences present in SEQ)
+                self.__checkSoftClipped(N=numBases)
+            elif cigarInt == 5:
+                ##  hard clipping (clipped sequences NOT present in SEQ)
+                self.__checkHardClipped(N=numBases)
+            elif cigarInt == 6:
+                ## padding (silent deletion from padded reference)
+                self.__checkPadding(N=numBases)
+            elif cigarInt == 7:
+                ## sequence match
+                self.__checkSeqMatch(N=numBases)
+            elif cigarInt == 8:
+                ## sequence mismatch
+                self.__checkSeqMismatch(N=numBases)
+
+        assert len(self.currentRefRead) == len(self.currentRead)
+    @property
+    def __refRead(self):
+        """
+        Get the reference sequence the read is aligned to
+        """
+        refRead = [str(self.ref[pos]) for pos in self.alignedRead.positions]
+        return "".join(refRead)
+    
+
+    def __checkSNPs(self,N):
+        """
+        Checks read segment for SNP errors. called when cigarstring = M:N 
+        """
+
+        readSeg = popLong(self.__currentReadList,0,N)
+        refSeg = popLong(self.__currentRefReadList,0,N)
+
+        self.currentRead.extend(readSeg)
+        self.currentRefRead.extend(refSeg)
+
+        self.__readPos += N
+        self.__readPosIndex += N  
+    def __checkInsertion(self,N):
+        """
+        Checks Insertion read segment for errors. called when cigarstring = I:N 
+        """
+
+        ## add _ to reference
+        insSeg = popLong(self.__currentReadList,0,N)
+        self.currentRead.extend(insSeg)
+        self.currentRefRead.extend('_'*len(insSeg))
+        self.__readPos += N
+    def __checkDeletion(self,N):
+        """
+        Checks Deletion read segment for  errors. called when cigarstring = D:N 
+        """
+        ## add _ to read
+        i = self.alignedRead.positions[self.__readPosIndex-1] + 1
+        j =  self.alignedRead.positions[self.__readPosIndex]        
+        delSeg = str(self.ref[i:j])
+        self.currentRead.extend('_'*len(delSeg))
+        self.currentRefRead.extend(delSeg)
+
+    def __checkSkipped(self,N):
+        """
+        Checks skipped read segment for errors. called when cigarstring = N:N 
+        """
+        logging.error("Haven't written a handler for this case yet")
+        0/0
+    def __checkSoftClipped(self,N):
+        """
+        Checks SoftClipped read segment for errors. called when cigarstring = S:N 
+        """
+        clippedSeg = popLong(self.__currentReadList,0,N)
+        self.currentRead.extend(clippedSeq)
+        self.currentRefRead.extend('*'*len(clippedSeg))
+
+        
+    def __checkHardClipped(self,N):
+        """
+        Checks HardClipped read segment for errors. called when cigarstring = H:N 
+        """
+        logging.warning("We shouldn't have HardClipped bases in Samfile")
+    def __checkPadding(self,N):
+        """
+        Checks Padding read segment for errors. called when cigarstring = P:N 
+        """
+        logging.error("Haven't written a handler for this case yet")
+        0/0
+    def __checkSeqMismatch(self,N):
+        """
+        Checks SeqMismatch read segment for errors. called when cigarstring = =:N 
+        """
+        logging.error("Haven't written a handler for this case yet")
+        0/0
+    def __checkSkipped(self,N):
+        """
+        Checks Skipped read segment for errors. called when cigarstring = X:N 
+        """
+        logging.error("Haven't written a handler for this case yet")
+        0/0       
+
+    @property
+    def read(self):
+        return "".join(self.currentRead)
+    @property
+    def refRead(self):
+        return "".join(self.currentRefRead) 
 
 
 

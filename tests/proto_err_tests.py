@@ -19,7 +19,7 @@ def testErrorClassBasic():
     a = AlignedRead()
     a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
     a.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
-    errorObj = error('A','T',a,0)
+    errorObj = error('A','T',a,0,refPos=1000)
     assert_equal(errorObj.true,'A')
     assert_equal(errorObj.emission,'T')
     assert_equal(errorObj.before(2),'NN')
@@ -43,15 +43,16 @@ def testComplexErrorSim():
     opt = Values()
     opt.snpFreq = 0.1
     rep = [0.1]*N
+    opt.refPos = 100000
     errorSim = complexError(record,opt,id = 'st=%s'%(100000),baseErrorProb = rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
     assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
-    errorSim.snp(N,'T')
+    errorSim.snp(pos=N,rl='T')
     assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
     assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTATACCTCGCATCGATCGATCG'+randomRightFlank)
-    errorSim.ins(N+3,'CCC')
+    errorSim.ins(pos=N+3,rl='CCC')
     assert_equal(errorSim.errorProb,rep+[0.1,0.15,0.1,0.15,0.1,0.1,0.1,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15,0.1,0.15]+rep)
     assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTACCCTACCTCGCATCGATCGATCG'+randomRightFlank)
-    errorSim.deletion(N+17,5)
+    errorSim.deletion(pos=N+17,dlen=5)
     assert_equal( str(errorSim.seq) , randomLeftFlank+'TGTACCCTACCTCGCATGATCG'+randomRightFlank)
 
     ## Write these to a fasta file
@@ -78,6 +79,8 @@ def testComplexErrorSim():
     assert_equal(error1.true,'A')
     assert_equal(error1.emission,'T')
     assert_equal(error1.after(3),'GTA')
+    assert_equal(error1.readPos,N)
+    assert_equal(error1.refPos,100000+N)  
 
     error2 = errorList[1]
     assert_equal(error2.isIndel,True)
@@ -86,7 +89,9 @@ def testComplexErrorSim():
     assert_equal(error2.true,'')
     assert_equal(error2.emission,'CCC') 
     assert_equal(error2.after(3),'TAC')
-    assert_equal(error2.before(3),'GTA')  
+    assert_equal(error2.before(3),'GTA')
+    assert_equal(error2.readPos,N+3)
+    assert_equal(error2.refPos,100000+3+N)  
 
     error3 = errorList[2]
     assert_equal(error3.isIndel,True)
@@ -96,9 +101,11 @@ def testComplexErrorSim():
     assert_equal(error3.emission,'')   
     assert_equal(error3.after(3),'GAT')
     assert_equal(error3.before(3),'CAT') 
+    assert_equal(error3.readPos,N+17)
+    assert_equal(error3.refPos,100000+17+N) 
 
-    assert_equal(error1.alignedCorrectly,True)
-    assert_equal(error1.alignedDist,0)
+    assert_equal(error1.mappedCorrectly,True)
+    assert_equal(error1.mappedDist,0)
 
     ## Test counter
     opt.maxKmerLength = 4
@@ -123,7 +130,7 @@ def testbasicQuery():
     a = AlignedRead()
     a.seq="AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG"
     a.qual = '++))++)+*)******)))+)**+*+++)**)*+)'
-    errorObj = error('A','T',a,0)
+    errorObj = error('A','T',a,0,refPos=1000)
     errorObj = database.addError(error=errorObj)
 
 def testPlotting():

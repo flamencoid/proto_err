@@ -51,7 +51,7 @@ class BwaMemAlignCommandline(AbstractCommandline):
         self.program_name = cmd
         self.parameters = \
                 [
-                    _StaticArgument("mem -B 1 -t 4 -O 1 -L 9"),
+                    _StaticArgument("mem -B 3 -t 4 -O 1 -L 9"),
                     _Argument(["reference"], "Reference file name",
                               filename=True, is_required=True),
                     _Argument(["read_file"], "Read file name",

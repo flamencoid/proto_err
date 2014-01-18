@@ -66,11 +66,13 @@ class error():
     """
     
 
-    def __init__(self,true,emission,read,readPos,readLength=None):
+    def __init__(self,true,emission,read,readPos,readLength=None,refPos=None):
         self.true = true
         self.emission = emission
         assert true != '' or emission != ''
         assert true != emission
+
+
         self.read = read
         self.readPos = readPos # position on read where error starts
         if readLength:
@@ -78,7 +80,10 @@ class error():
         else:
             self.readLength = self.read.rlen
         assert self.readLength != None
-       
+
+        self.readID = int(self.read.qname.split('id=')[1])
+        sampPos = int(self.read.qname.split('st=')[1].split('&')[0])
+
             
         self.readPer = float(readPos) / float(self.readLength)
 
@@ -87,45 +92,72 @@ class error():
             self.true = reverse_complement(self.true)
             self.emission = reverse_complement(self.emission)
 
-
+        ## What are the coordinates of the error?
+        if refPos is not None:
+            self.refPos = refPos
+        else:
+            self.refPos =  self.read.positions[0] + self.readPos
         ## Was the read aligned correctly? 
         try:
-            ## messy way of extracting read length
-            # s = list(self.read.qname.split('st=')[1])
-            # curInt = '0'
-            # tempList = []
-            # while curInt.isdigit():
-            #     curInt = s.pop(0)
-            #     tempList.append(curInt)
-            sampPos = int(self.read.qname.split('st=')[1])
-            # sampPos = int("".join(tempList[:-1]))
-            self.alignedDist =  int(abs(sampPos - self.read.positions[0]))
+            if self.read.cigar[0][0] in [4,5]:
+                    clippedBases = self.read.cigar[0][1]
+            else:
+                clippedBases = 0
+            self.mappedDist =  abs(int(abs(sampPos - self.read.positions[0])) -clippedBases)
         except:
-            self.alignedDist = None
-        if self.alignedDist is None:
-            self.alignedCorrectly = None
-        elif not self.alignedDist is None and (self.alignedDist < len(self.read.seq)):
-            self.alignedCorrectly = True
+            self.mappedDist = None
+        if self.mappedDist is None:
+            self.mappedCorrectly = None
+        elif not self.mappedDist is None and (self.mappedDist < self.readLength):
+            self.mappedCorrectly = 1
         else:
-            self.alignedCorrectly = False
+            self.mappedCorrectly = 0
+
+        assert self.readPos >=0
+        assert self.readPos < self.readLength
+
+
+    def __eq__(self, other):
+        "Checks if two errors are equivalent"
+        if isinstance(other, self.__class__):
+            refBase = self.true == other.true
+            emitBase = self.emission == other.emission
+            readPosBool = self.readPos == other.readPos
+            ## add check for reference coordinates
+            return refBase and emitBase and readPosBool
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __str__(self):
         return "%s error(%s to %s)" %(self.errorType,self.true,self.emission)
 
     def before(self,j):
         """Return the preceding j bases,return N when bases missing"""
-        i = self.readPos
+        if self.isInsertion:
+            ## For insertions, we need to move along the read otherwise the 
+            ## "after" bases will include the inserted sequence
+            i = self.readPos +1 
+        else:
+            i = self.readPos
+
+        # i = self.readPos
         b = self.read.seq[i-j:i]
         while len(b) < j:
             b = 'N' +b
         return b
     def after(self,j):
         """Return the following j bases,return N when bases missing"""
-        if self.isIndel:
+        if self.isInsertion:
             ## For insertions, we need to move along the read otherwise the 
             ## "after" bases will include the inserted sequence
-            i = self.readPos + len(self.emission) -1 
+            i = self.readPos + len(self.emission) 
+        elif self.isDeletion:
+            i = self.readPos -1
         else:
+            
             i = self.readPos
         
         a = self.read.seq[i+1:j+i+1]
@@ -173,7 +205,6 @@ class error():
             ## return the previous position instead ?? 
             return None
         else:
-            # print self.read.qqual
             return asciiToInt(self.read.qqual[self.readPos])
     @property 
     def tlen(self):
@@ -182,11 +213,9 @@ class error():
     @property 
     def doc(self):
         """Return a pymongo document"""
-        # return {'true':self.true,'emission':self.emission,'read':str(self.read.seq),
-        #         'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
-        #         'leftFlank':self.before(10),'rightFlank':self.after(10),'type':self.errorType,
-        #         'qual':self.qual,'tlen' :self.tlen}
         return {'true':self.true,'emission':self.emission,
-                'readPos':self.readPos,'readPer':self.readPer,'alignedDist':self.alignedDist,
+                'readPos':self.readPos,'readPer':self.readPer,'mappedDist':self.mappedDist,
+                'mappedCorrectly': self.mappedCorrectly,
                 'leftFlank':self.before(10),'rightFlank':self.after(10),'type':self.errorType,
-                'qual':self.qual,'tlen' :self.tlen,'readLength':self.readLength}        
+                'qual':self.qual,'tlen' :self.tlen,'readLength':self.readLength,'refPos': self.refPos,
+                'readID':self.readID,'strand': 'reverse' if self.read.is_reverse else 'forward'}        

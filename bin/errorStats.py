@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../proto_err'))
 from optparse import OptionParser
-from errorCount import errorReader,counter,summary
+from errorCount import errorReader,counter,db_summary,samReader
 from fastaIO import getRef
 from query import errordb
 import time
@@ -45,7 +45,16 @@ opt.dbName = 'proto_err_' + opt.simID.replace('.','_')
 opt.samfile = "../data/ref.subsampled."+opt.simID+".sam"
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
+opt.observedReadDBName = 'alignedReads'
 ref = getRef(opt.refFilename)
+observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName )
+observedReadsDB.deleteAll()
+for read in samReader(samfile=opt.samfile,ref=ref):
+	if not read is None:
+		post = {'id':read.ID,'read':read.read,'ref':read.refRead}
+		observedReadsDB.insert(post)
+
+
 
 if opt.force:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
@@ -53,7 +62,7 @@ else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
 errorCounter.summary()
 
-# summ = summary(opt)
+# summ = db_summary(opt)
 # summ.errorDistribution()
 # summ.qualDistribution()
 # summ.qScoreCalibrationTest()

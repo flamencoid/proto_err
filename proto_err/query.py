@@ -46,6 +46,9 @@ class errordb():
         postID = self.errors.insert(post)
         error.dbID = postID
         return error
+    def insert(self,post):
+        self.db[self.collection].insert(post)
+
     def find_one(self,query,filt=None):
         self.errors = self.db[self.collection]
         if filt:
@@ -67,7 +70,8 @@ class errordb():
             errorList.append(error(true=document['true'],
                                         emission=document['emission'],
                                         read=read,readPos=document['readPos'],
-                                        readLength = document['readLength']))
+                                        readLength = document['readLength'],
+                                        refPos=document['refPos']))
         return errorList
     def deleteAll(self):
         self.logger.info("### Wiping error DB")

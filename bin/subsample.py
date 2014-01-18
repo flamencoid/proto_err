@@ -19,6 +19,9 @@ from Bio.SeqRecord import SeqRecord
 import csv
 import re
 import time
+## set seed
+random.seed(1)
+
 start = time.clock()
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
@@ -30,11 +33,11 @@ parser.add_option("--numReads", dest="numReads",help="""Number of reads to
 					default=100,type='int')
 parser.add_option("--meanReadLength", dest="readMean",help="""Read length is 
 					sampled from a normal of this mean (Optional defaults to 
-						5000)""",default=500,type='int')
+						5000)""",default=100,type='int')
 parser.add_option("--errorFreqMean", dest="snpFreq",help="""Probablity of an error 
 					at a base occurs is sampled from a normal with mean 
 					of this Probablity (Optional defaults to 
-						.1)""",default=0.1,type='float')
+						.1)""",default=0.01,type='float')
 parser.add_option("--errorFreqSD", dest="snpFreqSd",help="""Probablity of an error 
 					at a base occurs is sampled from a normal with SD 
 					of this value (Optional defaults to 
@@ -93,7 +96,7 @@ if not opt.simID:
 
 opt.dbName = 'proto_err_' + opt.simID.replace('.','_')	
 opt.simulatedErrorDBName = 'simulatedErrors'
-
+opt.simulatedReadDBName = 'simulatedReads'
 # errordb(database=opt.dbName).addMetaData(opt=opt,t='simulation',errorBias=errorBias)
 errordb(database=opt.dbName).addMetaData(opt=opt,t='simulation')
 
@@ -105,6 +108,7 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 	refLength =  len(ref)
 	seqList = []
 	simulatedErrorDB = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
+	simulatedReadsDB = errordb(database=opt.dbName,collection=opt.simulatedReadDBName)
 	counter = AutoVivification()
 
 	## Add options to errorDB
@@ -112,22 +116,29 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 
 	
 	simulatedErrorDB.deleteAll()
+	simulatedReadsDB.deleteAll()
 	for i in range(opt.numReads):
 		logging.info("### Read %i of  %i" % (i,opt.numReads) )
 		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
 		start = random.randrange(refLength)
 		## randomly subsample from reference
-		recordId = 'st=%s' % (str(start))
+		recordId = 'st=%s&id=%i' % (str(start),i)
 		seq = ref[start:start+seqLength]
 		record=SeqRecord(seq,recordId,'','')
 		## Take the read from the reverse stand opt.strandBias% of the time
+		opt.is_reverse = False
 		if random.random() > opt.strandBias:
 			record = record.reverse_complement()
+			opt.is_reverse = True
 		## Randomly generate errors
+		opt.refPos = start
 		simulatedErrors = errorSimulator(record,opt,id = recordId,errorBias=errorBias)
 		errs = simulatedErrors.error()
 		logging.info("### generated %i errors in a read of length %i" % (len(errs),seqLength))
 		simulatedErrorDB.addErrors(errs)
+		simulatedReadsDB.insert(post = {'id':i,'read':"".join(simulatedErrors.read),
+										'ref':"".join(simulatedErrors.ref),
+										'qscore':"".join([str(i) for i in simulatedErrors.qscore('int') ])})
 		record = simulatedErrors.record
 		seqList.append(record)
 	return seqList
