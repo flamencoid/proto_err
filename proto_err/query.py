@@ -62,7 +62,7 @@ class errordb():
             return self.errors.find(query,filt)
         else:
             return self.errors.find(query)
-    def find_errors(self,query,filt=None):
+    def find_errors(self,query={},filt=None):
         errorList = []
         for document in self.find(query,filt):
             read = AlignedRead()

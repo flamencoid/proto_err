@@ -62,15 +62,15 @@ else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
 errorCounter.summary()
 
-# summ = db_summary(opt)
+summ = db_summary(opt)
 # summ.errorDistribution()
 # summ.qualDistribution()
 # summ.qScoreCalibrationTest()
 
-# 
+
 # errorCounter.plotHist()
 
 end = time.clock()
-logging.info("errorStats.py took %i seconds to run" % (end-start))
+logging.info("errorStats.py took %f seconds to run" % (end-start))
 
 

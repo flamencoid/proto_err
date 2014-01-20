@@ -87,11 +87,6 @@ class error():
             
         self.readPer = float(readPos) / float(self.readLength)
 
-        ## If the read is on the reverse stand then 
-        if self.read.is_reverse:
-            self.true = reverse_complement(self.true)
-            self.emission = reverse_complement(self.emission)
-
         ## What are the coordinates of the error?
         self.refPos = refPos
         ## Was the read aligned correctly? 
@@ -120,8 +115,9 @@ class error():
             refBase = self.true == other.true
             emitBase = self.emission == other.emission
             readPosBool = self.readPos == other.readPos
+            coorBoole = self.refPos == other.refPos
             ## add check for reference coordinates
-            return refBase and emitBase and readPosBool
+            return refBase and emitBase and readPosBool and coorBoole
         else:
             return False
 

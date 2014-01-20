@@ -718,6 +718,35 @@ class counter():
         """
         return float(self.ref.count(kmer)) / len(self.ref)
 
+    def compareSimulationToResults(self):
+        errorList = self.errordb['errors'].find_errors()
+        simErrorList = self.errordb['simulatedErrors'].find_errors()
+        errorDict  = {}
+        for err in errorList:
+            errorDict[err.refPos] = err
+        simErrorDict = {}
+        for err in simErrorList:
+            simErrorDict[err.refPos] = err
+
+        TP = [] ## Corretly returned error
+        FP = [] ## Found but not in simulation
+        FN = [] ## In simulationg but not found
+        for refPos,err in errorDict.iteritems():
+            if refPos in simErrorDict:
+                simErr = simErrorDict.pop(refPos)
+                if err == simErr:
+                    TP.append(err)
+                else:
+                    FP.append(err)
+                    FN.append(simErr)
+            else:
+                FP.append(err)
+        ## All remaining sim errors are FN
+        FN.extend(simErrorDict.values())
+        errorDic = {'TP':TP,'FP':FP,'FN':FN}
+        return errorDic
+
+
     def summary(self):
         "Log a summary of errors found and samfile counts"
         for key,value in self.readCounter.iteritems():
@@ -735,6 +764,20 @@ class counter():
         self.logger.info("### Percentage of errors from  mismapped reads =%f " % (round(100*(float(self.getCount(mappedCorrectly=0)) / float(self.getCount()) ),2)))
 
         ## How many errors were correctly recovered?
+
+        ## Download errors and simulated errors and generate two dicts of the form
+        ## {redPos : errorObject}
+        compareDict = self.compareSimulationToResults()
+        self.logger.info("### Total simulated errors correctly found (TP) = %i" % (len(compareDict['TP'])))
+        self.logger.info("### Total errors found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
+        self.logger.info("### Total errors simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
+
+
+
+
+
+
+
 
 
     def getCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
