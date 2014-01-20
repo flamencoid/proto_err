@@ -119,6 +119,7 @@ class errorReader():
         self.__currentReadList = list(str(self.__read.seq))
         self.__readPos = 0
         self.__readPosIndex = 0
+        self.refPos = self.__read.positions[0]
         for tup in self.__read.cigar:
             cigarInt = tup[0]
             numBases = tup[1]
@@ -165,17 +166,19 @@ class errorReader():
             ## if it's an error, check the preceding  opt.maxOrder bases
             if not true == emission:
                 ## Check preceding bases
-                self.errorList.append(error(true,emission,self.__read,readPos=i+self.__readPos)) 
+                self.errorList.append(error(true,emission,self.__read,readPos=i+self.__readPos,refPos=self.refPos+i)) 
         self.__readPos += N
         self.__readPosIndex += N  
+        self.refPos += N
     def __checkInsertion(self,N):
         """
         Checks Insertion read segment for errors. called when cigarstring = I:N 
         """
         self.readCounter['I'] += N
         insSeg = popLong(self.__currentReadList,0,N)
-        self.errorList.append(error(true='',emission="".join(insSeg),read=self.__read,readPos=self.__readPos)) # -1 as insertion occurs at previous base (if simulating)
+        self.errorList.append(error(true='',emission="".join(insSeg),read=self.__read,readPos=self.__readPos,refPos=self.refPos)) # -1 as insertion occurs at previous base (if simulating)
         self.__readPos += N
+
     def __checkDeletion(self,N):
         """
         Checks Deletion read segment for  errors. called when cigarstring = D:N 
@@ -184,7 +187,10 @@ class errorReader():
         i = self.__read.positions[self.__readPosIndex-1] + 1
         j =  self.__read.positions[self.__readPosIndex]        
         delSeg = str(self.__ref[i:j])
-        self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos))
+        self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos,refPos=self.refPos))
+        self.refPos += N
+        
+
     def __checkSkipped(self,N):
         """
         Checks skipped read segment for errors. called when cigarstring = N:N 
@@ -1025,7 +1031,7 @@ class samReader():
         Checks SoftClipped read segment for errors. called when cigarstring = S:N 
         """
         clippedSeg = popLong(self.__currentReadList,0,N)
-        self.currentRead.extend(clippedSeq)
+        self.currentRead.extend(clippedSeg)
         self.currentRefRead.extend('*'*len(clippedSeg))
 
         

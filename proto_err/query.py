@@ -47,6 +47,7 @@ class errordb():
         error.dbID = postID
         return error
     def insert(self,post):
+        # self.logger.info("Uploading post to database")
         self.db[self.collection].insert(post)
 
     def find_one(self,query,filt=None):
@@ -67,6 +68,7 @@ class errordb():
             read = AlignedRead()
             # read.seq = str(document['read'])
             read.seq = ''
+            read.qname = 'st=%s&id=%i' % (str(document['refPos']),document['readID'])
             errorList.append(error(true=document['true'],
                                         emission=document['emission'],
                                         read=read,readPos=document['readPos'],

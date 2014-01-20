@@ -66,7 +66,7 @@ class error():
     """
     
 
-    def __init__(self,true,emission,read,readPos,readLength=None,refPos=None):
+    def __init__(self,true,emission,read,readPos,refPos,readLength=None,):
         self.true = true
         self.emission = emission
         assert true != '' or emission != ''
@@ -93,10 +93,7 @@ class error():
             self.emission = reverse_complement(self.emission)
 
         ## What are the coordinates of the error?
-        if refPos is not None:
-            self.refPos = refPos
-        else:
-            self.refPos =  self.read.positions[0] + self.readPos
+        self.refPos = refPos
         ## Was the read aligned correctly? 
         try:
             if self.read.cigar[0][0] in [4,5]:

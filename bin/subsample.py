@@ -33,7 +33,7 @@ parser.add_option("--numReads", dest="numReads",help="""Number of reads to
 					default=100,type='int')
 parser.add_option("--meanReadLength", dest="readMean",help="""Read length is 
 					sampled from a normal of this mean (Optional defaults to 
-						5000)""",default=100,type='int')
+						5000)""",default=500,type='int')
 parser.add_option("--errorFreqMean", dest="snpFreq",help="""Probablity of an error 
 					at a base occurs is sampled from a normal with mean 
 					of this Probablity (Optional defaults to 
@@ -127,9 +127,9 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 		record=SeqRecord(seq,recordId,'','')
 		## Take the read from the reverse stand opt.strandBias% of the time
 		opt.is_reverse = False
-		if random.random() > opt.strandBias:
-			record = record.reverse_complement()
-			opt.is_reverse = True
+		# if random.random() > opt.strandBias:
+		# 	record = record.reverse_complement()
+		# 	opt.is_reverse = True
 		## Randomly generate errors
 		opt.refPos = start
 		simulatedErrors = errorSimulator(record,opt,id = recordId,errorBias=errorBias)
