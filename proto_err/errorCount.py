@@ -598,7 +598,7 @@ class counter():
                     dic[error.emission] = 1                
         return dic         
 
-    def getExpectedCount(self,truth,emission):
+    def getExpectedCount(self,truth,emission,kmerBefore='',kmerAfter='',qualRange=[]):
         """
         Gets the expected count of a transition. 
 
@@ -628,14 +628,21 @@ class counter():
             111
         """
         simulationMetaData =  self.errordb['metaData'].find_one({'type':'simulation'},{'snpFreq':1,'readMean':1,'numReads':1,'SnpIndelRatio':1})
-        probBaseIsTruth = self.probKmer(truth)
+        probBaseIsTruth = self.probKmer(kmerBefore+truth+kmerAfter)
         # print simulationMetaData
         # ExpectedSNPCount = self.readCounter['totalAlignedBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
-        ExpectedSNPCount = self.readCounter['totalBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
-        probEmmission = float(1)/float(3)
-        expectedCount = probBaseIsTruth * ExpectedSNPCount * probEmmission
+        # ExpectedSNPCount = self.readCounter['totalBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
+        # probEmmission = float(1)/float(3)
+        if qualRange:
+            probSNPError = qscoreToProb(sum(qualRange)/len(qualRange))
+        else:
+            probSNPError = simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio']
+        if emission:
+            expectedCount = (self.readCounter['totalAlignedBases'] * probBaseIsTruth * probSNPError) / 3.0 # assume equal probabilites of eny transition
+        else:
+            expectedCount = probBaseIsTruth * probSNPError * self.readCounter['totalAlignedBases']
 
-        return round(expectedCount)
+        return round(expectedCount,2)
 
     def getSimulatedCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
                 type=None,maxAlignedDist=None,readLength=None,readPosRange=[],readPerRange=[],
@@ -823,6 +830,36 @@ class counter():
         bases = pd.DataFrame.from_items([('Counts', self.readCounter.values())],
                                 orient='index', columns=self.readCounter.keys())
         bases.to_csv(path_or_buf=outfile,sep='\t')
+
+
+    def SNPTransitionStats(self):
+        """
+        generate some statistics of transition probabilites
+        """
+        alphabet = ['A','T','C','G']
+
+        qscores = unique([d['qual'] for d in self.errordb['errors'].find({'qual':{'$exists':1},'type':'SNP' } )])
+        outdic = AutoVivification()
+        for before in alphabet:
+            for truth in alphabet:
+                for after in alphabet:
+                    for qscore in qscores:
+                        for emission in alphabet:
+                            if not truth == emission:
+                                context = before + truth + after
+                                outdic['SNP'][context][qscore]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
+                                                                                kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
+                                outdic['SNP'][context][qscore]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
+                                                                                kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
+                                outdic['SNP'][context][qscore]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
+                                                                                kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
+                                if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
+                                    outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((abs(float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission]))) / float(outdic['SNP'][context][qscore]['samCount'][emission]),2)
+
+        print outdic
+
+                        
+    
 
 
 

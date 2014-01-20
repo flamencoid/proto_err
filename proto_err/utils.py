@@ -42,5 +42,12 @@ def reverse_complement(string):
 
 def probToQscore(p):
     return int(-10 * math.log10(p+0.000001))
+def qscoreToProb(q):
+    return 10 ** (-float(q)/10)
+
+def unique(seq):
+    seen = set()
+    seen_add = seen.add
+    return [ x for x in seq if x not in seen and not seen_add(x)]
 
 
