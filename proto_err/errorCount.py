@@ -15,6 +15,10 @@ from collections import Counter as listCounter
 import pandas as pd
 from pprint import pprint
 import scipy.stats
+
+from rpy2.robjects.packages import importr
+from rpy2.robjects.vectors import FloatVector
+
 class errorReader():
 
     """ 
@@ -874,17 +878,29 @@ class counter():
             for truth in alphabet:
                 for after in alphabet:
                     context = before + truth + after
-                    for qscore in qscores:
-                        logging.info("Context %s quality score %i" %(context,qscore))
-                        for emission in alphabet:
-                            if not truth == emission:
+                    for emission in alphabet:
+                        logging.info("Context %s aggregation" %(context))
+                        ## Stats for contexts without q scores
+                        outDicContextOnly['SNP'][context]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
+                                                                                kmerBefore=before,kmerAfter=after)
+                        outDicContextOnly['SNP'][context]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
+                                                                                kmerBefore=before,kmerAfter=after)
+                        outDicContextOnly['SNP'][context]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
+                                                                                kmerBefore=before,kmerAfter=after)                           
+                        outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], totalExpectedCount, outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
+                        if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
+                            outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
+                        ## Stats for contexts with q scores
+                        if not truth == emission:
+                            for qscore in qscores:
+                                logging.info("Context %s quality score %i" %(context,qscore))
                                 outdic['SNP'][context][qscore]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
                                 outdic['SNP'][context][qscore]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
                                 outdic['SNP'][context][qscore]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after,qual=qscore)
-                                outdic['SNP'][context][qscore]['pvalue'][emission] = scipy.stats.binom_test(outdic['SNP'][context][qscore]['samCount'][emission], totalExpectedCount, outdic['SNP'][context][qscore]['expectedCount'][emission]/totalExpectedCount) 
+                                outdic['SNP'][context][qscore]['pvalue'][emission] = float(scipy.stats.binom_test(outdic['SNP'][context][qscore]['samCount'][emission], totalExpectedCount, outdic['SNP'][context][qscore]['expectedCount'][emission]/totalExpectedCount) )
                                 
                                 samCount +=  outdic['SNP'][context][qscore]['samCount'][emission]
                                 simCount += outdic['SNP'][context][qscore]['simCount'][emission]
@@ -892,25 +908,54 @@ class counter():
                                 if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
                                     outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
 
-                                try:
-                                    outDicContextOnly['SNP'][context]['samCount'][emission] += outdic['SNP'][context][qscore]['samCount'][emission]
-                                    outDicContextOnly['SNP'][context]['simCount'][emission] += outdic['SNP'][context][qscore]['simCount'][emission]
-                                    outDicContextOnly['SNP'][context]['expectedCount'][emission] += outdic['SNP'][context][qscore]['expectedCount'][emission]
-                                except:
-                                    outDicContextOnly['SNP'][context]['samCount'][emission] = outdic['SNP'][context][qscore]['samCount'][emission]
-                                    outDicContextOnly['SNP'][context]['simCount'][emission] = outdic['SNP'][context][qscore]['simCount'][emission]
-                                    outDicContextOnly['SNP'][context]['expectedCount'][emission] = outdic['SNP'][context][qscore]['expectedCount'][emission]                           
-                                outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], totalExpectedCount, outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
-                                if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
-                                    outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
-                        logging.info(outdic['SNP'][context][qscore])
-                    logging.info("Context %s aggregation" %(context))
-                    logging.info(outDicContextOnly['SNP'][context])
+
+
+                    
 
         pprint (outdic)
         pprint(outDicContextOnly)
         print samCount,simCount,expectedCount
         print self.getCount(type='SNP'),self.getSimulatedCount(type='SNP'),self.getExpectedCount()
+
+        ## Create friendly output
+
+        ##                      simCount     ExptCount   SamCount    pvalue  pvalue-corrected
+        ## Context ContextOut
+        ## AAA  ATC 123 122     124 0.05    0.2
+        ## ...
+
+        outputList = []
+        outputWithQscoresList = []
+        for before in alphabet:
+            for truth in alphabet:
+                for after in alphabet:
+                    for emission in alphabet:
+                        if not truth == emission:
+                            context = before + truth + after
+                            contextOut = before + emission + after
+                            row = [context,contextOut] + [outDicContextOnly['SNP'][context][t][emission] for t in ['simCount','samCount','expectedCount','pvalue']]
+                            outputList.append(row)
+                            for qscore in qscores:
+                                row = [context,contextOut,qscore] + [outdic['SNP'][context][qscore][t][emission] for t in ['simCount','samCount','expectedCount','pvalue']]
+                                outputWithQscoresList.append(row)
+        df = pd.DataFrame(outputList, columns=['ContextTrue','ContextEmit','simCount','samCount','expectedCount','pvalue'])
+        dfQ = pd.DataFrame(outputWithQscoresList, columns=['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount','pvalue'])
+
+        stats = importr('stats')
+        p_adjust = stats.p_adjust(FloatVector(list(df['pvalue'])), method = 'BH')
+        p_adjustQ = stats.p_adjust(FloatVector(list(dfQ['pvalue'])), method = 'BH')
+        
+        df['pvalue-adjust'] = p_adjust
+        dfQ['pvalue-adjust'] = p_adjustQ
+
+
+
+        df = df.sort(['pvalue'],ascending=True)
+        dfQ = dfQ.sort(['pvalue'],ascending=True)
+        outfile = self.opt.outDir + 'contextStats.dat'
+        df.to_csv(path_or_buf=outfile,sep='\t') 
+        outfile = self.opt.outDir + 'contextQualityScoreStats.dat'
+        dfQ.to_csv(path_or_buf=outfile,sep='\t') 
 
                         
     
