@@ -12,6 +12,7 @@ from plot import *
 from error import error
 import os
 from collections import Counter as listCounter
+import pandas as pd
 class errorReader():
     """ 
     Iterable over errors in aligned reads
@@ -718,9 +719,9 @@ class counter():
         """
         return float(self.ref.count(kmer)) / len(self.ref)
 
-    def compareSimulationToResults(self):
-        errorList = self.errordb['errors'].find_errors()
-        simErrorList = self.errordb['simulatedErrors'].find_errors()
+    def compareSimulationToResults(self,query={}):
+        errorList = self.errordb['errors'].find_errors(query=query)
+        simErrorList = self.errordb['simulatedErrors'].find_errors(query=query)
         errorDict  = {}
         for err in errorList:
             errorDict[err.refPos] = err
@@ -746,17 +747,24 @@ class counter():
         errorDic = {'TP':TP,'FP':FP,'FN':FN}
         return errorDic
 
-
     def summary(self):
         "Log a summary of errors found and samfile counts"
+
+        ## Initialise some pandas dataframes to sort output for writing to csv. 
+        SNPRow = [self.getCount(type='SNP'),self.getSimulatedCount(type='SNP')]
+        INSRow = [self.getCount(type='Insertion'),self.getSimulatedCount(type='Insertion')]
+        DELRow = [self.getCount(type='Deletion'),self.getCount(type='Deletion')]
+        
+
+
         for key,value in self.readCounter.iteritems():
             self.logger.info("### Count of %s in samfile = %i" % (key,value))
-        self.logger.info("### Total SNP errors observed = %i" % (self.getCount(type='SNP')) )
-        self.logger.info("### Total SNP errors simulated = %i" % (self.getSimulatedCount(type='SNP')))
-        self.logger.info("### Total Insertion errors observed = %i" % (self.getCount(type='Insertion')))
-        self.logger.info("### Total Insertion errors simulated = %i" % (self.getSimulatedCount(type='Insertion')))
-        self.logger.info("### Total Deletion errors observed = %i" % (self.getCount(type='Deletion')))
-        self.logger.info("### Total Deletion errors simulated = %i" % (self.getSimulatedCount(type='Deletion')))
+        self.logger.info("### Total SNP errors observed = %i" % (SNPRow[0]) )
+        self.logger.info("### Total SNP errors simulated = %i" % (SNPRow[1]))
+        self.logger.info("### Total Insertion errors observed = %i" % (INSRow[0]))
+        self.logger.info("### Total Insertion errors simulated = %i" % (INSRow[1]))
+        self.logger.info("### Total Deletion errors observed = %i" % (DELRow[0]))
+        self.logger.info("### Total Deletion errors simulated = %i" % (DELRow[1]))
 
         ## How many errors are from mismapped reads?
         self.logger.info("### Total errors from reads mapped mapped correctly =%i" % (self.getCount(mappedCorrectly=1)))
@@ -771,6 +779,50 @@ class counter():
         self.logger.info("### Total simulated errors correctly found (TP) = %i" % (len(compareDict['TP'])))
         self.logger.info("### Total errors found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
         self.logger.info("### Total errors simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
+        compareDict = self.compareSimulationToResults(query={'type':'SNP'})
+        SNPRow.extend([len(compareDict['TP']),len(compareDict['FP']),len(compareDict['FN']) ])
+        self.logger.info("### Total simulated SNPs correctly found (TP) = %i" % (len(compareDict['TP'])))
+        self.logger.info("### Total SNPs found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
+        self.logger.info("### Total SNPs simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
+        compareDict = self.compareSimulationToResults(query={'type':'Insertion'})
+        INSRow.extend([len(compareDict['TP']),len(compareDict['FP']),len(compareDict['FN']) ])
+        self.logger.info("### Total simulated Insertions correctly found (TP) = %i" % (len(compareDict['TP'])))
+        self.logger.info("### Total Insertions found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
+        self.logger.info("### Total Insertions simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
+        compareDict = self.compareSimulationToResults(query={'type':'Deletion'})
+        DELRow.extend([len(compareDict['TP']),len(compareDict['FP']),len(compareDict['FN']) ])
+        self.logger.info("### Total simulated Deletions correctly found (TP) = %i" % (len(compareDict['TP'])))
+        self.logger.info("### Total Deletions found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
+        self.logger.info("### Total Deletions simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
+
+        
+
+
+
+        TotalRow = []
+        for i in range(len(SNPRow)):
+            TotalRow.append(sum([SNPRow[i],INSRow[i],DELRow[i]]))
+
+        SNPRow.append(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[3]))
+        INSRow.append(float(INSRow[2]) / float(INSRow[2] + INSRow[3]))
+        DELRow.append(float(DELRow[2]) / float(DELRow[2] + DELRow[3]))
+        TotalRow.append(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[3]))
+
+        SNPRow.append(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[4]))
+        INSRow.append(float(INSRow[2]) / float(INSRow[2] + INSRow[4]))
+        DELRow.append(float(DELRow[2]) / float(DELRow[2] + DELRow[4]))
+        TotalRow.append(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[4]))
+        outfile = self.opt.outDir + 'errorsCount.dat'
+        logging.info('Writing error counts to %s' % (outfile))
+        errorsDF = pd.DataFrame.from_items([('Total', TotalRow),('SNP', SNPRow), ('INS', INSRow),('DEL', DELRow)],
+                                orient='index', columns=['samCount', 'simCount', 'TP','FP','FN','Precision','Recall'])
+        errorsDF.to_csv(path_or_buf=outfile,sep='\t')
+
+        outfile = self.opt.outDir + 'readCounts.dat'
+        logging.info('Writing read counts to %s' % (outfile))
+        bases = pd.DataFrame.from_items([('Counts', self.readCounter.values())],
+                                orient='index', columns=self.readCounter.keys())
+        bases.to_csv(path_or_buf=outfile,sep='\t')
 
 
 

@@ -56,7 +56,7 @@ parser.add_option("--SnpIndelRatio", dest="SnpIndelRatio",help="""Ratio of SNP
 parser.add_option("--meanIndelSize", dest="indelMean",help="""INDEL size is 
 					sampled from a normal of this mean (Optional defaults to 
 						5)""",
-					default=5,type='int')
+					default=3,type='int')
 parser.add_option("--IndelSizeSD", dest="indelSd",help="""INDEL size is 
 					sampled from a normal with this SD (Optional defaults to 
 						meanIndelSize/2)""",default=None,type='int')
