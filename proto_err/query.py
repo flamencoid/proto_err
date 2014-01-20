@@ -11,11 +11,11 @@ class errordb():
         self.logger = logging
         try:
             self.client = MongoClient('localhost', 27017)
-            self.logger.info("Connection to localhost DB succesful")
+            self.logger.info("Connection to localhost DB %s %s succesful" % (database,collection))
         except:
             try:
                 self.client = MongoClient('88.80.186.60', 27017)
-                self.logger.info("Connection to DB at 88.80.186.60 succesful")
+                self.logger.info("Connection to DB at 88.80.186.60 %s %s succesful" % (database,collection))
             except:
                 MongoClient('localhost', 27017)
                 logging.error(getDBError())
@@ -76,7 +76,7 @@ class errordb():
                                         refPos=document['refPos']))
         return errorList
     def deleteAll(self):
-        self.logger.info("### Wiping error DB")
+        self.logger.info("### Wiping error DB %s %s" %(self.database,self.collection))
         self.errors.remove()
 
     def addMetaData(self,opt,t,errorBias=None):

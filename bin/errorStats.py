@@ -48,13 +48,15 @@ opt.observedErrorDBName = 'errors'
 opt.observedReadDBName = 'alignedReads'
 ref = getRef(opt.refFilename)
 observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName )
-observedReadsDB.deleteAll()
+
 
 ## Generate read documents for uploading to db
-for read in samReader(samfile=opt.samfile,ref=ref):
-	if not read is None:
-		post = {'id':read.ID,'read':read.read,'ref':read.refRead,'cigar':read.alignedRead.cigar}
-		observedReadsDB.insert(post)
+if opt.force:
+	observedReadsDB.deleteAll()
+	for read in samReader(samfile=opt.samfile,ref=ref):
+		if not read is None:
+			post = {'id':read.ID,'read':read.read,'ref':read.refRead,'cigar':read.alignedRead.cigarstring}
+			observedReadsDB.insert(post)
 
 
 

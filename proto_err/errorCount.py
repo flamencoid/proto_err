@@ -13,7 +13,10 @@ from error import error
 import os
 from collections import Counter as listCounter
 import pandas as pd
+from pprint import pprint
+import scipy.stats
 class errorReader():
+
     """ 
     Iterable over errors in aligned reads
 
@@ -278,6 +281,7 @@ class counter():
 
     def __init__(self,ref,opt,errorList=None,samfile=None,makeDB=False):
         self.logger     = logging.getLogger()
+        self.samfile = samfile
         if (not errorList and not samfile) or (errorList and samfile):
             self.logger.error("counter takes errorList or samfile, at least one and not both")
         if samfile and not errorList:
@@ -311,6 +315,8 @@ class counter():
         else:
             self.logger.warning("""### Using pre-generated database.""")
             self.logger.warning("""### Initiate counter with makeDB=True to wipe and repopulate""")
+
+        self.qscoresCount = None ## So we don't do counting twice
         
 
 
@@ -596,9 +602,18 @@ class counter():
                     dic[error.emission] += 1
                 except:
                     dic[error.emission] = 1                
-        return dic         
+        return dic
 
-    def getExpectedCount(self,truth,emission,kmerBefore='',kmerAfter='',qualRange=[]):
+    def getFreqQual(self,qual):
+        """Get the frequency of a particular quality value in the samfile"""
+        if not self.qscoresCount:
+            logging.info("Counting qual score frequency")
+            self.qscoresCount = listCounter([asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.samfile ).fetch()))])
+        return float(self.qscoresCount[qual]) / float(sum(self.qscoresCount.values()))
+
+
+
+    def getExpectedCount(self,truth='',emission='',kmerBefore='',kmerAfter='',qual=None):
         """
         Gets the expected count of a transition. 
 
@@ -628,21 +643,29 @@ class counter():
             111
         """
         simulationMetaData =  self.errordb['metaData'].find_one({'type':'simulation'},{'snpFreq':1,'readMean':1,'numReads':1,'SnpIndelRatio':1})
-        probBaseIsTruth = self.probKmer(kmerBefore+truth+kmerAfter)
+        if qual:
+            pContext = self.probKmer(kmerBefore+truth+kmerAfter) * self.getFreqQual(qual)
+        elif truth:
+            pContext = self.probKmer(kmerBefore+truth+kmerAfter)
+        else:
+            pContext = 1
         # print simulationMetaData
         # ExpectedSNPCount = self.readCounter['totalAlignedBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
         # ExpectedSNPCount = self.readCounter['totalBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
         # probEmmission = float(1)/float(3)
-        if qualRange:
-            probSNPError = qscoreToProb(sum(qualRange)/len(qualRange))
+        if qual:
+            probSNPError = qscoreToProb(qual)
         else:
             probSNPError = simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio']
         if emission:
-            expectedCount = (self.readCounter['totalAlignedBases'] * probBaseIsTruth * probSNPError) / 3.0 # assume equal probabilites of eny transition
+            expectedCount = (self.readCounter['totalAlignedBases'] * pContext * probSNPError) / 3.0 # assume equal probabilites of eny transition
         else:
-            expectedCount = probBaseIsTruth * probSNPError * self.readCounter['totalAlignedBases']
+            expectedCount = pContext * probSNPError * self.readCounter['totalAlignedBases']
+
+
 
         return round(expectedCount,2)
+
 
     def getSimulatedCount(self,truth=None,emission=None,kmerBefore=None,kmerAfter=None,
                 type=None,maxAlignedDist=None,readLength=None,readPosRange=[],readPerRange=[],
@@ -836,27 +859,58 @@ class counter():
         """
         generate some statistics of transition probabilites
         """
+        logging.info("Generating Context bias statistics")
         alphabet = ['A','T','C','G']
 
+        logging.info("Generating unique list of quality scores")
         qscores = unique([d['qual'] for d in self.errordb['errors'].find({'qual':{'$exists':1},'type':'SNP' } )])
         outdic = AutoVivification()
+        outDicContextOnly = AutoVivification()
+        samCount = 0
+        simCount = 0 
+        expectedCount = 0
+        totalExpectedCount = self.getExpectedCount()
         for before in alphabet:
             for truth in alphabet:
                 for after in alphabet:
+                    context = before + truth + after
                     for qscore in qscores:
+                        logging.info("Context %s quality score %i" %(context,qscore))
                         for emission in alphabet:
                             if not truth == emission:
-                                context = before + truth + after
                                 outdic['SNP'][context][qscore]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
                                 outdic['SNP'][context][qscore]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
                                 outdic['SNP'][context][qscore]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
-                                                                                kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
+                                                                                kmerBefore=before,kmerAfter=after,qual=qscore)
+                                outdic['SNP'][context][qscore]['pvalue'][emission] = scipy.stats.binom_test(outdic['SNP'][context][qscore]['samCount'][emission], totalExpectedCount, outdic['SNP'][context][qscore]['expectedCount'][emission]/totalExpectedCount) 
+                                
+                                samCount +=  outdic['SNP'][context][qscore]['samCount'][emission]
+                                simCount += outdic['SNP'][context][qscore]['simCount'][emission]
+                                expectedCount += outdic['SNP'][context][qscore]['expectedCount'][emission]
                                 if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
-                                    outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((abs(float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission]))) / float(outdic['SNP'][context][qscore]['samCount'][emission]),2)
+                                    outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
 
-        print outdic
+                                try:
+                                    outDicContextOnly['SNP'][context]['samCount'][emission] += outdic['SNP'][context][qscore]['samCount'][emission]
+                                    outDicContextOnly['SNP'][context]['simCount'][emission] += outdic['SNP'][context][qscore]['simCount'][emission]
+                                    outDicContextOnly['SNP'][context]['expectedCount'][emission] += outdic['SNP'][context][qscore]['expectedCount'][emission]
+                                except:
+                                    outDicContextOnly['SNP'][context]['samCount'][emission] = outdic['SNP'][context][qscore]['samCount'][emission]
+                                    outDicContextOnly['SNP'][context]['simCount'][emission] = outdic['SNP'][context][qscore]['simCount'][emission]
+                                    outDicContextOnly['SNP'][context]['expectedCount'][emission] = outdic['SNP'][context][qscore]['expectedCount'][emission]                           
+                                outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], totalExpectedCount, outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
+                                if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
+                                    outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
+                        logging.info(outdic['SNP'][context][qscore])
+                    logging.info("Context %s aggregation" %(context))
+                    logging.info(outDicContextOnly['SNP'][context])
+
+        pprint (outdic)
+        pprint(outDicContextOnly)
+        print samCount,simCount,expectedCount
+        print self.getCount(type='SNP'),self.getSimulatedCount(type='SNP'),self.getExpectedCount()
 
                         
     
