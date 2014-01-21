@@ -64,7 +64,7 @@ if opt.force:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
 else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
-# errorCounter.summary()
+errorCounter.summary()
 errorCounter.SNPTransitionStats()
 summ = db_summary(opt)
 # summ.errorDistribution()
