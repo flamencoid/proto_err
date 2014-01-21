@@ -137,10 +137,11 @@ class complexError(simulateError):
                 self.errorProb = [random.gauss(opt.snpFreq, opt.snpFreqSd) for _ in self.read]
                 ## Now check for regular expression matches
                 for pattern,prob in self.errorBias.iteritems():
-                    results = pattern.finditer(str(self.read))
+                    results = pattern.finditer("".join(self.read))
                     for result in results:
                     	# prob is a tuple (+pos to effected base,prob,sd)
-                    	self.errorProb[result.start(0)+prob[0]] = random.gauss(prob[1], prob[2]) 
+                        newProb = random.gauss(prob[1], prob[2])
+                    	self.errorProb[result.start(0)+prob[0]] =  newProb
 
             else:
             	self.errorProb = [random.gauss(opt.snpFreq, opt.snpFreqSd) for _ in self.read]

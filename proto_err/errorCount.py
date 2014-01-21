@@ -908,11 +908,7 @@ class counter():
                                 if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
                                     outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
 
-
-
-                    
-
-        pprint (outdic)
+        # pprint (outdic)
         pprint(outDicContextOnly)
         print samCount,simCount,expectedCount
         print self.getCount(type='SNP'),self.getSimulatedCount(type='SNP'),self.getExpectedCount()
@@ -923,7 +919,7 @@ class counter():
         ## Context ContextOut
         ## AAA  ATC 123 122     124 0.05    0.2
         ## ...
-
+        logging.info("Generating readable output")
         outputList = []
         outputWithQscoresList = []
         for before in alphabet:
@@ -941,6 +937,7 @@ class counter():
         df = pd.DataFrame(outputList, columns=['ContextTrue','ContextEmit','simCount','samCount','expectedCount','pvalue'])
         dfQ = pd.DataFrame(outputWithQscoresList, columns=['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount','pvalue'])
 
+        ## Adjust the p-values for multiple testing
         stats = importr('stats')
         p_adjust = stats.p_adjust(FloatVector(list(df['pvalue'])), method = 'BH')
         p_adjustQ = stats.p_adjust(FloatVector(list(dfQ['pvalue'])), method = 'BH')
@@ -952,9 +949,14 @@ class counter():
 
         df = df.sort(['pvalue'],ascending=True)
         dfQ = dfQ.sort(['pvalue'],ascending=True)
+        
         outfile = self.opt.outDir + 'contextStats.dat'
+        logging.info("Writing context bias stats to %s" % (outfile))
         df.to_csv(path_or_buf=outfile,sep='\t') 
+
+        
         outfile = self.opt.outDir + 'contextQualityScoreStats.dat'
+        logging.info("Writing context and qual score bias stats to %s" % (outfile))
         dfQ.to_csv(path_or_buf=outfile,sep='\t') 
 
                         
