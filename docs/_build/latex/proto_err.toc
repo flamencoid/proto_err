@@ -1,8 +1,0 @@
-\select@language {english}
-\contentsline {chapter}{\numberline {1}\texttt {proto\_err} -- Main package}{1}{chapter.1}
-\contentsline {section}{\numberline {1.1}\texttt {proto\_err.errorCount} -- Error Counting}{1}{section.1.1}
-\contentsline {paragraph}{Examples}{1}{paragraph*.4}
-\contentsline {paragraph}{Attributes}{2}{paragraph*.5}
-\contentsline {chapter}{\numberline {2}Indices and tables}{3}{chapter.2}
-\contentsline {chapter}{Python Module Index}{5}{section*.6}
-\contentsline {chapter}{Index}{7}{section*.7}

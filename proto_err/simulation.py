@@ -109,6 +109,27 @@ class simulateError():
 
 
 class singleSNP(simulateError):
+
+    """ 
+    Information about the errors in a read 
+
+    Attributes
+    ----------
+
+    Parameters
+    ----------
+    Methods
+    ----------
+    See Also
+    --------
+    
+
+    Examples
+    --------
+
+    """
+
+
     def __init__(self,record,opt,id):
         simulateError.__init__(self,record,opt,id)
         self.errorProb = [random.gauss(opt.snpFreq, 0.01) for _ in range(len(self.seq))] 
@@ -126,6 +147,45 @@ class singleSNP(simulateError):
                 self.snp(pos,replaceLetter)
 
 class complexError(simulateError):
+    """ 
+    Information about the errors in a read 
+
+    Attributes
+    ----------
+    errorProb
+        List of error probabilities
+
+
+    Parameters
+    ----------
+    record
+        Bio.Seq record object
+    opt
+        Options passed by OptionParse
+    id
+        Record Identifier
+    baseErrorProb
+        Optional
+    errorBias
+        None
+
+    Methods
+    ----------
+    error
+
+    qscoret='int',aligned=True)
+        
+
+
+
+    See Also
+    ----------
+    
+
+    Examples
+    ----------
+
+    """
     def __init__(self,record,opt,id,baseErrorProb=None,errorBias=None):
         simulateError.__init__(self,record,opt,id)
         self.errorBias = errorBias
@@ -218,14 +278,4 @@ class complexError(simulateError):
                 readPos += 1
         return errorList
                     
-
-
-
-            
-
-        # for pos,prob in enumerate(self.errorProb):
-        #     if  < prob and pos < len(self.errorProb):
-
-                
-            
 
