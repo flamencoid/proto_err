@@ -143,6 +143,12 @@ Deletion error(GC to )</pre>
 </tbody>
 </table>
 <dl class="attribute">
+<dt id="proto_err.simulation.simulateError.SNPProb">
+<tt class="descname">SNPProb</tt><em class="property"> None</em><a class="headerlink" href="#proto_err.simulation.simulateError.SNPProb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert errorProb into SNPProb list</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="proto_err.simulation.simulateError.alignedRead">
 <tt class="descname">alignedRead</tt><em class="property"> None</em><a class="headerlink" href="#proto_err.simulation.simulateError.alignedRead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns an alignedRead object of a the subsampled read aligned perfectley to ref</p>
@@ -168,8 +174,9 @@ Deletion error(GC to )</pre>
 
 <dl class="method">
 <dt id="proto_err.simulation.simulateError.qscore">
-<tt class="descname">qscore</tt><big>(</big><em>t='int'</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.qscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.qscore" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descname">qscore</tt><big>(</big><em>t='int'</em>, <em>aligned=True</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.qscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.qscore" title="Permalink to this definition">¶</a></dt>
+<dd><p>probability of a SNP only</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="proto_err.simulation.simulateError.record">
@@ -177,10 +184,195 @@ Deletion error(GC to )</pre>
 <dd><p>Return a Bio.SeqRecord</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="proto_err.simulation.simulateError.seq">
+<tt class="descname">seq</tt><em class="property"> None</em><a class="headerlink" href="#proto_err.simulation.simulateError.seq" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="proto_err.simulation.simulateError.snp">
 <tt class="descname">snp</tt><big>(</big><em>pos</em>, <em>rl</em><big>)</big><a class="reference internal" href="_modules/proto_err/simulation.html#simulateError.snp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.simulation.simulateError.snp" title="Permalink to this definition">¶</a></dt>
 <dd><p>function to induce a SNP</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-proto_err.error"></span><dl class="class">
+<dt id="proto_err.error.error">
+<em class="property">class </em><tt class="descclassname">proto_err.error.</tt><tt class="descname">error</tt><big>(</big><em>true</em>, <em>emission</em>, <em>read</em>, <em>readPos</em>, <em>refPos</em>, <em>readLength=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/error.html#error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Information about the errors in a read</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>true: string</strong> :</p>
+<blockquote>
+<div><p>reference base(s)</p>
+</div></blockquote>
+<p><strong>emission: string</strong> :</p>
+<blockquote>
+<div><p>read base(s)</p>
+</div></blockquote>
+<p><strong>read: AlignedRead</strong> :</p>
+<blockquote>
+<div><p>pysam AlignedRead object from which error was derived</p>
+</div></blockquote>
+<p><strong>readPos: int</strong> :</p>
+<blockquote class="last">
+<div><p>position along read where error occured / length of read sequence</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">counter</span></tt></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pysam</span> <span class="kn">import</span> <span class="n">AlignedRead</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="kn">import</span> <span class="n">proto_err</span><span class="o">.</span><span class="n">errorCount</span> <span class="kn">import</span> <span class="nn">error</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read</span> <span class="o">=</span> <span class="n">AlignedRead</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read</span><span class="o">.</span><span class="n">seq</span><span class="o">=</span><span class="s">&quot;AGCTTAGCTAGCTACCTATATCTTGGTCTTGGCCG&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">read</span><span class="o">.</span><span class="n">qual</span> <span class="o">=</span> <span class="s">&#39;++))++)+*)******)))+)**+*+++)**)*+)&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">proto_err</span><span class="o">.</span><span class="n">errorCount</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">,</span><span class="s">&#39;A&#39;</span><span class="p">,</span><span class="n">read</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">isSnp</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">isIndel</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">qual</span>
+<span class="go">11</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">before</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">NN </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">GC </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">qscore</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c">## equivalent to error.qual</span>
+<span class="go">11</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span><span class="o">.</span><span class="n">qscore</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">9</span>
+</pre></div>
+</div>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="9%" />
+<col width="80%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>true</td>
+<td>string</td>
+<td>reference bases</td>
+</tr>
+<tr class="row-even"><td>emission</td>
+<td>string</td>
+<td>Read bases</td>
+</tr>
+<tr class="row-odd"><td>read</td>
+<td>AlignedRead</td>
+<td>pysam AlignedRead object from which error was derived</td>
+</tr>
+<tr class="row-even"><td>readPos</td>
+<td>int</td>
+<td>position along read where error occured</td>
+</tr>
+<tr class="row-odd"><td>readPer</td>
+<td>float</td>
+<td>position along read where error occured / length of read sequence</td>
+</tr>
+<tr class="row-even"><td>alignedDist</td>
+<td>int or None</td>
+<td>number of bases between position of start of alignment and where read was sampled None if sampled position n/a</td>
+</tr>
+<tr class="row-odd"><td>alignedCorrectly</td>
+<td>bool or None</td>
+<td>If the alignedDist is less then the read length True else False None is alignedDist is None</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.error.error.after" title="proto_err.error.error.after"><tt class="xref py py-obj docutils literal"><span class="pre">after</span></tt></a>(j)</td>
+<td>Return the following j bases,return N when bases missing</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.error.error.before" title="proto_err.error.error.before"><tt class="xref py py-obj docutils literal"><span class="pre">before</span></tt></a>(j)</td>
+<td>Return the preceding j bases,return N when bases missing</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.error.error.qscore" title="proto_err.error.error.qscore"><tt class="xref py py-obj docutils literal"><span class="pre">qscore</span></tt></a>(i)</td>
+<td>Return the quality score at a base +i i from the error start position</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="proto_err.error.error.after">
+<tt class="descname">after</tt><big>(</big><em>j</em><big>)</big><a class="reference internal" href="_modules/proto_err/error.html#error.after"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.after" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the following j bases,return N when bases missing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.error.error.before">
+<tt class="descname">before</tt><big>(</big><em>j</em><big>)</big><a class="reference internal" href="_modules/proto_err/error.html#error.before"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.before" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the preceding j bases,return N when bases missing</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.error.error.doc">
+<tt class="descname">doc</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/error.html#error.doc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.doc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pymongo document</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.error.error.errorType">
+<tt class="descname">errorType</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/error.html#error.errorType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.errorType" title="Permalink to this definition">¶</a></dt>
+<dd><p>The type of read error SNP, Insertion or Deletion</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.error.error.isDeletion">
+<tt class="descname">isDeletion</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/error.html#error.isDeletion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.isDeletion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether or not the error is a deletion</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.error.error.isIndel">
+<tt class="descname">isIndel</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/error.html#error.isIndel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.isIndel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether or not the error is a INDEL</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.error.error.isInsertion">
+<tt class="descname">isInsertion</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/error.html#error.isInsertion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.isInsertion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether or not the error is an insertion</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.error.error.isSnp">
+<tt class="descname">isSnp</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/error.html#error.isSnp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.isSnp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return whether or not the error is a SNP</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.error.error.qscore">
+<tt class="descname">qscore</tt><big>(</big><em>i</em><big>)</big><a class="reference internal" href="_modules/proto_err/error.html#error.qscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.qscore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the quality score at a base +i i from the error start position
+error.qscore(0) is equivalent to error.qual</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.error.error.qual">
+<tt class="descname">qual</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/error.html#error.qual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.qual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return quality score of the base where the error occured</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.error.error.tlen">
+<tt class="descname">tlen</tt><em class="property"> None</em><a class="reference internal" href="_modules/proto_err/error.html#error.tlen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.error.error.tlen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the length of the error</p>
 </dd></dl>
 
 </dd></dl>
@@ -252,6 +444,12 @@ Deletion error(GC to )</pre>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.SNPTransitionStats" title="proto_err.errorCount.counter.SNPTransitionStats"><tt class="xref py py-obj docutils literal"><span class="pre">SNPTransitionStats</span></tt></a>()</td>
+<td>generate some statistics of transition probabilites</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.compareSimulationToResults" title="proto_err.errorCount.counter.compareSimulationToResults"><tt class="xref py py-obj docutils literal"><span class="pre">compareSimulationToResults</span></tt></a>([query])</td>
+<td></td>
+</tr>
 <tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.countAlignedBases" title="proto_err.errorCount.counter.countAlignedBases"><tt class="xref py py-obj docutils literal"><span class="pre">countAlignedBases</span></tt></a>()</td>
 <td>Counts the number of aligned bases in counter</td>
 </tr>
@@ -264,26 +462,40 @@ Deletion error(GC to )</pre>
 <tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.getCount" title="proto_err.errorCount.counter.getCount"><tt class="xref py py-obj docutils literal"><span class="pre">getCount</span></tt></a>([truth,&nbsp;emission,&nbsp;kmerBefore,&nbsp;...])</td>
 <td>Gets the count for a given {truth,emmision,kmer}</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.getExpectedCount" title="proto_err.errorCount.counter.getExpectedCount"><tt class="xref py py-obj docutils literal"><span class="pre">getExpectedCount</span></tt></a>(truth,&nbsp;emission)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.getExpectedCount" title="proto_err.errorCount.counter.getExpectedCount"><tt class="xref py py-obj docutils literal"><span class="pre">getExpectedCount</span></tt></a>([truth,&nbsp;emission,&nbsp;...])</td>
 <td>Gets the expected count of a transition.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.getSimulatedCount" title="proto_err.errorCount.counter.getSimulatedCount"><tt class="xref py py-obj docutils literal"><span class="pre">getSimulatedCount</span></tt></a>([truth,&nbsp;emission,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.getFreqQual" title="proto_err.errorCount.counter.getFreqQual"><tt class="xref py py-obj docutils literal"><span class="pre">getFreqQual</span></tt></a>(qual)</td>
+<td>Get the frequency of a particular quality value in the samfile</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.getSimulatedCount" title="proto_err.errorCount.counter.getSimulatedCount"><tt class="xref py py-obj docutils literal"><span class="pre">getSimulatedCount</span></tt></a>([truth,&nbsp;emission,&nbsp;...])</td>
 <td>Gets the count of simulated errors.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.plotHist" title="proto_err.errorCount.counter.plotHist"><tt class="xref py py-obj docutils literal"><span class="pre">plotHist</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.plotHist" title="proto_err.errorCount.counter.plotHist"><tt class="xref py py-obj docutils literal"><span class="pre">plotHist</span></tt></a>()</td>
 <td>Plots histograms</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.probKmer" title="proto_err.errorCount.counter.probKmer"><tt class="xref py py-obj docutils literal"><span class="pre">probKmer</span></tt></a>(kmer)</td>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.probKmer" title="proto_err.errorCount.counter.probKmer"><tt class="xref py py-obj docutils literal"><span class="pre">probKmer</span></tt></a>(kmer)</td>
 <td>Gets the fraction of</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.setup" title="proto_err.errorCount.counter.setup"><tt class="xref py py-obj docutils literal"><span class="pre">setup</span></tt></a>(opt)</td>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.setup" title="proto_err.errorCount.counter.setup"><tt class="xref py py-obj docutils literal"><span class="pre">setup</span></tt></a>(opt)</td>
 <td>Pass options from OptionParser</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.counter.summary" title="proto_err.errorCount.counter.summary"><tt class="xref py py-obj docutils literal"><span class="pre">summary</span></tt></a>()</td>
-<td></td>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.counter.summary" title="proto_err.errorCount.counter.summary"><tt class="xref py py-obj docutils literal"><span class="pre">summary</span></tt></a>()</td>
+<td>Log a summary of errors found and samfile counts</td>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="proto_err.errorCount.counter.SNPTransitionStats">
+<tt class="descname">SNPTransitionStats</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.SNPTransitionStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate some statistics of transition probabilites</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.counter.compareSimulationToResults">
+<tt class="descname">compareSimulationToResults</tt><big>(</big><em>query={}</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.compareSimulationToResults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="proto_err.errorCount.counter.countAlignedBases">
 <tt class="descname">countAlignedBases</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.countAlignedBases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.countAlignedBases" title="Permalink to this definition">¶</a></dt>
@@ -398,7 +610,7 @@ Maximum kmer length</p>
 
 <dl class="method">
 <dt id="proto_err.errorCount.counter.getCount">
-<tt class="descname">getCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmerBefore=None</em>, <em>kmerAfter=None</em>, <em>type=None</em>, <em>maxAlignedDist=None</em>, <em>readPosRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>readPerRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>qualRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>tlenRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>returnList=False</em>, <em>collection='errors'</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.getCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.getCount" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmerBefore=None</em>, <em>kmerAfter=None</em>, <em>type=None</em>, <em>maxAlignedDist=None</em>, <em>mappedCorrectly=None</em>, <em>readLength=None</em>, <em>readPosRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>readPerRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>qualRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>tlenRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>returnList=False</em>, <em>collection='errors'</em><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#counter.getCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.counter.getCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the count for a given {truth,emmision,kmer}</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -427,6 +639,10 @@ Maximum kmer length</p>
 <p><strong>maxAlignedDist</strong> : int</p>
 <blockquote>
 <div><p>maximum aligned distance e.g. maxAlignedDist = 10 returns all errors where the read mapped within 10 bp of where it was sampled from</p>
+</div></blockquote>
+<p><strong>mappedCorrectly</strong> : bool</p>
+<blockquote>
+<div><p>Mapped distance within read length</p>
 </div></blockquote>
 <p><strong>readPosRange</strong> : list or tuple of ints</p>
 <blockquote>
@@ -489,7 +705,7 @@ Maximum kmer length</p>
 
 <dl class="method">
 <dt id="proto_err.errorCount.counter.getExpectedCount">
-<tt class="descname">getExpectedCount</tt><big>(</big><em>truth</em>, <em>emission</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.getExpectedCount" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getExpectedCount</tt><big>(</big><em>truth=''</em>, <em>emission=''</em>, <em>kmerBefore=''</em>, <em>kmerAfter=''</em>, <em>qual=None</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.getExpectedCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the expected count of a transition.</p>
 <p>E[true,emmision] = (frequency of truth in reference) * (Observed SNP Count) * (Probability of emmision | SNP ).</p>
 <p>i.e for a random reference E[true,emission] = 1/4 * numSnps * 1/3</p>
@@ -527,8 +743,14 @@ Maximum kmer length</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="proto_err.errorCount.counter.getFreqQual">
+<tt class="descname">getFreqQual</tt><big>(</big><em>qual</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.getFreqQual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the frequency of a particular quality value in the samfile</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="proto_err.errorCount.counter.getSimulatedCount">
-<tt class="descname">getSimulatedCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmerBefore=None</em>, <em>kmerAfter=None</em>, <em>type=None</em>, <em>maxAlignedDist=None</em>, <em>readPosRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>readPerRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>qualRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>tlenRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>returnList=False</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.getSimulatedCount" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">getSimulatedCount</tt><big>(</big><em>truth=None</em>, <em>emission=None</em>, <em>kmerBefore=None</em>, <em>kmerAfter=None</em>, <em>type=None</em>, <em>maxAlignedDist=None</em>, <em>readLength=None</em>, <em>readPosRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>readPerRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>qualRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>tlenRange=</em><span class="optional">[</span><span class="optional">]</span>, <em>returnList=False</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.getSimulatedCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the count of simulated errors.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -673,6 +895,69 @@ Maximum kmer length</p>
 <dl class="method">
 <dt id="proto_err.errorCount.counter.summary">
 <tt class="descname">summary</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.counter.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log a summary of errors found and samfile counts</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="proto_err.errorCount.db_summary">
+<em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">db_summary</tt><big>(</big><em>opt</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.db_summary" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.db_summary.errorDistribution" title="proto_err.errorCount.db_summary.errorDistribution"><tt class="xref py py-obj docutils literal"><span class="pre">errorDistribution</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.db_summary.errorQualDistribution" title="proto_err.errorCount.db_summary.errorQualDistribution"><tt class="xref py py-obj docutils literal"><span class="pre">errorQualDistribution</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.db_summary.getAllQualScores" title="proto_err.errorCount.db_summary.getAllQualScores"><tt class="xref py py-obj docutils literal"><span class="pre">getAllQualScores</span></tt></a>()</td>
+<td>Returns a list of quality scores of all the bases</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.db_summary.qScoreCalibrationTest" title="proto_err.errorCount.db_summary.qScoreCalibrationTest"><tt class="xref py py-obj docutils literal"><span class="pre">qScoreCalibrationTest</span></tt></a>()</td>
+<td>plots assigned qscore versus emperical qscore to assess how well calibrated the quals are</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.db_summary.qualDistribution" title="proto_err.errorCount.db_summary.qualDistribution"><tt class="xref py py-obj docutils literal"><span class="pre">qualDistribution</span></tt></a>()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="proto_err.errorCount.db_summary.errorDistribution">
+<tt class="descname">errorDistribution</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.db_summary.errorDistribution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.db_summary.errorQualDistribution">
+<tt class="descname">errorQualDistribution</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.db_summary.errorQualDistribution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.db_summary.getAllQualScores">
+<tt class="descname">getAllQualScores</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.db_summary.getAllQualScores" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of quality scores of all the bases</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.db_summary.numErrors">
+<tt class="descname">numErrors</tt><em class="property"> None</em><a class="headerlink" href="#proto_err.errorCount.db_summary.numErrors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of errors in the database</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.db_summary.qScoreCalibrationTest">
+<tt class="descname">qScoreCalibrationTest</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.db_summary.qScoreCalibrationTest" title="Permalink to this definition">¶</a></dt>
+<dd><p>plots assigned qscore versus emperical qscore to assess how well calibrated the quals are</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.db_summary.qualDistribution">
+<tt class="descname">qualDistribution</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.db_summary.qualDistribution" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -747,6 +1032,48 @@ Maximum kmer length</p>
 <tt class="descname">next</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/errorCount.html#errorReader.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.errorCount.errorReader.next" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the next error in the samfile aligned read</p>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="proto_err.errorCount.samReader">
+<em class="property">class </em><tt class="descclassname">proto_err.errorCount.</tt><tt class="descname">samReader</tt><big>(</big><em>samfile</em>, <em>ref</em><big>)</big><a class="headerlink" href="#proto_err.errorCount.samReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the same file and return human readable alignments</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.errorCount.samReader.getReadID" title="proto_err.errorCount.samReader.getReadID"><tt class="xref py py-obj docutils literal"><span class="pre">getReadID</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.errorCount.samReader.next" title="proto_err.errorCount.samReader.next"><tt class="xref py py-obj docutils literal"><span class="pre">next</span></tt></a>()</td>
+<td>Returns the next read in the samfile aligned read</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="proto_err.errorCount.samReader.getReadID">
+<tt class="descname">getReadID</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.samReader.getReadID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="proto_err.errorCount.samReader.next">
+<tt class="descname">next</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.errorCount.samReader.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the next read in the samfile aligned read</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.samReader.read">
+<tt class="descname">read</tt><em class="property"> None</em><a class="headerlink" href="#proto_err.errorCount.samReader.read" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="proto_err.errorCount.samReader.refRead">
+<tt class="descname">refRead</tt><em class="property"> None</em><a class="headerlink" href="#proto_err.errorCount.samReader.refRead" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -906,7 +1233,7 @@ Maximum kmer length</p>
 
 <dl class="class">
 <dt id="proto_err.plot.plotter">
-<em class="property">class </em><tt class="descclassname">proto_err.plot.</tt><tt class="descname">plotter</tt><big>(</big><em>opt</em><big>)</big><a class="reference internal" href="_modules/proto_err/plot.html#plotter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.plot.plotter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">proto_err.plot.</tt><tt class="descname">plotter</tt><big>(</big><em>opt=None</em>, <em>imgDir=None</em>, <em>jsonDir=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/plot.html#plotter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.plot.plotter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plotting object from which histPlotter inherits</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -939,6 +1266,64 @@ Maximum kmer length</p>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="proto_err.plot.scatterPloter">
+<em class="property">class </em><tt class="descclassname">proto_err.plot.</tt><tt class="descname">scatterPloter</tt><big>(</big><em>x</em>, <em>y</em>, <em>xlab</em>, <em>ylab</em>, <em>filename</em>, <em>opt=None</em>, <em>imgDir=None</em>, <em>jsonDir=None</em><big>)</big><a class="headerlink" href="#proto_err.plot.scatterPloter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#proto_err.plot.plotter" title="proto_err.plot.plotter"><tt class="xref py py-class docutils literal"><span class="pre">proto_err.plot.plotter</span></tt></a></p>
+<p>Plots a scatter plot</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>dic</strong> : string</p>
+<blockquote>
+<div><p>truth base(s)</p>
+</div></blockquote>
+<p><strong>opt</strong> : Value</p>
+<blockquote>
+<div><p>options passed from OptionsParser()</p>
+</div></blockquote>
+<p><strong>filename</strong> : string</p>
+<blockquote class="last">
+<div><p>name of output</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="n">Values</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">Values</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="o">.</span><span class="n">imgDir</span> <span class="o">=</span> <span class="s">&#39;/img&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="o">.</span><span class="n">jsonDir</span> <span class="o">=</span> <span class="s">&#39;/json&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plotter</span> <span class="o">=</span> <span class="n">scatterPloter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="go">INFO:Image saved to /img/image.png</span>
+<span class="go">INFO:Raw data saved to /json/image.json</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.plot.scatterPloter.plot" title="proto_err.plot.scatterPloter.plot"><tt class="xref py py-obj docutils literal"><span class="pre">plot</span></tt></a>()</td>
+<td>Method to call plot</td>
+</tr>
+<tr class="row-even"><td><tt class="xref py py-obj docutils literal"><span class="pre">setup</span></tt>(opt)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="proto_err.plot.scatterPloter.plot">
+<tt class="descname">plot</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.plot.scatterPloter.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to call plot</p>
+</dd></dl>
+
+</dd></dl>
+
 <span class="target" id="module-proto_err.query"></span><dl class="class">
 <dt id="proto_err.query.errordb">
 <em class="property">class </em><tt class="descclassname">proto_err.query.</tt><tt class="descname">errordb</tt><big>(</big><em>database='proto_err'</em>, <em>collection='errors'</em><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb" title="Permalink to this definition">¶</a></dt>
@@ -956,16 +1341,25 @@ Maximum kmer length</p>
 <tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.addErrors" title="proto_err.query.errordb.addErrors"><tt class="xref py py-obj docutils literal"><span class="pre">addErrors</span></tt></a>(errorList)</td>
 <td>Add errors from errorList to database</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.deleteAll" title="proto_err.query.errordb.deleteAll"><tt class="xref py py-obj docutils literal"><span class="pre">deleteAll</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.addMetaData" title="proto_err.query.errordb.addMetaData"><tt class="xref py py-obj docutils literal"><span class="pre">addMetaData</span></tt></a>(opt,&nbsp;t[,&nbsp;errorBias])</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.find" title="proto_err.query.errordb.find"><tt class="xref py py-obj docutils literal"><span class="pre">find</span></tt></a>(query[,&nbsp;filt])</td>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.deleteAll" title="proto_err.query.errordb.deleteAll"><tt class="xref py py-obj docutils literal"><span class="pre">deleteAll</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.find_errors" title="proto_err.query.errordb.find_errors"><tt class="xref py py-obj docutils literal"><span class="pre">find_errors</span></tt></a>(query[,&nbsp;filt])</td>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.find" title="proto_err.query.errordb.find"><tt class="xref py py-obj docutils literal"><span class="pre">find</span></tt></a>([query,&nbsp;filt])</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.find_one" title="proto_err.query.errordb.find_one"><tt class="xref py py-obj docutils literal"><span class="pre">find_one</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.find_errors" title="proto_err.query.errordb.find_errors"><tt class="xref py py-obj docutils literal"><span class="pre">find_errors</span></tt></a>([query,&nbsp;filt])</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.find_one" title="proto_err.query.errordb.find_one"><tt class="xref py py-obj docutils literal"><span class="pre">find_one</span></tt></a>(query[,&nbsp;filt])</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#proto_err.query.errordb.getMetaData" title="proto_err.query.errordb.getMetaData"><tt class="xref py py-obj docutils literal"><span class="pre">getMetaData</span></tt></a>()</td>
+<td>Return the metadata associated with current database</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#proto_err.query.errordb.insert" title="proto_err.query.errordb.insert"><tt class="xref py py-obj docutils literal"><span class="pre">insert</span></tt></a>(post)</td>
 <td></td>
 </tr>
 </tbody>
@@ -983,23 +1377,39 @@ Maximum kmer length</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="proto_err.query.errordb.addMetaData">
+<tt class="descname">addMetaData</tt><big>(</big><em>opt</em>, <em>t</em>, <em>errorBias=None</em><big>)</big><a class="headerlink" href="#proto_err.query.errordb.addMetaData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="proto_err.query.errordb.deleteAll">
 <tt class="descname">deleteAll</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb.deleteAll"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb.deleteAll" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="proto_err.query.errordb.find">
-<tt class="descname">find</tt><big>(</big><em>query</em>, <em>filt=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb.find" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find</tt><big>(</big><em>query={}</em>, <em>filt=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb.find" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="proto_err.query.errordb.find_errors">
-<tt class="descname">find_errors</tt><big>(</big><em>query</em>, <em>filt=None</em><big>)</big><a class="headerlink" href="#proto_err.query.errordb.find_errors" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_errors</tt><big>(</big><em>query={}</em>, <em>filt=None</em><big>)</big><a class="headerlink" href="#proto_err.query.errordb.find_errors" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="proto_err.query.errordb.find_one">
-<tt class="descname">find_one</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb.find_one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb.find_one" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_one</tt><big>(</big><em>query</em>, <em>filt=None</em><big>)</big><a class="reference internal" href="_modules/proto_err/query.html#errordb.find_one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proto_err.query.errordb.find_one" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="proto_err.query.errordb.getMetaData">
+<tt class="descname">getMetaData</tt><big>(</big><big>)</big><a class="headerlink" href="#proto_err.query.errordb.getMetaData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the metadata associated with current database</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="proto_err.query.errordb.insert">
+<tt class="descname">insert</tt><big>(</big><em>post</em><big>)</big><a class="headerlink" href="#proto_err.query.errordb.insert" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
