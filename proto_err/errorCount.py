@@ -623,7 +623,7 @@ class counter():
         # if not self.qscoresCount:
         #     logging.info("Counting qual score frequency")
         #     self.qscoresCount = listCounter([asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.samfile ).fetch()))])
-        qscoresCount =  self.getKmerQualCount(kmer,qual)
+        qscoresCount =  self.getKmerQualCount(kmer,qual)    
         return float(qscoresCount) / float(sum(self.kmerQualCount[kmer].values()))
 
     def getFreqKmer(self,kmer):
@@ -729,7 +729,7 @@ class counter():
         # ExpectedSNPCount = self.readCounter['totalAlignedBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
         # ExpectedSNPCount = self.readCounter['totalBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
         # probEmmission = float(1)/float(3)
-        if qual:
+        if qual is not None:
             probSNPError = qscoreToProb(qual)
         else:
             # probSNPError = simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio']
