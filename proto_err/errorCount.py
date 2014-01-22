@@ -618,12 +618,15 @@ class counter():
                     dic[error.emission] = 1                
         return dic
 
-    def getFreqQual(self,qual):
-        """Get the frequency of a particular quality value in the samfile"""
-        if not self.qscoresCount:
-            logging.info("Counting qual score frequency")
-            self.qscoresCount = listCounter([asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.samfile ).fetch()))])
-        return float(self.qscoresCount[qual]) / float(sum(self.qscoresCount.values()))
+    def getFreqQualGivenKmer(self,kmer,qual):
+        """Get the frequency of a particular quality value for a context in the samfile"""
+        # if not self.qscoresCount:
+        #     logging.info("Counting qual score frequency")
+        #     self.qscoresCount = listCounter([asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.samfile ).fetch()))])
+        qscoresCount =  self.getKmerQualCount(kmer,qual)
+        if qual ==0:
+            print qscoresCount,float(sum(self.kmerQualCount[kmer].values()))
+        return float(qscoresCount) / float(sum(self.kmerQualCount[kmer].values()))
 
     def getFreqKmer(self,kmer):
         """Get the frequency of a particular kmer in the samfile"""
@@ -638,11 +641,11 @@ class counter():
 
         return p
 
-    def getContextMeanQualScore(self,kmer):
-        """Get the mean quality score associated with a given context (trimer onl atm) returns the qual of the middle base"""
-        assert len(kmer)==3
+    def getKmerQualCount(self,kmer,qual=1000):
+        """Get the count of a particular kmer, quality kmer context
+        i.e. """
         try:
-            qual = self.kmerQualCount[kmer]
+            kmerQualCount = self.kmerQualCount[kmer][qual]
         except:
             logging.info("Calculating mean quality score for all contexts of length %i" % len(kmer))
             qualDic = AutoVivification()
@@ -658,9 +661,32 @@ class counter():
                         except:
                             qualDic[kmer] = [asciiToInt(read.qual[result.start(0) + 1])]
             for kmer in kmerCombo(len(kmer)):
-                self.kmerQualCount[kmer] = float(sum(qualDic[kmer])) / float(len(qualDic[kmer]))
-            qual = self.kmerQualCount[kmer]
-        return qual
+                self.kmerQualCount[kmer] = listCounter(qualDic[kmer])
+            kmerQualCount = self.kmerQualCount[kmer][qual]    
+        return  kmerQualCount       
+
+    def getContextMeanQualScore(self,kmer):
+        """Get the mean quality score associated with a given context (3mer only atm) returns the qual of the middle base"""
+        assert len(kmer)==3
+        if not self.kmerQualCount:
+            self.getKmerQualCount(kmer) ## initiatesself.kmerQualCount
+        
+        qual = self.kmerQualCount[kmer].keys()
+        counts = self.kmerQualCount[kmer].values()
+
+        sumQual = 0
+        for qual,count in zip(qual,counts):
+            sumQual+= (qual * count)
+
+        meanQual = float(sumQual) / sum(counts)
+        return meanQual
+        
+
+
+
+
+
+
 
             # if len(kmer) != 3:
 
@@ -700,7 +726,7 @@ class counter():
         """
         # simulationMetaData =  self.errordb['metaData'].find_one({'type':'simulation'},{'snpFreq':1,'readMean':1,'numReads':1,'SnpIndelRatio':1})
         if qual:
-            pContext = self.probKmerRef(kmerBefore+truth+kmerAfter) * self.getFreqQual(qual)
+            pContext = self.probKmerRef(kmerBefore+truth+kmerAfter) * self.getFreqQualGivenKmer(kmer=kmerBefore+truth+kmerAfter,qual=qual)
         elif truth:
             ## Use the frequency of the kmer in the reference or in the samfile???? 
             ## Has to be in the reference, as observed contexts are after errors
