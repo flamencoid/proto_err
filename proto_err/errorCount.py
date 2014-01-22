@@ -624,8 +624,6 @@ class counter():
         #     logging.info("Counting qual score frequency")
         #     self.qscoresCount = listCounter([asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.samfile ).fetch()))])
         qscoresCount =  self.getKmerQualCount(kmer,qual)
-        if qual ==0:
-            print qscoresCount,float(sum(self.kmerQualCount[kmer].values()))
         return float(qscoresCount) / float(sum(self.kmerQualCount[kmer].values()))
 
     def getFreqKmer(self,kmer):
