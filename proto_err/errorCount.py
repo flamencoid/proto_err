@@ -684,17 +684,6 @@ class counter():
 
 
 
-
-
-
-
-            # if len(kmer) != 3:
-
-
-
-
-
-
     def getExpectedCount(self,truth='',emission='',kmerBefore='',kmerAfter='',qual=None):
         """
         Gets the expected count of a transition. 
@@ -725,8 +714,10 @@ class counter():
             111
         """
         # simulationMetaData =  self.errordb['metaData'].find_one({'type':'simulation'},{'snpFreq':1,'readMean':1,'numReads':1,'SnpIndelRatio':1})
-        if qual:
-            pContext = self.probKmerRef(kmerBefore+truth+kmerAfter) * self.getFreqQualGivenKmer(kmer=kmerBefore+truth+kmerAfter,qual=qual)
+        if qual is not None:
+            context = kmerBefore+truth+kmerAfter
+            pContext = self.probKmerRef(context) * self.getFreqQualGivenKmer(kmer=context,qual=qual)
+            # print context,qual, self.getFreqQualGivenKmer(kmer=context,qual=qual)
         elif truth:
             ## Use the frequency of the kmer in the reference or in the samfile???? 
             ## Has to be in the reference, as observed contexts are after errors
@@ -1017,7 +1008,7 @@ class counter():
                             if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
                                 outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
                             ## Stats for contexts with q scores
-                        
+                            
                             for qscore in qscores:
                                 outdic['SNP'][context][qscore]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
@@ -1034,8 +1025,6 @@ class counter():
                                     # outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
                     logging.info("p-values for context %s %s" %(context,outDicContextOnly['SNP'][context]['pvalue'].values()))
 
-        # pprint (outdic)
-        pprint(outDicContextOnly)
         print samCount,simCount,expectedCount
         print self.getCount(type='SNP'),self.getSimulatedCount(type='SNP'),totalExpectedCount
 
