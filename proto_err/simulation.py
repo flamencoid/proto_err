@@ -19,7 +19,6 @@ class simulateError():
         self.ref = list(seq)
         self.id = id
         self.opt = opt
-        self.errorProb = [0]*len(seq)
 
 
     def snp(self,pos,rl):
@@ -35,7 +34,8 @@ class simulateError():
         self.read = self.read[:pos+1] + list(rl) + self.read[pos+1:]
         self.ref = self.ref[:pos+1] + ['_']*len(rl) + self.ref[pos+1:]
         ## Also need to insert the equivalent qscores
-        self.errorProb = self.errorProb[:pos+1] + [self.opt.snpFreq for _ in list(rl)]  +self.errorProb[pos+1:]
+        self.SNPerrorProb = self.SNPerrorProb[:pos+1] + [random.gauss(self.opt.errFreq * self.opt.SnpIndelRatio, self.opt.errFreqSd) for _ in list(rl)]  +self.SNPerrorProb[pos+1:]
+        self.INDELerrorProb = self.INDELerrorProb[:pos+1] + [random.gauss(self.opt.errFreq * (1- self.opt.SnpIndelRatio), self.opt.errFreqSd) for _ in list(rl)]  +self.INDELerrorProb[pos+1:]
         # self.id += 'i%s,%s' % (str(pos),str(rl))
         self.pos += len(rl) + 1 # need to jump pos to avoid putting errors in inserted seq
         ## We haven't moved along the reference at all
@@ -46,7 +46,8 @@ class simulateError():
         ## add  - * len(del) in the self.read, don't edit but move along the reference
         self.read = self.read[:pos] + ['_']*dlen+self.read[pos+dlen:]
         ## Also need to delete the equivalent qscores
-        self.errorProb = self.errorProb[:pos] + ['_']*dlen+self.errorProb[pos+dlen:]
+        self.SNPerrorProb = self.SNPerrorProb[:pos] + ['_']*dlen+self.SNPerrorProb[pos+dlen:]
+        self.INDELerrorProb = self.INDELerrorProb[:pos] + ['_']*dlen+self.INDELerrorProb[pos+dlen:]
         self.pos += dlen
 
         
@@ -79,21 +80,12 @@ class simulateError():
     def record(self):
         """Return a Bio.SeqRecord"""
         return SeqRecord(self.seq,self.id,letter_annotations={'phred_quality':self.qscore(t='int',aligned=False)})
-    @property 
-    def SNPProb(self):
-        "Convert errorProb into SNPProb list"
-        out = []
-        for p in self.errorProb:
-            if not p == '_':
-                out.append(self.opt.SnpIndelRatio * p)
-            else:
-                out.append('_')
-        return out
+
 
     def qscore(self,t='int',aligned=True):
         "probability of a SNP only"
         qscores = []
-        for p in self.SNPProb:
+        for p in self.SNPerrorProb:
             if not p == '_':
                 if p < 0:
                     p = 0
@@ -107,44 +99,6 @@ class simulateError():
             return "".join([intToAscii(p) for p in qscores if not p == '_']  )
             
 
-
-class singleSNP(simulateError):
-
-    """ 
-    Information about the errors in a read 
-
-    Attributes
-    ----------
-
-    Parameters
-    ----------
-    Methods
-    ----------
-    See Also
-    --------
-    
-
-    Examples
-    --------
-
-    """
-
-
-    def __init__(self,record,opt,id):
-        simulateError.__init__(self,record,opt,id)
-        self.errorProb = [random.gauss(opt.snpFreq, 0.01) for _ in range(len(self.seq))] 
-
-    def error(self):
-        """Function to induce and error"""
-        ## iterate through the probability list
-        for pos,prob in enumerate(self.errorProb):
-            if random.random() < prob:
-                letter = self.seq[pos]
-                alphabet = copy(self.alphabet)
-                reducedAlphabet = alphabet
-                reducedAlphabet.remove(letter)
-                replaceLetter = random.choice(reducedAlphabet)
-                self.snp(pos,replaceLetter)
 
 class complexError(simulateError):
     """ 
@@ -191,40 +145,43 @@ class complexError(simulateError):
         self.errorBias = errorBias
         self.pos = 0
         if baseErrorProb:
-            self.errorProb = baseErrorProb
+            self.SNPerrorProb = baseErrorProb
+            self.INDELerrorProb = baseErrorProb
         else:
+            self.SNPerrorProb = [random.gauss(opt.errFreq * opt.SnpIndelRatio, opt.errFreqSd) for _ in self.read]
+            self.INDELerrorProb = [random.gauss(opt.errFreq * (1 - opt.SnpIndelRatio), opt.errFreqSd) for _ in self.read]
             if self.errorBias:
-                self.errorProb = [random.gauss(opt.snpFreq, opt.snpFreqSd) for _ in self.read]
                 ## Now check for regular expression matches
                 for pattern,prob in self.errorBias.iteritems():
                     results = pattern.finditer("".join(self.read))
                     for result in results:
                     	# prob is a tuple (+pos to effected base,prob,sd)
                         newProb = random.gauss(prob[1], prob[2])
-                    	self.errorProb[result.start(0)+prob[0]] =  newProb
+                    	self.SNPerrorProb[result.start(0)+prob[0]] =  newProb
 
-            else:
-            	self.errorProb = [random.gauss(opt.snpFreq, opt.snpFreqSd) for _ in self.read]
 
-        assert len(self.errorProb) == len(self.read)
+        assert len(self.SNPerrorProb) == len(self.read)
+        assert len(self.INDELerrorProb) == len(self.read)
 
     def error(self):
         """Function to induce errors"""
         ## iterate through the probability list
-        while self.pos < len(self.errorProb):
+        while self.pos < len(self.SNPerrorProb):
             assert len(self.read) == len(self.ref)
-            assert len(self.read) == len(self.errorProb)
+            assert len(self.read) == len(self.SNPerrorProb)
+            assert len(self.read) == len(self.INDELerrorProb)
             r = random.random()
-            prob = self.errorProb[self.pos]
-            if r < prob:
+            probSNP = self.SNPerrorProb[self.pos]
+            probINDEL =  self.INDELerrorProb[self.pos]
+            if r < probSNP or r < probINDEL:
                 letter = self.ref[self.pos]
                 alphabet = copy(self.alphabet)
                 reducedAlphabet = alphabet
                 reducedAlphabet.remove(letter)
                 replaceLetter = random.choice(reducedAlphabet)
-                if random.random() <= self.opt.SnpIndelRatio:
+                if r < probSNP:
                     self.snp(self.pos,replaceLetter)
-                else:
+                elif r >= probSNP and r < probINDEL:
                     e = self.indel(self.pos)
             else:
                 self.pos += 1

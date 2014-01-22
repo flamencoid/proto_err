@@ -33,11 +33,11 @@ parser.add_option("--numReads", dest="numReads",help="""Number of reads to
 parser.add_option("--meanReadLength", dest="readMean",help="""Read length is 
 					sampled from a normal of this mean (Optional defaults to 
 						5000)""",default=500,type='int')
-parser.add_option("--errorFreqMean", dest="snpFreq",help="""Probablity of an error 
+parser.add_option("--errorFreqMean", dest="errFreq",help="""Probablity of an error 
 					at a base occurs is sampled from a normal with mean 
 					of this Probablity (Optional defaults to 
 						.1)""",default=0.01,type='float')
-parser.add_option("--errorFreqSD", dest="snpFreqSd",help="""Probablity of an error 
+parser.add_option("--errorFreqSD", dest="errFreqSd",help="""Probablity of an error 
 					at a base occurs is sampled from a normal with SD 
 					of this value (Optional defaults to 
 						errorFreqMean/5)""",default=None,type='float')
@@ -69,8 +69,8 @@ if not opt.readSd :
 	opt.readSd = int(float(opt.readMean)/3)
 if not opt.indelSd:
 	opt.indelSd = float(opt.indelMean)/2
-if not opt.snpFreqSd:
-	opt.snpFreqSd = float(opt.snpFreq)/5
+if not opt.errFreqSd:
+	opt.errFreqSd = float(opt.errFreq)/5
 if opt.errorBiasFile:
 	errorBias = AutoVivification()
 	with open(opt.errorBiasFile,'rb') as errorFile:
