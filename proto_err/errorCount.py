@@ -19,6 +19,8 @@ import scipy.stats
 from rpy2.robjects.packages import importr
 from rpy2.robjects.vectors import FloatVector
 
+import re
+
 class errorReader():
 
     """ 
@@ -323,11 +325,9 @@ class counter():
         self.freqKmerDic = {}
         self.alignedStringQual = ""
         self.alignedString = ""
-        for read in pysam.Samfile( self.samfile ).fetch():
-            self.alignedStringQual = self.alignedStringQual.join(read.qual)
-            self.alignedString = self.alignedString.join(str(read.seq))
-            print self.alignedStringQual
-            print self.alignedString
+        self.kmerQualCount = {}
+        
+
 
         
 
@@ -622,7 +622,7 @@ class counter():
         """Get the frequency of a particular quality value in the samfile"""
         if not self.qscoresCount:
             logging.info("Counting qual score frequency")
-            self.qscoresCount = listCounter([asciiToInt(i) for i in list(self.alignedStringQual)])
+            self.qscoresCount = listCounter([asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.samfile ).fetch()))])
         return float(self.qscoresCount[qual]) / float(sum(self.qscoresCount.values()))
 
     def getFreqKmer(self,kmer):
@@ -637,6 +637,35 @@ class counter():
             self.freqKmerDic[kmer] = p
 
         return p
+
+    def getContextMeanQualScore(self,kmer):
+        """Get the mean quality score associated with a given context (trimer onl atm) returns the qual of the middle base"""
+        assert len(kmer)==3
+        try:
+            qual = self.kmerQualCount[kmer]
+        except:
+            logging.info("Calculating mean quality score for all contexts of length %i" % len(kmer))
+            qualDic = AutoVivification()
+            for read in pysam.Samfile(self.samfile).fetch():
+                ## Prepopulated with trimers
+                kmerList =  kmerCombo(len(kmer))
+                patternDic = dict(zip(kmerList,[re.compile(kmer) for kmer in kmerList]))
+                for kmer,pattern in patternDic.iteritems():
+                    results = pattern.finditer("".join(read.seq))
+                    for result in results:
+                        try:
+                            qualDic[kmer].append(asciiToInt(read.qual[result.start(0) + 1]))
+                        except:
+                            qualDic[kmer] = [asciiToInt(read.qual[result.start(0) + 1])]
+            for kmer in kmerCombo(len(kmer)):
+                self.kmerQualCount[kmer] = float(sum(qualDic[kmer])) / float(len(qualDic[kmer]))
+            qual = self.kmerQualCount[kmer]
+        return qual
+
+            # if len(kmer) != 3:
+
+
+
 
 
 
@@ -674,7 +703,8 @@ class counter():
             pContext = self.probKmerRef(kmerBefore+truth+kmerAfter) * self.getFreqQual(qual)
         elif truth:
             ## Use the frequency of the kmer in the reference or in the samfile???? 
-            pContext = self.probKmerRef("".join([kmerBefore,truth,kmerAfter]))
+            ## Has to be in the reference, as observed contexts are after errors
+            pContext = self.probKmerRef(kmerBefore+truth+kmerAfter)
 
             # pContext = self.getFreqKmer(kmerBefore+truth+kmerAfter)
             # print self.probKmerRef(kmerBefore+truth+kmerAfter) , pContext
@@ -689,7 +719,13 @@ class counter():
         else:
             # probSNPError = simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio']
             ## Using the observed snp error rate
-            probSNPError = float(self.getCount(type='SNP')) / float(self.readCounter['totalAlignedBases']) # I don't think this is the correct way to do this
+            # probSNPError = float(self.getCount(type='SNP')) / float(self.readCounter['totalAlignedBases']) # I don't think this is the correct way to do this
+            if kmerBefore+truth+kmerAfter:
+                ## If you're looking at a particular context
+                probSNPError = qscoreToProb(self.getContextMeanQualScore(kmer=kmerBefore+truth+kmerAfter))
+            else:
+                ## If you want the total expectation
+                probSNPError = float(self.getCount(type='SNP')) / float(self.readCounter['totalAlignedBases'])
         if emission:
             expectedCount = (self.readCounter['totalAlignedBases'] * pContext * probSNPError) / 3.0 # assume equal probabilites of eny transition
         else:
@@ -872,15 +908,38 @@ class counter():
         for i in range(len(SNPRow)):
             TotalRow.append(sum([SNPRow[i],INSRow[i],DELRow[i]]))
 
-        SNPRow.append(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[3]))
-        INSRow.append(float(INSRow[2]) / float(INSRow[2] + INSRow[3]))
-        DELRow.append(float(DELRow[2]) / float(DELRow[2] + DELRow[3]))
-        TotalRow.append(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[3]))
-
-        SNPRow.append(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[4]))
-        INSRow.append(float(INSRow[2]) / float(INSRow[2] + INSRow[4]))
-        DELRow.append(float(DELRow[2]) / float(DELRow[2] + DELRow[4]))
-        TotalRow.append(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[4]))
+        try:
+            SNPRow.append(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[3]))
+        except:
+            SNPRow.append('-')
+        try:
+            INSRow.append(float(INSRow[2]) / float(INSRow[2] + INSRow[3]))
+        except:
+           INSRow.append('-')
+        try:
+            DELRow.append(float(DELRow[2]) / float(DELRow[2] + DELRow[3]))
+        except:
+            DELRow.append('-')
+        try:
+            TotalRow.append(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[3]))
+        except:
+            TotalRow.append('-')
+        try:
+            SNPRow.append(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[4]))
+        except:
+            SNPRow.append('-')
+        try:
+            INSRow.append(float(INSRow[2]) / float(INSRow[2] + INSRow[4]))
+        except:
+            INSRow.append('-')
+        try:
+            DELRow.append(float(DELRow[2]) / float(DELRow[2] + DELRow[4]))
+        except:
+            DELRow.append('-')
+        try:
+            TotalRow.append(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[4]))
+        except:
+            TotalRow.append('-')
         outfile = self.opt.outDir + 'errorsCount.dat'
         logging.info('Writing error counts to %s' % (outfile))
         errorsDF = pd.DataFrame.from_items([('Total', TotalRow),('SNP', SNPRow), ('INS', INSRow),('DEL', DELRow)],
@@ -913,24 +972,26 @@ class counter():
             for truth in alphabet:
                 for after in alphabet:
                     context = before + truth + after
+                    logging.info("Calculating stats for context %s" %(context))
                     for emission in alphabet:
-                        logging.info("Context %s" %(context))
-                        ## Stats for contexts without q scores
-                        outDicContextOnly['SNP'][context]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
-                                                                                kmerBefore=before,kmerAfter=after)
-                        outDicContextOnly['SNP'][context]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
-                                                                                kmerBefore=before,kmerAfter=after)
-                        outDicContextOnly['SNP'][context]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
-                                                                                kmerBefore=before,kmerAfter=after)
-
-                        outDicContextOnly['SNP'][context]['expectedOccurancyofContext'][emission] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
-                        outDicContextOnly['SNP'][context]['observedOccurancyofContext'][emission] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
-
-                        outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], totalExpectedCount, outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
-                        if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
-                            outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
-                        ## Stats for contexts with q scores
                         if not truth == emission:
+                            ## Stats for contexts without q scores
+                            outDicContextOnly['SNP'][context]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
+                                                                                    kmerBefore=before,kmerAfter=after)
+                            outDicContextOnly['SNP'][context]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
+                                                                                    kmerBefore=before,kmerAfter=after)
+                            outDicContextOnly['SNP'][context]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
+                                                                                    kmerBefore=before,kmerAfter=after)
+
+                            outDicContextOnly['SNP'][context]['expectedOccurancyofContext'][emission] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
+                            outDicContextOnly['SNP'][context]['observedOccurancyofContext'][emission] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
+                            outDicContextOnly['SNP'][context]['meanQualityScoreForContext'][emission] = self.getContextMeanQualScore(kmer=context)
+
+                            outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], self.getCount(type='SNP'), outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
+                            if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
+                                outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
+                            ## Stats for contexts with q scores
+                        
                             for qscore in qscores:
                                 outdic['SNP'][context][qscore]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
@@ -945,11 +1006,12 @@ class counter():
                                 expectedCount += outdic['SNP'][context][qscore]['expectedCount'][emission]
                                 # if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
                                     # outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
+                    logging.info("p-values for context %s %s" %(context,outDicContextOnly['SNP'][context]['pvalue'].values()))
 
         # pprint (outdic)
         pprint(outDicContextOnly)
         print samCount,simCount,expectedCount
-        print self.getCount(type='SNP'),self.getSimulatedCount(type='SNP'),self.getExpectedCount()
+        print self.getCount(type='SNP'),self.getSimulatedCount(type='SNP'),totalExpectedCount
 
         ## Create friendly output
 
@@ -960,7 +1022,7 @@ class counter():
         logging.info("Generating readable output")
         outputList = []
         outputWithQscoresList = []
-        outputListHeader = ['expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
+        outputListHeader = ['meanQualityScoreForContext','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
         for before in alphabet:
             for truth in alphabet:
                 for after in alphabet:

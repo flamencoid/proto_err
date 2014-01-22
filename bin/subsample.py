@@ -20,7 +20,6 @@ import csv
 import re
 import time
 ## set seed
-random.seed(1)
 
 start = time.clock()
 parser = OptionParser()
@@ -118,7 +117,7 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 	simulatedErrorDB.deleteAll()
 	simulatedReadsDB.deleteAll()
 	for i in range(opt.numReads):
-		logging.info("### Read %i of  %i" % (i,opt.numReads) )
+		logging.info("### Read %i of  %i" % (i+1,opt.numReads) )
 		seqLength = abs(int(math.ceil(np.random.normal(opt.readMean,opt.readSd))))
 		start = random.randrange(refLength)
 		## randomly subsample from reference
