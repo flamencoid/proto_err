@@ -33,6 +33,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li><a href="../../index.html">proto_err 0.0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -149,7 +155,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">readCounter</span><span class="p">[</span><span class="s">&#39;HardClippedReads&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__checkRead</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="errorReader.next"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.errorReader.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the next error in the samfile aligned read</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -160,7 +166,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorList</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c"># self.readCounter[&#39;totalErrorBases&#39;] = len(self.errorList)</span>
-
+</div>
     <span class="k">def</span> <span class="nf">__checkRead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks current read for errors</span>
@@ -293,7 +299,7 @@
 
 
 </div>
-<span class="k">class</span> <span class="nc">counter</span><span class="p">():</span> 
+<div class="viewcode-block" id="counter"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter">[docs]</a><span class="k">class</span> <span class="nc">counter</span><span class="p">():</span> 
     <span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">    Takes a list of errors or samfile and does some kmer counting</span>
 
@@ -371,7 +377,7 @@
 
 
 
-    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opt</span><span class="p">):</span>
+<div class="viewcode-block" id="counter.setup"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opt</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Pass options from OptionParser</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -380,7 +386,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">maxKmerLength</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;opt.maxKmerLength not set, Defaulting to 3&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">maxKmerLength</span> <span class="o">=</span> <span class="mi">3</span>
-
+</div>
     <span class="k">def</span> <span class="nf">__kmerFreq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">seq</span><span class="p">,</span><span class="n">kmer</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the number of times a kmer appears in a sequence</span>
@@ -391,7 +397,7 @@
 
         <span class="k">return</span> <span class="n">count</span><span class="p">,</span><span class="nb">float</span><span class="p">(</span><span class="n">count</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">countRefKmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">maxKmerLength</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="counter.countRefKmer"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.countRefKmer">[docs]</a>    <span class="k">def</span> <span class="nf">countRefKmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">maxKmerLength</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Count all kmers in the reference of length kmerLen or below</span>
 
@@ -436,8 +442,8 @@
             <span class="k">for</span> <span class="n">kmer</span> <span class="ow">in</span> <span class="n">kmerList</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="s">&#39;RefCounts&#39;</span><span class="p">][</span><span class="nb">str</span><span class="p">(</span><span class="n">kmer</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">kmer</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="s">&#39;RefCounts&#39;</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">countErrorKmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">maxKmerLength</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="counter.countErrorKmer"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.countErrorKmer">[docs]</a>    <span class="k">def</span> <span class="nf">countErrorKmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">maxKmerLength</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Count all kmers in the list of errors of length kmerLen or below before </span>
 <span class="sd">        and after and error.</span>
@@ -505,11 +511,11 @@
                 <span class="k">except</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="s">&#39;kmerCounts&#39;</span><span class="p">][</span><span class="s">&#39;after&#39;</span><span class="p">][</span><span class="n">error</span><span class="o">.</span><span class="n">true</span><span class="p">][</span><span class="n">error</span><span class="o">.</span><span class="n">emission</span><span class="p">][</span><span class="n">error</span><span class="o">.</span><span class="n">after</span><span class="p">(</span><span class="n">j</span><span class="p">)]</span><span class="o">=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="s">&#39;errorMode&#39;</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="s">&#39;kmerCounts&#39;</span><span class="p">]</span>
-
+</div>
     <span class="k">def</span> <span class="nf">__readDiff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">read</span><span class="p">,</span><span class="n">ref</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">difflib</span><span class="o">.</span><span class="n">ndiff</span><span class="p">(</span><span class="n">read</span><span class="p">,</span><span class="n">ref</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">countAlignedBases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="counter.countAlignedBases"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.countAlignedBases">[docs]</a>    <span class="k">def</span> <span class="nf">countAlignedBases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Counts the number of aligned bases in counter</span>
 
@@ -530,8 +536,8 @@
             <span class="n">read</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">read</span>
             <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">read</span><span class="o">.</span><span class="n">cigar</span><span class="p">:</span>
                 <span class="n">count</span> <span class="o">+=</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">count</span>
-    <span class="k">def</span> <span class="nf">plotHist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">count</span></div>
+<div class="viewcode-block" id="counter.plotHist"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.plotHist">[docs]</a>    <span class="k">def</span> <span class="nf">plotHist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plots histograms</span>
 
@@ -626,7 +632,7 @@
                         <span class="n">dicAfter</span><span class="p">[</span><span class="n">errorType</span><span class="p">][</span><span class="n">kmer</span><span class="p">]</span> <span class="o">=</span> <span class="n">count</span> 
                 <span class="n">histPlotter</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="n">dicBefore</span><span class="p">[</span><span class="n">errorType</span><span class="p">],</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&quot;kmerBeforeCount/kmer_before_</span><span class="si">%s</span><span class="s">_order_</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">errorType</span><span class="p">,</span><span class="n">order</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
                 <span class="n">histPlotter</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="n">dicBefore</span><span class="p">[</span><span class="n">errorType</span><span class="p">],</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&quot;kmerAfterCount/kmer_after_</span><span class="si">%s</span><span class="s">_order_</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">errorType</span><span class="p">,</span><span class="n">order</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span> 
-
+</div>
     <span class="k">def</span> <span class="nf">__countToDic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">errorList</span><span class="p">,</span><span class="n">attribute</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convience funciton to help with converting counts to dic for plotting</span>
 
@@ -654,7 +660,7 @@
                     <span class="n">dic</span><span class="p">[</span><span class="n">error</span><span class="o">.</span><span class="n">emission</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>                
         <span class="k">return</span> <span class="n">dic</span>
 
-    <span class="k">def</span> <span class="nf">getFreqQual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">qual</span><span class="p">):</span>
+<div class="viewcode-block" id="counter.getFreqQual"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.getFreqQual">[docs]</a>    <span class="k">def</span> <span class="nf">getFreqQual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">qual</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get the frequency of a particular quality value in the samfile&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">qscoresCount</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Counting qual score frequency&quot;</span><span class="p">)</span>
@@ -662,8 +668,8 @@
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qscoresCount</span><span class="p">[</span><span class="n">qual</span><span class="p">])</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qscoresCount</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
 
 
-
-    <span class="k">def</span> <span class="nf">getExpectedCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">kmerBefore</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">kmerAfter</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">qual</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="counter.getExpectedCount"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.getExpectedCount">[docs]</a>    <span class="k">def</span> <span class="nf">getExpectedCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">truth</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">kmerBefore</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">kmerAfter</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span><span class="n">qual</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the expected count of a transition. </span>
 
@@ -716,8 +722,8 @@
 
         <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">expectedCount</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 
-
-    <span class="k">def</span> <span class="nf">getSimulatedCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">truth</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kmerBefore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kmerAfter</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+</div>
+<div class="viewcode-block" id="counter.getSimulatedCount"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.getSimulatedCount">[docs]</a>    <span class="k">def</span> <span class="nf">getSimulatedCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">truth</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kmerBefore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kmerAfter</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                 <span class="nb">type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">maxAlignedDist</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">readLength</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">readPosRange</span><span class="o">=</span><span class="p">[],</span><span class="n">readPerRange</span><span class="o">=</span><span class="p">[],</span>
                 <span class="n">qualRange</span><span class="o">=</span><span class="p">[],</span><span class="n">tlenRange</span><span class="o">=</span><span class="p">[],</span><span class="n">returnList</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -782,8 +788,8 @@
                             <span class="n">qualRange</span><span class="o">=</span><span class="n">qualRange</span><span class="p">,</span><span class="n">tlenRange</span><span class="o">=</span><span class="n">tlenRange</span><span class="p">,</span><span class="n">readLength</span><span class="o">=</span><span class="n">readLength</span><span class="p">,</span><span class="n">returnList</span><span class="o">=</span><span class="n">returnList</span><span class="p">,</span>
                             <span class="n">collection</span><span class="o">=</span><span class="s">&#39;simulatedErrors&#39;</span><span class="p">)</span>
 
-
-    <span class="k">def</span> <span class="nf">probKmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">kmer</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="counter.probKmer"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.probKmer">[docs]</a>    <span class="k">def</span> <span class="nf">probKmer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">kmer</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the fraction of </span>
 
@@ -798,8 +804,8 @@
 <span class="sd">            freq in ref</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">kmer</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">compareSimulationToResults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">query</span><span class="o">=</span><span class="p">{}):</span>
+</div>
+<div class="viewcode-block" id="counter.compareSimulationToResults"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.compareSimulationToResults">[docs]</a>    <span class="k">def</span> <span class="nf">compareSimulationToResults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">query</span><span class="o">=</span><span class="p">{}):</span>
         <span class="n">errorList</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">errordb</span><span class="p">[</span><span class="s">&#39;errors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find_errors</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
         <span class="n">simErrorList</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">errordb</span><span class="p">[</span><span class="s">&#39;simulatedErrors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find_errors</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
         <span class="n">errorDict</span>  <span class="o">=</span> <span class="p">{}</span>
@@ -826,8 +832,8 @@
         <span class="n">FN</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">simErrorDict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="n">errorDic</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;TP&#39;</span><span class="p">:</span><span class="n">TP</span><span class="p">,</span><span class="s">&#39;FP&#39;</span><span class="p">:</span><span class="n">FP</span><span class="p">,</span><span class="s">&#39;FN&#39;</span><span class="p">:</span><span class="n">FN</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">errorDic</span>
-
-    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="counter.summary"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.summary">[docs]</a>    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s">&quot;Log a summary of errors found and samfile counts&quot;</span>
 
         <span class="c">## Initialise some pandas dataframes to sort output for writing to csv. </span>
@@ -904,8 +910,8 @@
                                 <span class="n">orient</span><span class="o">=</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">readCounter</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">bases</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path_or_buf</span><span class="o">=</span><span class="n">outfile</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
 
-
-    <span class="k">def</span> <span class="nf">SNPTransitionStats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="counter.SNPTransitionStats"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.SNPTransitionStats">[docs]</a>    <span class="k">def</span> <span class="nf">SNPTransitionStats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        generate some statistics of transition probabilites</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1015,8 +1021,8 @@
 
 
 
-
-    <span class="k">def</span> <span class="nf">getCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">truth</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kmerBefore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kmerAfter</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+</div>
+<div class="viewcode-block" id="counter.getCount"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.counter.getCount">[docs]</a>    <span class="k">def</span> <span class="nf">getCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">truth</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">emission</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kmerBefore</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">kmerAfter</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                 <span class="nb">type</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">maxAlignedDist</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">mappedCorrectly</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">readLength</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">readPosRange</span><span class="o">=</span><span class="p">[],</span><span class="n">readPerRange</span><span class="o">=</span><span class="p">[],</span>
                 <span class="n">qualRange</span><span class="o">=</span><span class="p">[],</span><span class="n">tlenRange</span><span class="o">=</span><span class="p">[],</span><span class="n">returnList</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">collection</span><span class="o">=</span><span class="s">&#39;errors&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1119,8 +1125,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">mongoPointer</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
 
-
-<span class="k">class</span> <span class="nc">db_summary</span><span class="p">():</span>
+</div></div>
+<div class="viewcode-block" id="db_summary"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.db_summary">[docs]</a><span class="k">class</span> <span class="nc">db_summary</span><span class="p">():</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">opt</span><span class="p">):</span>
         <span class="c">## Connection to mongoDB, runs without for now.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">errordb</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1131,12 +1137,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">qscores</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">errorQualList</span> <span class="o">=</span> <span class="bp">False</span>
 
-    <span class="k">def</span> <span class="nf">getAllQualScores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="db_summary.getAllQualScores"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.db_summary.getAllQualScores">[docs]</a>    <span class="k">def</span> <span class="nf">getAllQualScores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s">&quot;Returns a list of quality scores of all the bases&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Extracting Qscores from samfile&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">asciiToInt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">qual</span> <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">pysam</span><span class="o">.</span><span class="n">Samfile</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="o">.</span><span class="n">samfile</span> <span class="p">)</span><span class="o">.</span><span class="n">fetch</span><span class="p">()))]</span>
-
-    <span class="k">def</span> <span class="nf">errorDistribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="db_summary.errorDistribution"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.db_summary.errorDistribution">[docs]</a>    <span class="k">def</span> <span class="nf">errorDistribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">ed</span> <span class="o">=</span>  <span class="p">[</span><span class="n">doc</span><span class="p">[</span><span class="s">&#39;readPer&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">errordb</span><span class="p">[</span><span class="s">&#39;errors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="p">{},</span><span class="n">filt</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;readPer&#39;</span><span class="p">})]</span>
         <span class="k">if</span> <span class="n">ed</span><span class="p">:</span>
             <span class="n">densityPlotterFromLists</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;errorDistribution&#39;</span><span class="p">:</span><span class="n">ed</span><span class="p">},</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;errorDistribution_dens&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
@@ -1146,8 +1152,8 @@
         <span class="k">if</span> <span class="n">simEd</span><span class="p">:</span>
             <span class="n">densityPlotterFromLists</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;errorDistribution&#39;</span><span class="p">:</span><span class="n">simEd</span><span class="p">},</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;simulatedErrorDistribution_dens&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
             <span class="n">densityPlotterFromLists</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;errorDistribution&#39;</span><span class="p">:</span><span class="n">simEd</span><span class="p">},</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;simulatedErrorDistribution_hist&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="s">&#39;hist&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">errorQualDistribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="db_summary.errorQualDistribution"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.db_summary.errorQualDistribution">[docs]</a>    <span class="k">def</span> <span class="nf">errorQualDistribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorQualList</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">errorQualList</span> <span class="o">=</span>  <span class="p">[</span><span class="n">doc</span><span class="p">[</span><span class="s">&#39;qual&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">errordb</span><span class="p">[</span><span class="s">&#39;errors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;type&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s">&#39;$ne&#39;</span><span class="p">:</span> <span class="s">&#39;Deletion&#39;</span><span class="p">}},</span><span class="n">filt</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;qual&#39;</span><span class="p">})]</span>
         <span class="k">if</span> <span class="n">ed</span><span class="p">:</span>
@@ -1158,15 +1164,15 @@
         <span class="k">if</span> <span class="n">simEd</span><span class="p">:</span>
             <span class="n">densityPlotterFromLists</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;simulatederrorQualDistribution&#39;</span><span class="p">:</span><span class="n">simEd</span><span class="p">},</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;simulatederrorQualDistribution_dens&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
             <span class="n">densityPlotterFromLists</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;simulatederrorQualDistribution&#39;</span><span class="p">:</span><span class="n">simEd</span><span class="p">},</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;simulatederrorQualDistribution_hist&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="s">&#39;hist&#39;</span><span class="p">)</span>        
-
-    <span class="k">def</span> <span class="nf">qualDistribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="db_summary.qualDistribution"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.db_summary.qualDistribution">[docs]</a>    <span class="k">def</span> <span class="nf">qualDistribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">qscores</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">qscores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getAllQualScores</span><span class="p">()</span>
 
         <span class="n">densityPlotterFromLists</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;QualDistribution&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">qscores</span><span class="p">},</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;QualDistribution_dens&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
         <span class="n">densityPlotterFromLists</span><span class="p">(</span><span class="n">dic</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;QualDistribution&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">qscores</span><span class="p">},</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;QualDistribution_hist&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="s">&#39;hist&#39;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">qScoreCalibrationTest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="db_summary.qScoreCalibrationTest"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.db_summary.qScoreCalibrationTest">[docs]</a>    <span class="k">def</span> <span class="nf">qScoreCalibrationTest</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s">&quot;plots assigned qscore versus emperical qscore to assess how well calibrated the quals are&quot;</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Assess qscore calibration&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">qscores</span><span class="p">:</span>
@@ -1183,22 +1189,22 @@
         <span class="n">scatterPloter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">samQscore</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">empiricalQscore</span><span class="p">,</span>
                     <span class="n">xlab</span><span class="o">=</span><span class="s">&#39;known&#39;</span><span class="p">,</span><span class="n">ylab</span><span class="o">=</span><span class="s">&#39;empirical&#39;</span><span class="p">,</span>
                     <span class="n">filename</span><span class="o">=</span><span class="s">&#39;qscoreCalibration&#39;</span><span class="p">,</span><span class="n">opt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-
+</div>
     <span class="nd">@property</span> 
-    <span class="k">def</span> <span class="nf">numErrors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="db_summary.numErrors"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.db_summary.numErrors">[docs]</a>    <span class="k">def</span> <span class="nf">numErrors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s">&quot;Get the number of errors in the database&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">errordb</span><span class="p">[</span><span class="s">&#39;errors&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">find</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
 
 
-
-<span class="k">class</span> <span class="nc">samReader</span><span class="p">():</span>
+</div></div>
+<div class="viewcode-block" id="samReader"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.samReader">[docs]</a><span class="k">class</span> <span class="nc">samReader</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; Read the same file and return human readable alignments&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">samfile</span><span class="p">,</span><span class="n">ref</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">samfile</span> <span class="o">=</span> <span class="n">pysam</span><span class="o">.</span><span class="n">Samfile</span><span class="p">(</span> <span class="n">samfile</span> <span class="p">)</span><span class="o">.</span><span class="n">fetch</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ref</span> <span class="o">=</span> <span class="n">ref</span>
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
-    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="samReader.next"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.samReader.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the next read in the samfile aligned read</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1209,10 +1215,10 @@
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
-            
-    <span class="k">def</span> <span class="nf">getReadID</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            </div>
+<div class="viewcode-block" id="samReader.getReadID"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.samReader.getReadID">[docs]</a>    <span class="k">def</span> <span class="nf">getReadID</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alignedRead</span><span class="o">.</span><span class="n">qname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;id=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
-
+</div>
     <span class="k">def</span> <span class="nf">__parseRead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        parses the read and returns readable alignment</span>
@@ -1339,12 +1345,12 @@
         <span class="mi">0</span><span class="o">/</span><span class="mi">0</span>       
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentRead</span><span class="p">)</span>
+<div class="viewcode-block" id="samReader.read"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.samReader.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentRead</span><span class="p">)</span></div>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">refRead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="samReader.refRead"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.errorCount.samReader.refRead">[docs]</a>    <span class="k">def</span> <span class="nf">refRead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentRefRead</span><span class="p">)</span> 
-</pre></div>
+</pre></div></div></div>
 
           </div>
         </div>
@@ -1374,6 +1380,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li><a href="../../index.html">proto_err 0.0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>

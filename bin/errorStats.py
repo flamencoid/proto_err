@@ -64,16 +64,16 @@ if opt.force:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
 else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
-errorCounter.summary()
-errorCounter.SNPTransitionStats()
-summ = db_summary(opt)
-# summ.errorDistribution()
-# summ.qualDistribution()
-# summ.qScoreCalibrationTest()
 
+errorCounter.SNPTransitionStats()
 
 # errorCounter.plotHist()
-
+## Do some meta and summary statistics
+summ = db_summary(opt)
+summ.errorDistribution()
+summ.qualDistribution()
+summ.qScoreCalibrationTest()
+errorCounter.summary()
 end = time.clock()
 logging.info("errorStats.py took %f seconds to run" % (end-start))
 

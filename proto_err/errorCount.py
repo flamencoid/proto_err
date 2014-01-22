@@ -283,19 +283,16 @@ class counter():
     >>> errorCounter.countRefKmer()
     """
 
-    def __init__(self,ref,opt,errorList=None,samfile=None,makeDB=False):
+    def __init__(self,ref,opt,samfile,makeDB=False):
         self.logger     = logging.getLogger()
         self.samfile = samfile
-        if (not errorList and not samfile) or (errorList and samfile):
-            self.logger.error("counter takes errorList or samfile, at least one and not both")
-        if samfile and not errorList:
-            self.errorList = []
-            reader = errorReader(samfile,ref)
-            for error in reader:
-                self.errorList.append(error)
-            self.readCounter = reader.readCounter
-        else:
-            self.errorList = errorList
+
+        self.errorList = []
+        reader = errorReader(samfile,ref)
+        for error in reader:
+            self.errorList.append(error)
+        self.readCounter = reader.readCounter
+
         # the results dictionary
         self.res = {}
         self.res['kmerCounts'] = AutoVivification()
@@ -321,6 +318,19 @@ class counter():
             self.logger.warning("""### Initiate counter with makeDB=True to wipe and repopulate""")
 
         self.qscoresCount = None ## So we don't do counting twice
+        self.kmerSamCount = None
+        self.probKmerRefDic = {}
+        self.freqKmerDic = {}
+        self.alignedStringQual = ""
+        self.alignedString = ""
+        for read in pysam.Samfile( self.samfile ).fetch():
+            self.alignedStringQual = self.alignedStringQual.join(read.qual)
+            self.alignedString = self.alignedString.join(str(read.seq))
+            print self.alignedStringQual
+            print self.alignedString
+
+        
+
         
 
 
@@ -612,8 +622,21 @@ class counter():
         """Get the frequency of a particular quality value in the samfile"""
         if not self.qscoresCount:
             logging.info("Counting qual score frequency")
-            self.qscoresCount = listCounter([asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.samfile ).fetch()))])
+            self.qscoresCount = listCounter([asciiToInt(i) for i in list(self.alignedStringQual)])
         return float(self.qscoresCount[qual]) / float(sum(self.qscoresCount.values()))
+
+    def getFreqKmer(self,kmer):
+        """Get the frequency of a particular kmer in the samfile"""
+        try:
+            p = self.freqKmerDic[kmer]
+        except:
+            count = 0
+            for read in pysam.Samfile( self.samfile ).fetch():
+                count += str(read.seq).count(kmer)
+            p = float(count) / float(self.readCounter['totalAlignedBases'])
+            self.freqKmerDic[kmer] = p
+
+        return p
 
 
 
@@ -646,11 +669,15 @@ class counter():
             >>> print errorCounter.getCount(truth='A',emission='T')
             111
         """
-        simulationMetaData =  self.errordb['metaData'].find_one({'type':'simulation'},{'snpFreq':1,'readMean':1,'numReads':1,'SnpIndelRatio':1})
+        # simulationMetaData =  self.errordb['metaData'].find_one({'type':'simulation'},{'snpFreq':1,'readMean':1,'numReads':1,'SnpIndelRatio':1})
         if qual:
-            pContext = self.probKmer(kmerBefore+truth+kmerAfter) * self.getFreqQual(qual)
+            pContext = self.probKmerRef(kmerBefore+truth+kmerAfter) * self.getFreqQual(qual)
         elif truth:
-            pContext = self.probKmer(kmerBefore+truth+kmerAfter)
+            ## Use the frequency of the kmer in the reference or in the samfile???? 
+            pContext = self.probKmerRef("".join([kmerBefore,truth,kmerAfter]))
+
+            # pContext = self.getFreqKmer(kmerBefore+truth+kmerAfter)
+            # print self.probKmerRef(kmerBefore+truth+kmerAfter) , pContext
         else:
             pContext = 1
         # print simulationMetaData
@@ -660,7 +687,9 @@ class counter():
         if qual:
             probSNPError = qscoreToProb(qual)
         else:
-            probSNPError = simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio']
+            # probSNPError = simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio']
+            ## Using the observed snp error rate
+            probSNPError = float(self.getCount(type='SNP')) / float(self.readCounter['totalAlignedBases']) # I don't think this is the correct way to do this
         if emission:
             expectedCount = (self.readCounter['totalAlignedBases'] * pContext * probSNPError) / 3.0 # assume equal probabilites of eny transition
         else:
@@ -737,7 +766,7 @@ class counter():
                             collection='simulatedErrors')
 
 
-    def probKmer(self,kmer):
+    def probKmerRef(self,kmer):
         """
         Gets the fraction of 
 
@@ -751,7 +780,13 @@ class counter():
         float
             freq in ref
         """
-        return float(self.ref.count(kmer)) / len(self.ref)
+        try:
+            p = self.probKmerRefDic[kmer]
+        except:
+            p = float(self.ref.count(kmer)) / len(self.ref)
+            self.probKmerRefDic[kmer] = p
+        return p
+
 
     def compareSimulationToResults(self,query={}):
         errorList = self.errordb['errors'].find_errors(query=query)
@@ -879,21 +914,24 @@ class counter():
                 for after in alphabet:
                     context = before + truth + after
                     for emission in alphabet:
-                        logging.info("Context %s aggregation" %(context))
+                        logging.info("Context %s" %(context))
                         ## Stats for contexts without q scores
                         outDicContextOnly['SNP'][context]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after)
                         outDicContextOnly['SNP'][context]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after)
                         outDicContextOnly['SNP'][context]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
-                                                                                kmerBefore=before,kmerAfter=after)                           
+                                                                                kmerBefore=before,kmerAfter=after)
+
+                        outDicContextOnly['SNP'][context]['expectedOccurancyofContext'][emission] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
+                        outDicContextOnly['SNP'][context]['observedOccurancyofContext'][emission] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
+
                         outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], totalExpectedCount, outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
                         if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
                             outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
                         ## Stats for contexts with q scores
                         if not truth == emission:
                             for qscore in qscores:
-                                logging.info("Context %s quality score %i" %(context,qscore))
                                 outdic['SNP'][context][qscore]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
                                                                                 kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
                                 outdic['SNP'][context][qscore]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
@@ -905,8 +943,8 @@ class counter():
                                 samCount +=  outdic['SNP'][context][qscore]['samCount'][emission]
                                 simCount += outdic['SNP'][context][qscore]['simCount'][emission]
                                 expectedCount += outdic['SNP'][context][qscore]['expectedCount'][emission]
-                                if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
-                                    outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
+                                # if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
+                                    # outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
 
         # pprint (outdic)
         pprint(outDicContextOnly)
@@ -922,6 +960,7 @@ class counter():
         logging.info("Generating readable output")
         outputList = []
         outputWithQscoresList = []
+        outputListHeader = ['expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
         for before in alphabet:
             for truth in alphabet:
                 for after in alphabet:
@@ -929,12 +968,12 @@ class counter():
                         if not truth == emission:
                             context = before + truth + after
                             contextOut = before + emission + after
-                            row = [context,contextOut] + [outDicContextOnly['SNP'][context][t][emission] for t in ['simCount','samCount','expectedCount','pvalue']]
+                            row = [context,contextOut] + [outDicContextOnly['SNP'][context][t][emission] for t in outputListHeader]
                             outputList.append(row)
                             for qscore in qscores:
                                 row = [context,contextOut,qscore] + [outdic['SNP'][context][qscore][t][emission] for t in ['simCount','samCount','expectedCount','pvalue']]
                                 outputWithQscoresList.append(row)
-        df = pd.DataFrame(outputList, columns=['ContextTrue','ContextEmit','simCount','samCount','expectedCount','pvalue'])
+        df = pd.DataFrame(outputList, columns=['contextTrue','ContextEmit']+outputListHeader)
         dfQ = pd.DataFrame(outputWithQscoresList, columns=['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount','pvalue'])
 
         ## Adjust the p-values for multiple testing

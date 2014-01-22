@@ -33,6 +33,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li><a href="../../index.html">proto_err 0.0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -53,7 +59,7 @@
 <span class="kn">from</span> <span class="nn">Bio.Application</span> <span class="kn">import</span> <span class="n">_Option</span><span class="p">,</span> <span class="n">_Argument</span><span class="p">,</span> <span class="n">_Switch</span><span class="p">,</span> <span class="n">AbstractCommandline</span><span class="p">,</span><span class="n">_StaticArgument</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="k">def</span> <span class="nf">refIndex</span><span class="p">(</span><span class="nb">file</span><span class="p">):</span>
+<div class="viewcode-block" id="refIndex"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.align.refIndex">[docs]</a><span class="k">def</span> <span class="nf">refIndex</span><span class="p">(</span><span class="nb">file</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Function to generate BWA index</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -61,16 +67,16 @@
     <span class="n">index_cmd</span> <span class="o">=</span> <span class="n">Applications</span><span class="o">.</span><span class="n">BwaIndexCommandline</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="nb">file</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s">&quot;bwtsw&quot;</span><span class="p">)</span>
     <span class="n">index_cmd</span><span class="p">()</span>
     <span class="k">return</span> <span class="mi">1</span>
-
-<span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="n">reference</span><span class="p">,</span> <span class="n">read_file</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span><span class="n">algorithm</span><span class="o">=</span><span class="s">&#39;bwa-mem&#39;</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="align"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.align.align">[docs]</a><span class="k">def</span> <span class="nf">align</span><span class="p">(</span><span class="n">reference</span><span class="p">,</span> <span class="n">read_file</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span><span class="n">algorithm</span><span class="o">=</span><span class="s">&#39;bwa-mem&#39;</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">algorithm</span><span class="o">==</span><span class="s">&#39;bwa-mem&#39;</span><span class="p">:</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Aligning reads to reference with bwa-mem&quot;</span><span class="p">)</span>
         <span class="n">alignCmd</span> <span class="o">=</span> <span class="n">BwaMemAlignCommandline</span><span class="p">(</span> <span class="n">reference</span><span class="o">=</span><span class="n">reference</span><span class="p">,</span> <span class="n">read_file</span><span class="o">=</span><span class="n">read_file</span><span class="p">)</span>
         <span class="k">print</span> <span class="n">alignCmd</span>
 
     <span class="k">return</span> <span class="n">alignCmd</span><span class="p">(</span><span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">)</span>
-
-<div class="viewcode-block" id="BwaMemAlignCommandline"><a class="viewcode-back" href="../../align.html#proto_err.align.BwaMemAlignCommandline">[docs]</a><span class="k">class</span> <span class="nc">BwaMemAlignCommandline</span><span class="p">(</span><span class="n">AbstractCommandline</span><span class="p">):</span>
+</div>
+<div class="viewcode-block" id="BwaMemAlignCommandline"><a class="viewcode-back" href="../../test/proto_err.html#proto_err.align.BwaMemAlignCommandline">[docs]</a><span class="k">class</span> <span class="nc">BwaMemAlignCommandline</span><span class="p">(</span><span class="n">AbstractCommandline</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Command line wrapper for Burrows Wheeler Aligner (BWA) aln.</span>
 
 <span class="sd">    Run a BWA alignment, equivalent to::</span>
@@ -209,6 +215,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li><a href="../../index.html">proto_err 0.0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
