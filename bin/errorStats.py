@@ -11,6 +11,7 @@ from errorCount import errorReader,counter,db_summary,samReader
 from fastaIO import getRef
 from query import errordb
 import time
+from report import Reporter
 start = time.clock()
 
 parser = OptionParser()
@@ -51,12 +52,12 @@ observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName 
 
 
 ## Generate read documents for uploading to db
-if opt.force:
-	observedReadsDB.deleteAll()
-	for read in samReader(samfile=opt.samfile,ref=ref):
-		if not read is None:
-			post = {'id':read.ID,'read':read.read,'ref':read.refRead,'cigar':read.alignedRead.cigarstring}
-			observedReadsDB.insert(post)
+# if opt.force:
+# 	observedReadsDB.deleteAll()
+# 	for read in samReader(samfile=opt.samfile,ref=ref):
+# 		post = {'id':read.ID,'read':read.read,'ref':read.refRead,
+# 		'qual':read.qual,'cigar':read.alignedRead.cigarstring}
+# 		observedReadsDB.insert(post)
 
 
 
@@ -65,15 +66,20 @@ if opt.force:
 else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
 
-errorCounter.SNPTransitionStats()
-
-# errorCounter.plotHist()
-## Do some meta and summary statistics
-summ = db_summary(opt)
-summ.errorDistribution()
-summ.qualDistribution()
-summ.qScoreCalibrationTest()
+# errorCounter.SNPTransitionStats()
 errorCounter.summary()
+# # # errorCounter.plotHist()
+# # ## Do some meta and summary statistics
+# summ = db_summary(opt)
+# summ.errorDistribution()
+# summ.qualDistribution()
+# summ.qScoreCalibrationTest('SNP')
+# summ.qScoreCalibrationTest('Insertion')
+# summ.qScoreCalibrationTest('Deletion')
+
+report = Reporter(opt=opt,counter=errorCounter,outfileDir= opt.outDir ,latexTemplate='../data/template.tex')
+report.generatePdfReport()
+
 end = time.clock()
 logging.info("errorStats.py took %f seconds to run" % (end-start))
 

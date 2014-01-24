@@ -162,11 +162,12 @@ class densityPlotterFromLists(plotter):
         filename : string
             name of output
         """
-    def __init__(self,dic,opt,filename):
+    def __init__(self,dic,opt,filename,binwidth=1):
         plotter.__init__(self,opt)
         self.dic = dic
         self.imgFilename = self.imgDir + filename+ ".png"
         self.jsonFilename = self.jsonDir + filename+ ".json"
+        self.binwidth = binwidth
     def plot(self,geom='dens'):
         """Method to call plot"""
         dfDic = {}
@@ -188,7 +189,7 @@ class densityPlotterFromLists(plotter):
         else:
             pp = gp + \
                  ggplot2.aes_string(x='value',fill='factor(name)') + \
-            ggplot2.geom_histogram(position='dodge') + \
+            ggplot2.geom_histogram(position='dodge',binwidth=self.binwidth) + \
             ggplot2.theme_bw()+\
             ggplot2.theme(**{'axis.text.x': ggplot2.element_text(angle = 90,hjust = 1)})
         grdevices.png(file=self.imgFilename, width=512, height=512)

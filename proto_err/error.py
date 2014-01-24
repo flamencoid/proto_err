@@ -150,7 +150,6 @@ class error():
         elif self.isDeletion:
             i = self.readPos -1
         else:
-            
             i = self.readPos
         
         a = self.read.seq[i+1:j+i+1]
@@ -196,7 +195,11 @@ class error():
         if self.isDeletion:
             ## deletions deleted the base so there won't be a qual score at the deleted position
             ## return the previous position instead ?? 
-            return None
+            return asciiToInt(self.read.qqual[self.readPos-1])
+        elif self.isInsertion:
+            ## If it's an insertion return the mean quality across the indel + previous base
+            qualList = [asciiToInt(self.read.qqual[i]) for i in range(self.readPos-1,self.readPos + self.tlen)]
+            meanqual = float(sum(qualList)) / float(len(qualList))
         else:
             return asciiToInt(self.read.qqual[self.readPos])
     @property 

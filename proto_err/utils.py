@@ -22,7 +22,10 @@ class AutoVivification(dict):
             value = self[item] = type(self)()
             return value
 def asciiToInt(s):
-    return ord(s) - 33
+    if not s =='_':
+        return ord(s) - 33
+    else:
+        return '_'
 def intToAscii(i):
     return  chr(i + 33 )
 def popLong(l,i,j):

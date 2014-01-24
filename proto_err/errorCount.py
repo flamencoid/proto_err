@@ -291,8 +291,8 @@ class counter():
 
         self.errorList = []
         reader = errorReader(samfile,ref)
-        for error in reader:
-            self.errorList.append(error)
+        logging.info("Parsing samfile for errors")
+        
         self.readCounter = reader.readCounter
 
         # the results dictionary
@@ -311,11 +311,16 @@ class counter():
         self.errordb['errors'] = errordb(database=opt.dbName,collection=opt.observedErrorDBName)
         self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
         self.errordb['metaData'] = errordb(database=opt.dbName,collection='metaData')
+
+        for error in reader:
+            self.errorList.append(error)
+        logging.info("Found %i errors in samfile" % (len(self.errorList)))
         if makeDB:
-            
             self.errordb['errors'].deleteAll()
             self.errorList = self.errordb['errors'].addErrors(self.errorList)
         else:
+            # logging.info("Downloading pre-generated errors from database")
+            # self.errorList = self.errordb['errors'].find_errors()
             self.logger.warning("""### Using pre-generated database.""")
             self.logger.warning("""### Initiate counter with makeDB=True to wipe and repopulate""")
 
@@ -344,16 +349,6 @@ class counter():
         if not self.opt.maxKmerLength:
             self.logger.info("opt.maxKmerLength not set, Defaulting to 3")
             self.opt.maxKmerLength = 3
-
-    def __kmerFreq(self,seq,kmer):
-        """
-        Calculate the number of times a kmer appears in a sequence
-        seq : SeqRecord Object
-        kmer : kmer string
-        """
-        count = seq.count(kmer)
-
-        return count,float(count)/len(seq)
 
     def countRefKmer(self,maxKmerLength=None):
         """
@@ -647,12 +642,14 @@ class counter():
         except:
             logging.info("Calculating mean quality score for all contexts of length %i" % len(kmer))
             qualDic = AutoVivification()
-            for read in pysam.Samfile(self.samfile).fetch():
+            for read in samReader(samfile=self.samfile,ref=self.ref):
                 ## Prepopulated with trimers
                 kmerList =  kmerCombo(len(kmer))
                 patternDic = dict(zip(kmerList,[re.compile(kmer) for kmer in kmerList]))
                 for kmer,pattern in patternDic.iteritems():
-                    results = pattern.finditer("".join(read.seq))
+                    ## Should this be greping in the reference rather than the read?
+                    # results = pattern.finditer("".join(read.seq))
+                    results = pattern.finditer("".join(read.refRead))
                     for result in results:
                         try:
                             qualDic[kmer].append(asciiToInt(read.qual[result.start(0) + 1]))
@@ -660,6 +657,11 @@ class counter():
                             qualDic[kmer] = [asciiToInt(read.qual[result.start(0) + 1])]
             for kmer in kmerCombo(len(kmer)):
                 self.kmerQualCount[kmer] = listCounter(qualDic[kmer])
+                try:
+                    # Remove any counts which lie in deletions
+                    del self.kmerQualCount[kmer]['_']
+                except:
+                    pass
             kmerQualCount = self.kmerQualCount[kmer][qual]    
         return  kmerQualCount       
 
@@ -924,48 +926,48 @@ class counter():
             TotalRow.append(sum([SNPRow[i],INSRow[i],DELRow[i]]))
 
         try:
-            SNPRow.append(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[3]))
+            SNPRow.append(round(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[3]),2))
         except:
             SNPRow.append('-')
         try:
-            INSRow.append(float(INSRow[2]) / float(INSRow[2] + INSRow[3]))
+            INSRow.append(round(float(INSRow[2]) / float(INSRow[2] + INSRow[3]),2))
         except:
            INSRow.append('-')
         try:
-            DELRow.append(float(DELRow[2]) / float(DELRow[2] + DELRow[3]))
+            DELRow.append(round(float(DELRow[2]) / float(DELRow[2] + DELRow[3]),2))
         except:
             DELRow.append('-')
         try:
-            TotalRow.append(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[3]))
+            TotalRow.append(round(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[3]),2))
         except:
             TotalRow.append('-')
         try:
-            SNPRow.append(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[4]))
+            SNPRow.append(round(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[4]),2))
         except:
             SNPRow.append('-')
         try:
-            INSRow.append(float(INSRow[2]) / float(INSRow[2] + INSRow[4]))
+            INSRow.append(round(float(INSRow[2]) / float(INSRow[2] + INSRow[4]),2))
         except:
             INSRow.append('-')
         try:
-            DELRow.append(float(DELRow[2]) / float(DELRow[2] + DELRow[4]))
+            DELRow.append(round(float(DELRow[2]) / float(DELRow[2] + DELRow[4]),2))
         except:
             DELRow.append('-')
         try:
-            TotalRow.append(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[4]))
+            TotalRow.append(round(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[4]),2))
         except:
             TotalRow.append('-')
         outfile = self.opt.outDir + 'errorsCount.dat'
         logging.info('Writing error counts to %s' % (outfile))
-        errorsDF = pd.DataFrame.from_items([('Total', TotalRow),('SNP', SNPRow), ('INS', INSRow),('DEL', DELRow)],
+        self.errorsDF = pd.DataFrame.from_items([('Total', TotalRow),('SNP', SNPRow), ('INS', INSRow),('DEL', DELRow)],
                                 orient='index', columns=['samCount', 'simCount', 'TP','FP','FN','Precision','Recall'])
-        errorsDF.to_csv(path_or_buf=outfile,sep='\t')
+        self.errorsDF.to_csv(path_or_buf=outfile,sep='\t')
 
         outfile = self.opt.outDir + 'readCounts.dat'
         logging.info('Writing read counts to %s' % (outfile))
-        bases = pd.DataFrame.from_items([('Counts', self.readCounter.values())],
+        self.readCounts = pd.DataFrame.from_items([('Counts', self.readCounter.values())],
                                 orient='index', columns=self.readCounter.keys())
-        bases.to_csv(path_or_buf=outfile,sep='\t')
+        self.readCounts.to_csv(path_or_buf=outfile,sep='\t')
 
 
     def SNPTransitionStats(self):
@@ -983,11 +985,14 @@ class counter():
         simCount = 0 
         expectedCount = 0
         totalExpectedCount = self.getExpectedCount()
+        cnt = 0
         for before in alphabet:
             for truth in alphabet:
                 for after in alphabet:
                     context = before + truth + after
-                    logging.info("Calculating stats for context %s" %(context))
+                    cnt += 1
+                    logging.info("Calculating stats for context %s : %i of 64" %(context,cnt))
+
                     for emission in alphabet:
                         if not truth == emission:
                             ## Stats for contexts without q scores
@@ -1000,7 +1005,7 @@ class counter():
 
                             outDicContextOnly['SNP'][context]['expectedOccurancyofContext'][emission] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
                             outDicContextOnly['SNP'][context]['observedOccurancyofContext'][emission] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
-                            outDicContextOnly['SNP'][context]['meanQualityScoreForContext'][emission] = self.getContextMeanQualScore(kmer=context)
+                            outDicContextOnly['SNP'][context]['meanQualityScoreForContext'][emission] = round(self.getContextMeanQualScore(kmer=context),2)
 
                             outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], self.getCount(type='SNP'), outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
                             if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
@@ -1048,30 +1053,30 @@ class counter():
                             for qscore in qscores:
                                 row = [context,contextOut,qscore] + [outdic['SNP'][context][qscore][t][emission] for t in ['simCount','samCount','expectedCount','pvalue']]
                                 outputWithQscoresList.append(row)
-        df = pd.DataFrame(outputList, columns=['contextTrue','ContextEmit']+outputListHeader)
-        dfQ = pd.DataFrame(outputWithQscoresList, columns=['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount','pvalue'])
+        self.contextStats = pd.DataFrame(outputList, columns=['contextTrue','ContextEmit']+outputListHeader)
+        self.contextQualStats = pd.DataFrame(outputWithQscoresList, columns=['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount','pvalue'])
 
         ## Adjust the p-values for multiple testing
         stats = importr('stats')
-        p_adjust = stats.p_adjust(FloatVector(list(df['pvalue'])), method = 'BH')
-        p_adjustQ = stats.p_adjust(FloatVector(list(dfQ['pvalue'])), method = 'BH')
+        p_adjust = stats.p_adjust(FloatVector(list(self.contextStats['pvalue'])), method = 'BH')
+        p_adjustQ = stats.p_adjust(FloatVector(list(self.contextQualStats['pvalue'])), method = 'BH')
         
-        df['pvalue-adjust'] = p_adjust
-        dfQ['pvalue-adjust'] = p_adjustQ
+        self.contextStats['pvalue-adjust'] = p_adjust
+        self.contextQualStats['pvalue-adjust'] = p_adjustQ
 
 
 
-        df = df.sort(['pvalue'],ascending=True)
-        dfQ = dfQ.sort(['pvalue'],ascending=True)
+        self.contextStats = self.contextStats.sort(['pvalue'],ascending=True)
+        self.contextQualStats = self.contextQualStats.sort(['pvalue'],ascending=True)
         
         outfile = self.opt.outDir + 'contextStats.dat'
         logging.info("Writing context bias stats to %s" % (outfile))
-        df.to_csv(path_or_buf=outfile,sep='\t') 
+        self.contextStats.to_csv(path_or_buf=outfile,sep='\t') 
 
         
         outfile = self.opt.outDir + 'contextQualityScoreStats.dat'
         logging.info("Writing context and qual score bias stats to %s" % (outfile))
-        dfQ.to_csv(path_or_buf=outfile,sep='\t') 
+        self.contextQualStats.to_csv(path_or_buf=outfile,sep='\t') 
 
                         
     
@@ -1208,12 +1213,12 @@ class db_summary():
         ed =  [doc['readPer'] for doc in self.errordb['errors'].find(query={},filt={'readPer'})]
         if ed:
             densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_dens').plot()
-            densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_hist').plot(geom='hist')
+            densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_hist',binwidth=0.1).plot(geom='hist')
 
         simEd = [doc['readPer'] for doc in self.errordb['simulatedErrors'].find(query={},filt={'readPer'})]
         if simEd:
             densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_dens').plot()
-            densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_hist').plot(geom='hist')
+            densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_hist',binwidth=0.1).plot(geom='hist')
 
     def errorQualDistribution(self):
         if not self.errorQualList:
@@ -1234,23 +1239,26 @@ class db_summary():
         densityPlotterFromLists(dic={'QualDistribution':self.qscores},opt=self.opt,filename='QualDistribution_dens').plot()
         densityPlotterFromLists(dic={'QualDistribution':self.qscores},opt=self.opt,filename='QualDistribution_hist').plot(geom='hist')
 
-    def qScoreCalibrationTest(self):
+    def qScoreCalibrationTest(self,variantType='SNP'):
         "plots assigned qscore versus emperical qscore to assess how well calibrated the quals are"
         logging.info("Assess qscore calibration")
         if not self.qscores:
             self.qscores = self.getAllQualScores()
         qScoreCounts = listCounter(self.qscores)
 
-        if not self.errorQualList:
-            self.errorQualList =  [doc['qual'] for doc in self.errordb['errors'].find(query={'type' : {'$ne': 'Deletion'}},filt={'qual'})]
+        self.errorQualList =  [doc['qual'] for doc in self.errordb['errors'].find(query={'type' : variantType},filt={'qual'})]
         errorQscoreCounts = listCounter(self.errorQualList)
         empiricalQscore = []
         samQscore =  [qual for qual,count in qScoreCounts.iteritems() if count > 100]
+        
+        ## Calculate empirical qscore. 
+        ## prob(qual) = number of errors with that qual / number of bases with that qual        
         for qual in samQscore:
             empiricalQscore.append(probToQscore(float(errorQscoreCounts[qual]) / float(qScoreCounts[qual])))
+
         scatterPloter(x=samQscore,y=empiricalQscore,
-                    xlab='known',ylab='empirical',
-                    filename='qscoreCalibration',opt=self.opt).plot()
+                    xlab='Reported',ylab='Empirical',
+                    filename='qscoreCalibration_%s' % (variantType),opt=self.opt).plot()
 
     @property 
     def numErrors(self):
@@ -1265,20 +1273,31 @@ class samReader():
         self.samfile = pysam.Samfile( samfile ).fetch()
         self.ref = ref
     def __iter__(self):
-        return self
+        if self is not None:
+            return self
+
+    def __readNext(self):
+        """
+        Iterates to the next read in samfile
+        """
+        ## If there are errors left in the read 
+        self.alignedRead = self.samfile.next()
+        if self.alignedRead.is_unmapped:
+            self.__readNext()
+        else:
+            self.__parseRead()
+
+
     def next(self):
         """
         Returns the next read in the samfile aligned read
         """
-        self.alignedRead = self.samfile.next()
-        if not self.alignedRead.is_unmapped:
-            self.ID = self.getReadID()
-            self.__parseRead()
-            return self
-        else:
-            self.next()
+        self.__readNext()
+        return self
+
             
-    def getReadID(self):
+    @property   
+    def ID(self):
         return int(self.alignedRead.qname.split('id=')[1])
 
     def __parseRead(self):
@@ -1287,9 +1306,11 @@ class samReader():
         """
         self.currentRead = []
         self.currentRefRead = []
+        self.currentQual = []
 
         self.__currentRefReadList = list(self.__refRead)
         self.__currentReadList = list(str(self.alignedRead.seq))
+        self.__currentQualList = list(self.alignedRead.qual)
         self.__readPos = 0
         self.__readPosIndex = 0
         for tup in self.alignedRead.cigar:
@@ -1324,6 +1345,7 @@ class samReader():
                 self.__checkSeqMismatch(N=numBases)
 
         assert len(self.currentRefRead) == len(self.currentRead)
+        assert len(self.currentQual) == len(self.currentRead)
     @property
     def __refRead(self):
         """
@@ -1340,12 +1362,15 @@ class samReader():
 
         readSeg = popLong(self.__currentReadList,0,N)
         refSeg = popLong(self.__currentRefReadList,0,N)
+        qualSeg = popLong(self.__currentQualList,0,N)
 
         self.currentRead.extend(readSeg)
         self.currentRefRead.extend(refSeg)
+        self.currentQual.extend(qualSeg)
 
         self.__readPos += N
         self.__readPosIndex += N  
+
     def __checkInsertion(self,N):
         """
         Checks Insertion read segment for errors. called when cigarstring = I:N 
@@ -1353,7 +1378,10 @@ class samReader():
 
         ## add _ to reference
         insSeg = popLong(self.__currentReadList,0,N)
+        insQualSeg = popLong(self.__currentQualList,0,N)
+
         self.currentRead.extend(insSeg)
+        self.currentQual.extend(insQualSeg)
         self.currentRefRead.extend('_'*len(insSeg))
         self.__readPos += N
     def __checkDeletion(self,N):
@@ -1365,6 +1393,7 @@ class samReader():
         j =  self.alignedRead.positions[self.__readPosIndex]        
         delSeg = str(self.ref[i:j])
         self.currentRead.extend('_'*len(delSeg))
+        self.currentQual.extend('_'*len(delSeg))
         self.currentRefRead.extend(delSeg)
 
     def __checkSkipped(self,N):
@@ -1412,6 +1441,10 @@ class samReader():
     @property
     def refRead(self):
         return "".join(self.currentRefRead) 
+    @property
+    def qual(self):
+
+        return "".join(self.currentQual) 
 
 
 
