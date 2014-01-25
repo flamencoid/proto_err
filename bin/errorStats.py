@@ -66,16 +66,16 @@ if opt.force:
 else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
 
-# errorCounter.SNPTransitionStats()
+errorCounter.SNPTransitionStats()
 errorCounter.summary()
-# # # errorCounter.plotHist()
+errorCounter.plotHist()
 # # ## Do some meta and summary statistics
-# summ = db_summary(opt)
-# summ.errorDistribution()
-# summ.qualDistribution()
-# summ.qScoreCalibrationTest('SNP')
-# summ.qScoreCalibrationTest('Insertion')
-# summ.qScoreCalibrationTest('Deletion')
+summ = db_summary(opt)
+summ.errorDistribution()
+summ.qualDistribution()
+summ.qScoreCalibrationTest('SNP')
+summ.qScoreCalibrationTest('Insertion')
+summ.qScoreCalibrationTest('Deletion')
 
 report = Reporter(opt=opt,counter=errorCounter,outfileDir= opt.outDir ,latexTemplate='../data/template.tex')
 report.generatePdfReport()

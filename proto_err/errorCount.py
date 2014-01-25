@@ -1005,7 +1005,7 @@ class counter():
 
                             outDicContextOnly['SNP'][context]['expectedOccurancyofContext'][emission] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
                             outDicContextOnly['SNP'][context]['observedOccurancyofContext'][emission] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
-                            outDicContextOnly['SNP'][context]['meanQualityScoreForContext'][emission] = round(self.getContextMeanQualScore(kmer=context),2)
+                            outDicContextOnly['SNP'][context]['avgQual'][emission] = round(self.getContextMeanQualScore(kmer=context),2)
 
                             outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], self.getCount(type='SNP'), outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
                             if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
@@ -1040,7 +1040,7 @@ class counter():
         logging.info("Generating readable output")
         outputList = []
         outputWithQscoresList = []
-        outputListHeader = ['meanQualityScoreForContext','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
+        outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
         for before in alphabet:
             for truth in alphabet:
                 for after in alphabet:
@@ -1053,7 +1053,7 @@ class counter():
                             for qscore in qscores:
                                 row = [context,contextOut,qscore] + [outdic['SNP'][context][qscore][t][emission] for t in ['simCount','samCount','expectedCount','pvalue']]
                                 outputWithQscoresList.append(row)
-        self.contextStats = pd.DataFrame(outputList, columns=['contextTrue','ContextEmit']+outputListHeader)
+        self.contextStats = pd.DataFrame(outputList, columns=['ContextTrue','ContextEmit']+outputListHeader)
         self.contextQualStats = pd.DataFrame(outputWithQscoresList, columns=['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount','pvalue'])
 
         ## Adjust the p-values for multiple testing

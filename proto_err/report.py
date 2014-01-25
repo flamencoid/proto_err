@@ -30,6 +30,10 @@ class Reporter(object):
 		outstr = str(d)
 		return outstr
 
+	# def addCaptionToTable(self,tableString,captionString):
+	# 	caption = "\caption{%s}"
+		
+
 
 	def renderTemplate(self):
 		## Metadata
@@ -51,11 +55,25 @@ class Reporter(object):
 		readCount2 = readCount[['totalBases', 'totalAlignedBases','M','I','D','H','S']]
 		self.docString.replace(k="readCount1",v=readCount1.to_latex(),escape=False)
 		self.docString.replace(k="readCount2",v=readCount2.to_latex(),escape=False)
-
-		self.docString.replace(k="significantContext",v=self.counter.contextStats[:10].to_latex(),escape=False)
-		self.docString.replace(k="significantQualContext",v=self.counter.contextQualStats[:10].to_latex(),escape=False)
-		self.counter.contextStats =  self.contextStats.sort(['meanQualityScoreForContext'],ascending=True)
-		self.docString.replace(k="lowQualScore",v=self.counter.contextStats.to_latex(),escape=False)
+		## Contexts with high significant differecne
+		topTenContext = self.counter.contextStats[:10]
+		topTenContext1 = topTenContext[['ContextTrue','ContextEmit','avgQual','simCount','samCount','expectedCount']]
+		topTenContext2 = topTenContext[['ContextTrue','ContextEmit','pvalue','pvalue-adjust']]
+		self.docString.replace(k="significantContext1",v=topTenContext1.to_latex(),escape=False)
+		self.docString.replace(k="significantContext2",v=topTenContext2.to_latex(),escape=False)
+		## Contexts with high significant differecne
+		topTenContext = self.counter.contextQualStats[:10]
+		topTenContext1 = topTenContext[['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount']]
+		topTenContext2 = topTenContext[['ContextTrue','ContextEmit','qscore','pvalue','pvalue-adjust']]
+		self.docString.replace(k="significantQualContext1",v=topTenContext1.to_latex(),escape=False)
+		self.docString.replace(k="significantQualContext2",v=topTenContext2.to_latex(),escape=False)
+		## Contexts with low Qscore
+		topTenContext = self.counter.contextStats.sort(['avgQual'],ascending=True)[:10]
+		topTenContext1 = topTenContext[['ContextTrue','ContextEmit','avgQual','simCount','samCount','expectedCount']]
+		topTenContext2 = topTenContext[['ContextTrue','ContextEmit','pvalue','pvalue-adjust']]
+		self.docString.replace(k="lowQualScore1",v=topTenContext1.to_latex(),escape=False)
+		self.docString.replace(k="lowQualScore2",v=topTenContext2.to_latex(),escape=False)
+		print topTenContext1.to_latex()
 
 	def writeLatex(self):
 		self.renderTemplate()
