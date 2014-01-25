@@ -645,6 +645,7 @@ class counter():
             for read in samReader(samfile=self.samfile,ref=self.ref):
                 ## Prepopulated with trimers
                 kmerList =  kmerCombo(len(kmer))
+                posAdd = int(float(len(kmer) - 1) / 2.0 )
                 patternDic = dict(zip(kmerList,[re.compile(kmer) for kmer in kmerList]))
                 for kmer,pattern in patternDic.iteritems():
                     ## Should this be greping in the reference rather than the read?
@@ -652,9 +653,9 @@ class counter():
                     results = pattern.finditer("".join(read.refRead))
                     for result in results:
                         try:
-                            qualDic[kmer].append(asciiToInt(read.qual[result.start(0) + 1]))
+                            qualDic[kmer].append(asciiToInt(read.qual[result.start(0) + posAdd]))
                         except:
-                            qualDic[kmer] = [asciiToInt(read.qual[result.start(0) + 1])]
+                            qualDic[kmer] = [asciiToInt(read.qual[result.start(0) + posAdd])]
             for kmer in kmerCombo(len(kmer)):
                 self.kmerQualCount[kmer] = listCounter(qualDic[kmer])
                 try:
@@ -667,13 +668,17 @@ class counter():
 
     def getContextMeanQualScore(self,kmer):
         """Get the mean quality score associated with a given context (3mer only atm) returns the qual of the middle base"""
-        assert len(kmer)==3
-        if not self.kmerQualCount:
-            self.getKmerQualCount(kmer) ## initiatesself.kmerQualCount
-        
-        qual = self.kmerQualCount[kmer].keys()
-        counts = self.kmerQualCount[kmer].values()
-
+        assert len(kmer) in [1,3,5] ## Too lazy to code for all odd numbers
+        try:
+            ## If the count already exists in the dict use that
+            qual = self.kmerQualCount[kmer].keys()
+            counts = self.kmerQualCount[kmer].values()
+        except KeyError:
+            ## If not, calculated all the counts of that kmer length 
+            ## (to save iterating through whole samfile for every count)
+            self.getKmerQualCount(kmer)
+            qual = self.kmerQualCount[kmer].keys()
+            counts = self.kmerQualCount[kmer].values()
         sumQual = 0
         for qual,count in zip(qual,counts):
             sumQual+= (qual * count)
@@ -684,7 +689,7 @@ class counter():
 
 
 
-    def getExpectedCount(self,truth='',emission='',kmerBefore='',kmerAfter='',qual=None):
+    def getExpectedCount(self,truth='',emission='',kmerBefore='',kmerAfter='',qual=None,type='SNP'):
         """
         Gets the expected count of a transition. 
 
@@ -713,12 +718,14 @@ class counter():
             >>> print errorCounter.getCount(truth='A',emission='T')
             111
         """
+
+
         # simulationMetaData =  self.errordb['metaData'].find_one({'type':'simulation'},{'snpFreq':1,'readMean':1,'numReads':1,'SnpIndelRatio':1})
         if qual is not None:
             context = kmerBefore+truth+kmerAfter
             pContext = self.probKmerRef(context) * self.getFreqQualGivenKmer(kmer=context,qual=qual)
             # print context,qual, self.getFreqQualGivenKmer(kmer=context,qual=qual)
-        elif truth:
+        elif truth or emission or kmerBefore or kmerAfter:
             ## Use the frequency of the kmer in the reference or in the samfile???? 
             ## Has to be in the reference, as observed contexts are after errors
             pContext = self.probKmerRef(kmerBefore+truth+kmerAfter)
@@ -732,21 +739,25 @@ class counter():
         # ExpectedSNPCount = self.readCounter['totalBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
         # probEmmission = float(1)/float(3)
         if qual is not None:
-            probSNPError = qscoreToProb(qual)
+            probError = qscoreToProb(qual)
         else:
             # probSNPError = simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio']
             ## Using the observed snp error rate
             # probSNPError = float(self.getCount(type='SNP')) / float(self.readCounter['totalAlignedBases']) # I don't think this is the correct way to do this
-            if kmerBefore+truth+kmerAfter:
-                ## If you're looking at a particular context
-                probSNPError = qscoreToProb(self.getContextMeanQualScore(kmer=kmerBefore+truth+kmerAfter))
+            if type == "SNP"  and kmerBefore+truth+kmerAfter:
+                ## If you're looking at a particular qual score
+                probError = qscoreToProb(self.getContextMeanQualScore(kmer=kmerBefore+truth+kmerAfter))
             else:
                 ## If you want the total expectation
-                probSNPError = float(self.getCount(type='SNP')) / float(self.readCounter['totalAlignedBases'])
-        if emission:
-            expectedCount = (self.readCounter['totalAlignedBases'] * pContext * probSNPError) / 3.0 # assume equal probabilites of eny transition
+                probError = float(self.getCount(type=type)) / float(self.readCounter['totalAlignedBases'])
+        if emission and type == 'SNP':
+            expectedCount = (self.readCounter['totalAlignedBases'] * pContext * probError) / 3.0 # assume equal probabilites of eny transition
+        elif type == 'SNP' and not emission:
+            expectedCount = pContext * probError * self.readCounter['totalAlignedBases']
+        elif not type == 'SNP':
+            expectedCount = (self.readCounter['totalAlignedBases'] * pContext * probError)
         else:
-            expectedCount = pContext * probSNPError * self.readCounter['totalAlignedBases']
+            raise(ValueError)
 
 
 
@@ -969,6 +980,93 @@ class counter():
                                 orient='index', columns=self.readCounter.keys())
         self.readCounts.to_csv(path_or_buf=outfile,sep='\t')
 
+    def DELTransitionStats(self,kmerLength=3):
+        """
+        Generate some stats about the context in which insertions occur 
+        We want to know if certain kmer contexts occur more frequently before insetions then would by chance
+        """
+        logging.info("Generating Context bias statistics for insertions")
+        alphabet = ['A','T','C','G']
+        outdic = AutoVivification()
+        ## Just do trimers before for now.
+        totalExpectedCount = self.getExpectedCount(type="Deletion")
+        cnt = 0
+        for context in kmerCombo(kmerLength):
+            cnt += 1
+            logging.info("Calculating stats for context %s : %i of %i" %(context,cnt,4**kmerLength))
+            ## Stats for contexts without q scores
+            outdic['DEL'][context]['samCount'] = self.getCount(kmerBefore=context,type='Deletion')
+            outdic['DEL'][context]['simCount'] = self.getSimulatedCount(kmerBefore=context,type='Deletion')
+            outdic['DEL'][context]['expectedCount'] = self.getExpectedCount(kmerBefore=context,type='Deletion')
+            outdic['DEL'][context]['expectedOccurancyofContext'] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
+            outdic['DEL'][context]['observedOccurancyofContext'] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
+            outdic['DEL'][context]['avgQual'] = round(self.getContextMeanQualScore(kmer=context),2)
+            # print outdic['DEL'][context]['samCount'] , self.getCount(type='Deletion'), outdic['DEL'][context]['expectedCount'],totalExpectedCount
+            outdic['DEL'][context]['pvalue'] = scipy.stats.binom_test(outdic['DEL'][context]['samCount'], 
+                                                                    self.getCount(type='Deletion'), 
+                                                                    outdic['DEL'][context]['expectedCount']/totalExpectedCount)
+        print self.getCount(type='Deletion'),self.getSimulatedCount(type='Deletion'),totalExpectedCount
+
+        logging.info("Generating readable output for Deletion bias Stats")
+        outputList = []
+        outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
+        for context in kmerCombo(kmerLength):
+            row = [context] + [outdic['DEL'][context][t] for t in outputListHeader]
+            outputList.append(row)
+        self.contextDELStats = pd.DataFrame(outputList, columns=['ContextTrue']+outputListHeader)
+
+        ## Adjust the p-values for multiple testing
+        stats = importr('stats')
+        p_adjust = stats.p_adjust(FloatVector(list(self.contextDELStats['pvalue'])), method = 'BH')
+        self.contextDELStats['pvalue-adjust'] = p_adjust
+        self.contextDELStats = self.contextDELStats.sort(['pvalue'],ascending=True)
+        outfile = self.opt.outDir + 'contextDELStats_kmer%i.dat' % kmerLength
+        logging.info("Writing context bias stats to %s" % (outfile))
+        self.contextDELStats.to_csv(path_or_buf=outfile,sep='\t') 
+
+    def INSTransitionStats(self,kmerLength=3):
+        """
+        Generate some stats about the context in which insertions occur 
+        We want to know if certain kmer contexts occur more frequently before insetions then would by chance
+        """
+        logging.info("Generating Context bias statistics for insertions")
+        alphabet = ['A','T','C','G']
+        outdic = AutoVivification()
+        ## Just do trimers before for now.
+        totalExpectedCount = self.getExpectedCount(type="Insertion")
+        cnt = 0
+        for context in kmerCombo(kmerLength):
+            cnt += 1
+            logging.info("Calculating stats for context %s : %i of %i" %(context,cnt,4**kmerLength))
+            ## Stats for contexts without q scores
+            outdic['INS'][context]['samCount'] = self.getCount(kmerBefore=context,type='Insertion')
+            outdic['INS'][context]['simCount'] = self.getSimulatedCount(kmerBefore=context,type='Insertion')
+            outdic['INS'][context]['expectedCount'] = self.getExpectedCount(kmerBefore=context,type='Insertion')
+            outdic['INS'][context]['expectedOccurancyofContext'] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
+            outdic['INS'][context]['observedOccurancyofContext'] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
+            outdic['INS'][context]['avgQual'] = round(self.getContextMeanQualScore(kmer=context),2)
+            # print outdic['INS'][context]['samCount'] , self.getCount(type='Insertion'), outdic['INS'][context]['expectedCount'],totalExpectedCount
+            outdic['INS'][context]['pvalue'] = scipy.stats.binom_test(outdic['INS'][context]['samCount'], 
+                                                                    self.getCount(type='Insertion'), 
+                                                                    outdic['INS'][context]['expectedCount']/totalExpectedCount)
+        print self.getCount(type='Insertion'),self.getSimulatedCount(type='Insertion'),totalExpectedCount
+
+        logging.info("Generating readable output for Insertion bias Stats")
+        outputList = []
+        outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
+        for context in kmerCombo(kmerLength):
+            row = [context] + [outdic['INS'][context][t] for t in outputListHeader]
+            outputList.append(row)
+        self.contextINSStats = pd.DataFrame(outputList, columns=['ContextTrue']+outputListHeader)
+
+        ## Adjust the p-values for multiple testing
+        stats = importr('stats')
+        p_adjust = stats.p_adjust(FloatVector(list(self.contextINSStats['pvalue'])), method = 'BH')
+        self.contextINSStats['pvalue-adjust'] = p_adjust
+        self.contextINSStats = self.contextINSStats.sort(['pvalue'],ascending=True)
+        outfile = self.opt.outDir + 'contextINSStats_kmer%i.dat' % kmerLength
+        logging.info("Writing context bias stats to %s" % (outfile))
+        self.contextINSStats.to_csv(path_or_buf=outfile,sep='\t') 
 
     def SNPTransitionStats(self):
         """

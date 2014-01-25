@@ -65,10 +65,12 @@ if opt.force:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
 else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
+errorCounter.INSTransitionStats()
+errorCounter.DELTransitionStats()
 
 errorCounter.SNPTransitionStats()
 errorCounter.summary()
-errorCounter.plotHist()
+# errorCounter.plotHist()
 # # ## Do some meta and summary statistics
 summ = db_summary(opt)
 summ.errorDistribution()

@@ -73,7 +73,14 @@ class Reporter(object):
 		topTenContext2 = topTenContext[['ContextTrue','ContextEmit','pvalue','pvalue-adjust']]
 		self.docString.replace(k="lowQualScore1",v=topTenContext1.to_latex(),escape=False)
 		self.docString.replace(k="lowQualScore2",v=topTenContext2.to_latex(),escape=False)
-		print topTenContext1.to_latex()
+		## Insertion Bias
+		topTenContext = self.counter.contextINSStats[:10]
+		topTenContext1 = topTenContext[['ContextTrue','avgQual','simCount','samCount','expectedCount','pvalue','pvalue-adjust']]
+		self.docString.replace(k="inssignificantContext1",v=topTenContext1.to_latex(),escape=False)
+		## Deletion Bias
+		topTenContext = self.counter.contextDELStats[:10]
+		topTenContext1 = topTenContext[['ContextTrue','avgQual','simCount','samCount','expectedCount','pvalue','pvalue-adjust']]
+		self.docString.replace(k="delsignificantContext1",v=topTenContext1.to_latex(),escape=False)
 
 	def writeLatex(self):
 		self.renderTemplate()
