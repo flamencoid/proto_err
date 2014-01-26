@@ -156,8 +156,13 @@ class complexError(simulateError):
                     results = pattern.finditer("".join(self.read))
                     for result in results:
                     	# prob is a tuple (+pos to effected base,prob,sd)
-                        newProb = random.gauss(prob[1], prob[2])
-                    	self.SNPerrorProb[result.start(0)+prob[0]] =  newProb
+                        newProb = random.gauss(prob[2], prob[3])
+                        if prob[0] == 'SNP':
+                            self.SNPerrorProb[result.start(0)+prob[1]] =  newProb
+                        elif prob[0] == 'INDEL':
+                            self.INDELerrorProb[result.start(0)+prob[1]] =  newProb
+                        else:
+                            raise ValueError("Biases can only of type SNP or INDEL")
 
 
         assert len(self.SNPerrorProb) == len(self.read)

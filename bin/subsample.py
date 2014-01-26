@@ -74,17 +74,19 @@ if not opt.errFreqSd:
 if opt.errorBiasFile:
 	errorBias = AutoVivification()
 	with open(opt.errorBiasFile,'rb') as errorFile:
-		pattern = re.compile("#")
+		pattern = re.compile("#") # pattern to skip comments
 		reader = csv.reader(errorFile,delimiter='\t')
 		for row in reader:
+			## If the row isn't a comment
 			if not pattern.search(row[0]):
-				if row[1]:
-					patternKey = re.compile(row[0]+row[1]+row[2])
+				if row[2]:
+					# If the bias includes a specific base
+					patternKey = re.compile(row[1]+row[2]+row[3])
 				else:
 					## This is incase of the regular expression matching the 
 					## start or end of a line
-					patternKey = re.compile(row[0]+'.'+row[2])
-				errorBias[patternKey] = (len(row[0]),float(row[3]),float(row[4]))
+					patternKey = re.compile(row[1]+'.'+row[3])
+				errorBias[patternKey] = (row[0],len(row[1]),float(row[4]),float(row[5]))
 else:
 	errorBias = None
 
