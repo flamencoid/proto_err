@@ -51,13 +51,13 @@ ref = getRef(opt.refFilename)
 observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName )
 
 
-## Generate read documents for uploading to db
-# if opt.force:
-# 	observedReadsDB.deleteAll()
-# 	for read in samReader(samfile=opt.samfile,ref=ref):
-# 		post = {'id':read.ID,'read':read.read,'ref':read.refRead,
-# 		'qual':read.qual,'cigar':read.alignedRead.cigarstring}
-# 		observedReadsDB.insert(post)
+# Generate read documents for uploading to db
+if opt.force:
+	observedReadsDB.deleteAll()
+	for read in samReader(samfile=opt.samfile,ref=ref):
+		post = {'id':read.ID,'read':read.read,'ref':read.refRead,
+		'qual':read.qual,'cigar':read.alignedRead.cigarstring}
+		observedReadsDB.insert(post)
 
 
 
@@ -70,7 +70,7 @@ errorCounter.DELTransitionStats()
 
 errorCounter.SNPTransitionStats()
 errorCounter.summary()
-# errorCounter.plotHist()
+errorCounter.plotHist()
 # # ## Do some meta and summary statistics
 summ = db_summary(opt)
 summ.errorDistribution()

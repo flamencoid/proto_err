@@ -5,7 +5,7 @@ import sys
 import os
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-sys.path.insert(0, os.path.abspath('../proto_err'))
+sys.path.insert(0, os.path.abspath('../src'))
 from fastaIO import getRef,writeFasta,writeFastq
 from simulation import complexError
 from optparse import OptionParser
@@ -75,7 +75,7 @@ if opt.errorBiasFile:
 	errorBias = AutoVivification()
 	with open(opt.errorBiasFile,'rb') as errorFile:
 		pattern = re.compile("#") # pattern to skip comments
-		reader = csv.reader(errorFile,delimiter='\t')
+		reader = csv.reader(errorFile,delimiter=',')
 		for row in reader:
 			## If the row isn't a comment
 			if not pattern.search(row[0]):

@@ -8,7 +8,7 @@ from utils import *
 import difflib
 import itertools
 from query import errordb
-from plot import *
+from pyutils.plot import *
 from error import error
 import os
 from collections import Counter as listCounter
@@ -886,7 +886,7 @@ class counter():
         ## Initialise some pandas dataframes to sort output for writing to csv. 
         SNPRow = [self.getCount(type='SNP'),self.getSimulatedCount(type='SNP')]
         INSRow = [self.getCount(type='Insertion'),self.getSimulatedCount(type='Insertion')]
-        DELRow = [self.getCount(type='Deletion'),self.getCount(type='Deletion')]
+        DELRow = [self.getCount(type='Deletion'),self.getSimulatedCount(type='Deletion')]
         
 
 
