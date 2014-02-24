@@ -5,7 +5,7 @@ import sys
 import os
 import logging
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-sys.path.insert(0, os.path.abspath('../proto_err'))
+sys.path.insert(0, os.path.abspath('../src'))
 from optparse import OptionParser
 from errorCount import errorReader,counter,db_summary,samReader
 from fastaIO import getRef
@@ -16,7 +16,7 @@ start = time.clock()
 
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
-					default="../data/ref.fa")
+					default="../data/refs/tb.ref.fasta")
 # parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned reads",
 # 						default="../data/ref.subsampled.fq.sam")
 parser.add_option("--outDir", dest="outDir",help="Path to output directory (Optional)",

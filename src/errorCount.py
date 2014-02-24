@@ -8,7 +8,7 @@ from utils import *
 import difflib
 import itertools
 from query import errordb
-from pyutils.plot import *
+from plot import *
 from error import error
 import os
 from collections import Counter as listCounter
@@ -176,7 +176,14 @@ class errorReader():
             ## if it's an error, check the preceding  opt.maxOrder bases
             if not true == emission:
                 ## Check preceding bases
-                self.errorList.append(error(true,emission,self.__read,readPos=i+self.__readPos,refPos=self.refPos+i)) 
+                if self.__read.is_reverse:
+                    ## Need to take the reverse complement of the truth and emission to get the error which occured in the read
+                    tmpTrue = str(SeqRecord(Seq(true),'','','').reverse_complement().seq)
+                    tmpEmission = str(SeqRecord(Seq(emission),'','','').reverse_complement().seq)
+                    self.errorList.append(error(tmpTrue,tmpEmission,self.__read,readPos=self.__read.rlen - (i+self.__readPos) - 1,refPos=self.refPos+i))
+
+                else:
+                    self.errorList.append(error(true,emission,self.__read,readPos=i+self.__readPos,refPos=self.refPos+i)) 
         self.__readPos += N
         self.__readPosIndex += N  
         self.refPos += N
@@ -186,7 +193,11 @@ class errorReader():
         """
         self.readCounter['I'] += N
         insSeg = popLong(self.__currentReadList,0,N)
-        self.errorList.append(error(true='',emission="".join(insSeg),read=self.__read,readPos=self.__readPos,refPos=self.refPos)) # -1 as insertion occurs at previous base (if simulating)
+        if self.__read.is_reverse:
+            tmpinsSeg = str(SeqRecord(Seq("".join(insSeg)),'','','').reverse_complement().seq)
+            self.errorList.append(error(true='',emission=tmpinsSeg,read=self.__read,readPos=self.__read.rlen - self.__readPos -1,refPos=self.refPos))
+        else:
+            self.errorList.append(error(true='',emission="".join(insSeg),read=self.__read,readPos=self.__readPos,refPos=self.refPos)) # -1 as insertion occurs at previous base (if simulating)
         self.__readPos += N
 
     def __checkDeletion(self,N):
@@ -197,7 +208,11 @@ class errorReader():
         i = self.__read.positions[self.__readPosIndex-1] + 1
         j =  self.__read.positions[self.__readPosIndex]        
         delSeg = str(self.__ref[i:j])
-        self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos,refPos=self.refPos))
+        if self.__read.is_reverse:
+            tmpdelSeg = str(SeqRecord(Seq(delSeg),'','','').reverse_complement().seq)
+            self.errorList.append(error(true=tmpdelSeg,emission="",read=self.__read,readPos=self.__read.rlen - self.__readPos -1,refPos=self.refPos))
+        else:
+            self.errorList.append(error(true=delSeg,emission="",read=self.__read,readPos=self.__readPos,refPos=self.refPos))
         self.refPos += N
         
 

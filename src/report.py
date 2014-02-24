@@ -93,6 +93,7 @@ class Reporter(object):
 		if not self.latexWriten:
 			self.writeLatex()
 		cmd =  'pdflatex -output-directory=%s %sreport.tex  ' % (self.outfileDir,self.outfileDir)
+		print cmd
 		logging.info("Running %s" % cmd)
 		proc=subprocess.Popen(shlex.split(cmd))
 		proc.communicate()

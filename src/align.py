@@ -6,6 +6,8 @@ import logging
 from Bio.Sequencing import Applications
 from Bio.Application import _Option, _Argument, _Switch, AbstractCommandline,_StaticArgument
 import os
+import subprocess
+import shlex
 
 def refIndex(file):
     """
@@ -16,13 +18,22 @@ def refIndex(file):
     index_cmd()
     return 1
 
-def align(reference, read_file, stdout,algorithm='bwa-mem'):
+def align(reference, read_file, stdout,algorithm='bwa-mem',
+        exectuablePath="/home/phelimb/tools/stampy-1.0.23/stampy.py",
+        index_name="../data/refs/tb",hash_name="../data/refs/tb"):
+
     if algorithm=='bwa-mem':
         logging.info("Aligning reads to reference with bwa-mem")
         alignCmd = BwaMemAlignCommandline( reference=reference, read_file=read_file)
-        print alignCmd
+        return alignCmd(stdout=stdout)
+    elif algorithm=='stampy':
+        logging.info("Aligning reads to reference with stampy")
+        cmd_line = "%s -g %s -h %s --maxbasequal 60  -M %s" % (exectuablePath,index_name,hash_name,read_file)
+        args = shlex.split(cmd_line)
+        proc = subprocess.Popen(args,stdout = open(stdout,'w'))
+        return 1
 
-    return alignCmd(stdout=stdout)
+        
 
 class BwaMemAlignCommandline(AbstractCommandline):
     """Command line wrapper for Burrows Wheeler Aligner (BWA) aln.

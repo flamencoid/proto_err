@@ -197,7 +197,10 @@ class complexError(simulateError):
         il = zip(self.read,self.ref,self.qscore('int'))
         iterator = itertools.cycle(il)
         i = 0
-        refPos = self.opt.refPos 
+        if self.opt.is_reverse:
+            refPos = self.opt.refPos -1 + readLength
+        else:
+            refPos = self.opt.refPos 
         readPos = 0
         base, truth, qscore = iterator.next()
         # print record.
@@ -208,7 +211,10 @@ class complexError(simulateError):
                 while base == '_':
                     deletedBases.append(truth)
                     i+=1
-                    refPos +=1
+                    if self.opt.is_reverse:
+                        refPos -= 1
+                    else:
+                        refPos +=1
                     base, truth, qscore = iterator.next()
                 errorList.append(error(true="".join(deletedBases),
                                         emission="",read=self.alignedRead,
@@ -236,7 +242,10 @@ class complexError(simulateError):
                                             readLength=readLength,refPos=refPos) )
                 base, truth, qscore = iterator.next()
                 i +=1
-                refPos += 1
+                if self.opt.is_reverse:
+                    refPos -= 1
+                else:
+                    refPos +=1
                 readPos += 1
         return errorList
                     
