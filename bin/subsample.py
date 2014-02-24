@@ -24,7 +24,7 @@ import time
 start = time.clock()
 parser = OptionParser()
 parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
-					default="../data/ref.fa")
+					default="../data/refs/tb.ref.fasta")
 parser.add_option("-i","--id",dest="simID",help="simulation identifier",
 						default='')
 parser.add_option("--numReads", dest="numReads",help="""Number of reads to 
@@ -128,9 +128,9 @@ def subsample(ref,opt,errorBias=None,errorSimulator=complexError):
 		record=SeqRecord(seq,recordId,'','')
 		## Take the read from the reverse stand opt.strandBias% of the time
 		opt.is_reverse = False
-		# if random.random() > opt.strandBias:
-		# 	record = record.reverse_complement()
-		# 	opt.is_reverse = True
+		if random.random() > opt.strandBias:
+			record = record.reverse_complement()
+			opt.is_reverse = True
 		## Randomly generate errors
 		opt.refPos = start
 		simulatedErrors = errorSimulator(record,opt,id = recordId,errorBias=errorBias)
