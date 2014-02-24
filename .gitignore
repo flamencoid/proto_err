@@ -20,3 +20,5 @@ tests/json
 profile.txt
 _build/
 BiasDetect
+*.sthash
+*.stidx
