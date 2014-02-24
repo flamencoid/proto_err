@@ -1,0 +1,303 @@
+%% Title
+%% Template for proto_err reports
+%% Phelim Bradley - psb31
+%% 
+
+%% Text following a percent sign (%) until the end of line is treated
+%% as a comment.
+
+\documentclass[a4paper,12pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% This section is called the preamble, where we can specify which
+%% latex packages we required.  Most (but not of all) of the packages
+%% below should be fairly standard in most latex documents.  The
+%% exception is xspace and the new \latex command, which you probably
+%% do not need.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Bibliography style:
+\usepackage{mathtools}
+\usepackage{mathptmx}           % Use the Times font.
+\usepackage{graphicx}           % Needed for including graphics.
+\usepackage{url}                % Facility for activating URLs.
+\usepackage{xspace,color}
+\usepackage{enumerate}
+\usepackage{csvsimple}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{subfig}
+\usepackage{tabularx}
+\usepackage{listings}
+ \captionsetup{justification=centering,singlelinecheck=on}
+
+
+
+
+%% Set the paper size to be A4, with a 2cm margin 
+%% all around the page.
+\usepackage[a4paper,margin=2cm]{geometry}
+
+%% Natbib is a popular style for formatting references.
+\usepackage{natbib}
+%% bibpunct sets the punctuation used for formatting citations.
+%\bibpunct{[}{]}{;}{a}{,}{,}
+
+%% This is an example of a new macro that I've created to save me
+%% having to type \LaTeX each time.  The xspace command provides space
+%% after the word LaTeX where appropriate.
+\usepackage{xspace}
+\providecommand*{\latex}{\LaTeX\xspace}
+
+%Make some shortcuts
+
+\def\be{\begin{equation}}
+\def\ee{\end{equation}}
+
+\def\bea{\begin{eqnarray}}
+\def\eea{\end{eqnarray}}
+
+
+\def\toprule{\hline}
+\def\midrule{\hline}
+\def\bottomrule{\hline}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Start of the document.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+
+
+
+\author{Proto\_err}
+\date{\today}
+\title{  Run ID : {{runID}}   }
+\maketitle
+
+\section{MetaData}
+
+%\begin{verbatim}
+	{{options}}
+%\end{verbatim}
+
+\section{Quality Score Distributions}
+
+
+	\begin{figure}[!htbp]
+	  \centering
+	  \includegraphics[width=10cm]{{{SNPQualCalibration}}}
+	  \caption{Reported vs Empirical Quality Scores, SNPs}
+	  \label{fig:SNPQual}
+	\end{figure}
+	\begin{figure}[!htbp]
+	  \centering
+	  \includegraphics[width=10cm]{{{INSQualCalibration}}}
+	  \caption{Reported vs Empirical Quality Scores, Insertions}
+	  \label{fig:INSQual}
+	\end{figure}
+	\begin{figure}[!htbp]
+	  \centering
+	  \includegraphics[width=10cm]{{{DELQualCalibration}}}
+	  \caption{Reported vs Empirical Quality Scores, Deletions}
+	  \label{fig:DELQual}
+	\end{figure}	
+
+\begin{figure}[!htbp]
+	  \centering
+	  \includegraphics[width=10cm]{{{QualDistribution_hist}}}
+	  \caption{Distribution of Quality Scores along}
+	  \label{fig:QualDistribution_hist}
+\end{figure}
+	
+\section{Error Bias Statistics}
+
+	\begin{figure}[!htbp]
+	  \centering
+	  \includegraphics[width=10cm]{{{errorDistribution_hist}}}
+	  \caption{Distribution of errors along read}
+	  \label{fig:errorDistribution_histl}
+	\end{figure}	
+\begin{figure}[!htbp]
+	  \centering
+	  \includegraphics[width=10cm]{{{SNP_observed_simulated_expected_transition}}}
+	  \caption{SNP Transitions}
+	  \label{fig:SNP_observed_simulated_expected_transition}
+\end{figure}
+	
+
+	
+\section{INDELs}
+
+	\begin{figure}[!htbp]
+	  \centering
+	  \includegraphics[width=10cm]{{{deletion_size_bar}}}
+	  \caption{Distribution of Deletion Sizes}
+	  \label{fig:deletion_size_bar}
+	\end{figure}	
+\begin{figure}[!htbp]
+	  \centering
+	  \includegraphics[width=10cm]{{{insertion_size_bar}}}
+	  \caption{Distribution of Insertion Sizes}
+	  \label{fig:insertion_size_bar}
+\end{figure}
+	
+
+\section{Summary}
+\begin{table}[htbp]
+  \centering
+{{errorsDF}} 
+\caption{Count of errors simulated and found in the resulting aligned samfile}
+%  \label{tab:StudentResults}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+{{readCount1}}  
+\caption{Alignment read statistics}
+%  \label{tab:StudentResults}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+{{readCount2}} 
+\caption{Alignment base statistics}
+%  \label{tab:StudentResults}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+{{significantContext1}} 
+\caption{Context with the most significant difference between expected and observed count}
+%  \label{tab:StudentResults}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+{{significantContext2}} 
+\caption{Context with the most significant difference between expected and observed count}
+%  \label{tab:StudentResults}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+{{significantQualContext1}} 
+\caption{Quality Score Context with the most significant difference between expected and observed count}
+%  \label{tab:StudentResults}
+\end{table}
+
+
+\begin{table}[htbp]
+  \centering
+{{significantQualContext2}} 
+\caption{Quality Score Context with the most significant difference between expected and observed count}
+%  \label{tab:StudentResults}
+\end{table}
+
+
+\begin{table}[htbp]
+  \centering
+{{lowQualScore1}} 
+\caption{Contexts with the lowest mean quality score}
+%  \label{tab:StudentResults}
+\end{table}
+
+
+\begin{table}[htbp]
+  \centering
+{{lowQualScore2}} 
+\caption{Contexts with the lowest mean quality score}
+%  \label{tab:StudentResults}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+{{inssignificantContext1}} 
+\caption{Context before Insertions with the most significant difference between expected and observed count}
+%  \label{tab:StudentResults}
+\end{table}
+
+
+
+\begin{table}[htbp]
+  \centering
+{{delsignificantContext1}} 
+\caption{Context before Deletions with the most significant difference between expected and observed count}
+%  \label{tab:StudentResults}
+\end{table}
+
+
+
+
+
+%
+%\begin{figure}[!ht]
+%	\def\tabularxcolumn#1{m{#1}}
+%\begin{tabularx}{\linewidth}{@{}cXX@{}}
+%\centering
+%
+%\begin{tabular}{cc}
+%\subfloat[Evolution of Secondary Structure]{\includegraphics[width=10cm]{apo_md_timeline_full.pdf}} 
+%   & \subfloat[Secondary structure change. Transparent orange shows original structure]{\includegraphics[width=7cm]{PartAQ6StructureChange4.png}}\\
+%\end{tabular}
+%
+%\end{tabularx}
+%
+%\caption{Secondary structure change}
+%\label{fig:TimeLine}
+%\end{figure}
+
+
+%% Table generated by Excel2LaTeX from sheet 'resultsFinal.csv'
+%\begin{table}[htbp]
+%  \centering
+%    \begin{tabular}{|r|r|r|r|}
+%    \hline
+%    student & score & grade & rank \\
+%   \hline
+%    1     & 19    & B     & 7 \\
+%    2     & 24    & A     & 2 \\
+%    3     & 14    & D     & 10 \\
+%    4     & 17    & C     & 9 \\
+%    5     & 20    & B     & 5 \\
+%    6     & 23    & A     & 3 \\
+%    7     & 29    & A     & 1 \\
+%    8     & 7     & F     & 12 \\
+%    9     & 22    & A     & 4 \\
+%    10    & 20    & B     & 5 \\
+%    11    & 9     & F     & 11 \\
+%    12    & 18    & B     & 8 \\
+%    \hline
+%    \end{tabular}
+%  \caption{Tabulated results of 12 students}
+%  \label{tab:StudentResults}
+%\end{table}
+%	
+%	\begin{figure}[htbp]
+%	  \centering
+%	  \includegraphics[width=10cm]{HistogramofComparisionScore.pdf}
+%	  \caption{Histogram of Comparison Scores}
+%	  \label{fig:histcompscore}
+%	\end{figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Finally we specify the format required for our references and the
+%% name of the bibtex file where our references should be taken from.
+\bibliographystyle{plain}	% (uses file "plain.bst")
+\bibliography{template}	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\appendix
+
+
+
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% The end.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

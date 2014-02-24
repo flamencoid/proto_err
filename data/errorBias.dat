@@ -1,0 +1,6 @@
+## This file contains context specific error probabilities. 
+## The default probability is set by --errorFreqMean
+##variant	kmerBefore	base	kmerAfter	probability 	sd
+SNP,G,A,T,0.1,0.05
+INDEL,CCT,,,0.2,0.05
+INDEL,TTA,,,0.25,0.05
