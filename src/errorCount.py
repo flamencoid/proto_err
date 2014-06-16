@@ -2,7 +2,6 @@
 import logging
 import pysam
 from pysam import AlignedRead
-from fastaIO import getRef
 import time
 from utils import *
 import difflib

@@ -8,7 +8,7 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 sys.path.insert(0, os.path.abspath('../src'))
 from optparse import OptionParser
 from errorCount import errorReader,counter,db_summary,samReader
-from fastaIO import getRef
+from Bio import SeqIO
 from query import errordb
 import time
 from report import Reporter
@@ -47,7 +47,8 @@ opt.samfile = "../data/ref.subsampled."+opt.simID+".sam"
 opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
 opt.observedReadDBName = 'alignedReads'
-ref = getRef(opt.refFilename)
+records = list(SeqIO.parse(opt.refFilename, "fasta"))
+ref = records[0]
 observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName )
 
 
