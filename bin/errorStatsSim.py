@@ -23,7 +23,9 @@ parser.add_option("--outDir", dest="outDir",help="Path to output directory (Opti
 						default="../results")
 parser.add_option("-f","--forceUseCurrentDB",action="store_false", dest="force",help="Don't Remake database (Optional: default wipes and repopulates database)",
 						default=True)
-parser.add_option("-s","--samfile",dest="samfile",help="samfile of alignedReads",
+parser.add_option("-i","--id",dest="simID",help="simulation identifier",
+						default='')
+parser.add_option("-i","--id",dest="simID",help="simulation identifier",
 						default='')
 (opt, args) = parser.parse_args()
 
@@ -39,10 +41,12 @@ if not os.path.exists(opt.imgDir):
 if not os.path.exists(opt.jsonDir):
     os.makedirs(opt.jsonDir)
 ## Make run ID mandatory
-if not opt.samfile:
-	logging.error("Please specify a samfile of aligned reads '''samfile''' ")
-	raise ValueError("-s option is mandatory")
-opt.dbName = 'proto_err_' + opt.samfile.replace('.sam','')
+if not opt.simID:
+	logging.error("Please specify a run ID with -i '''id''' ")
+	raise ValueError("-i option is mandatory")
+opt.dbName = 'proto_err_' + opt.simID.replace('.','_')
+opt.samfile = "../data/ref.subsampled."+opt.simID+".sam"
+# opt.simulatedErrorDBName = 'simulatedErrors'
 opt.observedErrorDBName = 'errors'
 opt.observedReadDBName = 'alignedReads'
 records = list(SeqIO.parse(opt.refFilename, "fasta"))
@@ -57,6 +61,7 @@ if opt.force:
 		post = {'id':read.ID,'read':read.read,'ref':read.refRead,
 		'qual':read.qual,'cigar':read.alignedRead.cigarstring}
 		observedReadsDB.insert(post)
+
 
 
 if opt.force:
