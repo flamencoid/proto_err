@@ -11,12 +11,12 @@ from errorCount import errorReader,counter,db_summary,samReader
 from Bio import SeqIO
 from query import errordb
 import time
-from report import Reporter
+#from report import Reporter
+from fastaIO import getRef
 start = time.clock()
 
 parser = OptionParser()
-parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
-					default="../data/refs/tb.ref.fasta")
+parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file")
 # parser.add_option("-s", "--samfile", dest="samfile",help="Samfile of aligned reads",
 # 						default="../data/ref.subsampled.fq.sam")
 parser.add_option("--outDir", dest="outDir",help="Path to output directory (Optional)",
@@ -29,7 +29,8 @@ parser.add_option("-s","--samfile",dest="samfile",help="samfile of alignedReads"
 
 ## Hardcode some options
 opt.maxKmerLength = 3 
-opt.outDir = opt.outDir + '/' + opt.simID + '/'
+opt.runID = opt.samfile.split('/')[-1].split('.')[0]
+opt.outDir = opt.outDir + '/' + opt.runID + '/'
 opt.imgDir = opt.outDir+'img/'
 opt.jsonDir = opt.outDir +'json/'
 if not os.path.exists(opt.outDir):
@@ -42,21 +43,20 @@ if not os.path.exists(opt.jsonDir):
 if not opt.samfile:
 	logging.error("Please specify a samfile of aligned reads '''samfile''' ")
 	raise ValueError("-s option is mandatory")
-opt.dbName = 'proto_err_' + opt.samfile.replace('.sam','')
+opt.dbName = 'proto_err_' + opt.runID
 opt.observedErrorDBName = 'errors'
 opt.observedReadDBName = 'alignedReads'
-records = list(SeqIO.parse(opt.refFilename, "fasta"))
-ref = records[0]
+ref = getRef(opt.refFilename)
 observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName )
 
 
 # Generate read documents for uploading to db
-if opt.force:
-	observedReadsDB.deleteAll()
-	for read in samReader(samfile=opt.samfile,ref=ref):
-		post = {'id':read.ID,'read':read.read,'ref':read.refRead,
-		'qual':read.qual,'cigar':read.alignedRead.cigarstring}
-		observedReadsDB.insert(post)
+# if opt.force:
+# 	observedReadsDB.deleteAll()
+# 	for read in samReader(samfile=opt.samfile,ref=ref):
+# 		post = {'id':read.ID,'read':read.read,'ref':read.refRead,
+# 		'qual':read.qual,'cigar':read.alignedRead.cigarstring}
+# 		observedReadsDB.insert(post)
 
 
 if opt.force:
@@ -77,8 +77,8 @@ summ.qScoreCalibrationTest('SNP')
 summ.qScoreCalibrationTest('Insertion')
 summ.qScoreCalibrationTest('Deletion')
 
-report = Reporter(opt=opt,counter=errorCounter,outfileDir= opt.outDir ,latexTemplate='../data/template.tex')
-report.generatePdfReport()
+#report = Reporter(opt=opt,counter=errorCounter,outfileDir= opt.outDir ,latexTemplate='../data/template.tex')
+#report.generatePdfReport()
 
 end = time.clock()
 logging.info("errorStats.py took %f seconds to run" % (end-start))

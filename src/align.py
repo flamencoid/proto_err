@@ -9,13 +9,19 @@ import os
 import subprocess
 import shlex
 
-def refIndex(file):
+def refIndex(reference,stdout=".tmp",algorithm="bwa-mem"):
     """
     Function to generate BWA index
     """
-    logging.info("Creating BW index of reference")
-    index_cmd = Applications.BwaIndexCommandline(infile=file, algorithm="bwtsw")
-    index_cmd()
+    if algorithm =="bwa-mem":
+        logging.info("Creating BW index of reference")
+        index_cmd = Applications.BwaIndexCommandline(infile=reference, algorithm="bwtsw")
+        index_cmd()
+    elif algorithm=="last":
+        logging.info("Creating LAST index of reference")
+        cmd_line = "/home/phelimb/tools/last/src/lastdb %s.lastindex %s " % (reference,reference)
+        args = shlex.split(cmd_line)
+        proc = subprocess.Popen(args)
     return 1
 
 def align(reference, read_file, stdout,algorithm='bwa-mem',
@@ -32,6 +38,13 @@ def align(reference, read_file, stdout,algorithm='bwa-mem',
         args = shlex.split(cmd_line)
         proc = subprocess.Popen(args,stdout = open(stdout,'w'))
         return 1
+    elif algorithm == "last":
+        logging.info("Aligning reads to reference with last")
+        cmd_line = "/home/phelimb/tools/last/src/lastal -s 2 -T 0 -Q1 -a 1 %s.lastindex %s " % (reference,read_file)
+        print cmd_line
+        args = shlex.split(cmd_line)
+        proc = subprocess.Popen(args,stdout = open(stdout,'w'))
+
 
         
 

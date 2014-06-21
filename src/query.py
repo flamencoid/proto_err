@@ -68,7 +68,10 @@ class errordb():
             read = AlignedRead()
             # read.seq = str(document['read'])
             read.seq = ''
-            read.qname = 'st=%s&id=%i' % (str(document['refPos']),document['readID'])
+            qname = 'st=%s&id=%s' % (str(document['refPos']),document['readID'])
+            # read.qname = qname
+            print qname
+            read.qname = "TMPCHANGE"
             errorList.append(error(true=document['true'],
                                         emission=document['emission'],
                                         read=read,readPos=document['readPos'],
