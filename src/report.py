@@ -17,7 +17,7 @@ class Reporter(object):
 		self.counter = counter
 
 		self.latexWriten = False
-		self.imgDir = PROJECT_PATH + '/proto_err/results/%s/img/' % (self.opt.simID  )
+		self.imgDir = PROJECT_PATH + '/proto_err/results/%s/img/' % (self.opt.runID  )
 		
 
 	def renderOptions(self):
@@ -37,7 +37,7 @@ class Reporter(object):
 
 	def renderTemplate(self):
 		## Metadata
-		self.docString.replace(k='runID',v=self.opt.simID)
+		self.docString.replace(k='runID',v=self.opt.runID)
 		self.docString.replace(k='options',v=self.renderOptions())
 		## Images
 		self.docString.replace(k="SNPQualCalibration",v='%sqscoreCalibration_SNP.png' % (self.imgDir),escape=False)

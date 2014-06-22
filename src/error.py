@@ -81,8 +81,8 @@ class error():
             self.readLength = self.read.rlen
         assert self.readLength != None
 
-        self.readID = int(self.read.qname.split('id=')[1])
-        sampPos = int(self.read.qname.split('st=')[1].split('&')[0])
+        self.readID = self.read.qname
+        # sampPos = int(self.read.qname.split('st=')[1].split('&')[0])
 
             
         self.readPer = float(readPos) / float(self.readLength)
@@ -95,7 +95,8 @@ class error():
                     clippedBases = self.read.cigar[0][1]
             else:
                 clippedBases = 0
-            self.mappedDist =  abs(int(abs(sampPos - self.read.positions[0])) -clippedBases)
+            # self.mappedDist =  abs(int(abs(sampPos - self.read.positions[0])) -clippedBases)
+            self.mappedDist = None
         except:
             self.mappedDist = None
         if self.mappedDist is None:

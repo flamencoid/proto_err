@@ -1,11 +1,10 @@
-scipy
+numpy>=1.6
 pandas
 numpydoc>=0.4
-numpy>=1.6
+scipy
 cython>=0.19.2
 pysam>=0.7.4
 Biopython>=1.63
 nose>=1.3
 pymongo
-scipy
 rpy2

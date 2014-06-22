@@ -7,7 +7,7 @@ from utils import *
 import difflib
 import itertools
 from query import errordb
-from plot import *
+#from plot import *
 from error import error
 import os
 from collections import Counter as listCounter
@@ -15,8 +15,8 @@ import pandas as pd
 from pprint import pprint
 import scipy.stats
 
-from rpy2.robjects.packages import importr
-from rpy2.robjects.vectors import FloatVector
+#from rpy2.robjects.packages import importr
+#from rpy2.robjects.vectors import FloatVector
 
 import re
 
@@ -94,6 +94,7 @@ class errorReader():
         self.__read = self.__samfile.next()
         
         self.readCounter['TotalReads'] += 1
+        logging.info("Read %s ..." % self.readCounter['TotalReads'])
         self.readCounter['totalBases'] += self.__read.rlen
         if self.__read.is_unmapped:
             self.readCounter['UnMapped'] += 1
@@ -323,10 +324,14 @@ class counter():
         ## Connection to mongoDB, runs without for now.
         self.errordb = {}
         self.errordb['errors'] = errordb(database=opt.dbName,collection=opt.observedErrorDBName)
-        self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
+        try:
+            self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
+        except AttributeError:
+            pass
         self.errordb['metaData'] = errordb(database=opt.dbName,collection='metaData')
 
         for error in reader:
+
             self.errorList.append(error)
         logging.info("Found %i errors in samfile" % (len(self.errorList)))
         if makeDB:
@@ -552,7 +557,11 @@ class counter():
         # # Count deletion kmers
         # # get maximum deletion length
         observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
-        simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
+        try:
+            simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
+        except KeyError:
+            simulatedSize = []
+
         if observedSize and simulatedSize:
             densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
                                 opt=self.opt,filename="deletion_size_hist_dens").plot(geom='dens')
@@ -566,10 +575,24 @@ class counter():
                 histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_observed_order_%i" % (order)).plot()
                 dic = self.__countToDic(self.getSimulatedCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
                 histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_simulated_order_%i" % (order)).plot()
+        elif observedSize and not simulatedSize:
+            densityPlotterFromLists(dic={'observed':observedSize},
+                                opt=self.opt,filename="deletion_size_hist_dens").plot(geom='dens')
+            densityPlotterFromLists(dic={'observed':observedSize},
+                                opt=self.opt,filename="deletion_size_bar").plot(geom='bar')
+
+            maxLen = max(observedSize) 
+            # for order in [i+1 for i in range(maxLen)]:
+            for order in [i+1 for i in range(5)]:
+                dic = self.__countToDic(self.getCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
+                histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_observed_order_%i" % (order)).plot()
 
         ## Count insterted kmers 
         observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Insertion'}, {'tlen':1} )]
-        simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Insertion'}, {'tlen':1} )]
+        try:
+            simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Insertion'}, {'tlen':1} )]
+        except KeyError:
+            simulatedSize = []
         if observedSize and simulatedSize:
             densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
                                 opt=self.opt,filename="insertion_size_hist_dens").plot(geom='dens')
@@ -583,6 +606,18 @@ class counter():
                 histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_observed_order_%i" % (order)).plot()
                 dic = self.__countToDic(self.getSimulatedCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
                 histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_simulated_order_%i" % (order)).plot()
+
+        if observedSize and not simulatedSize:
+            densityPlotterFromLists(dic={'observed':observedSize},
+                                opt=self.opt,filename="insertion_size_hist_dens").plot(geom='dens')
+            densityPlotterFromLists(dic={'observed':observedSize},
+                                opt=self.opt,filename="insertion_size_bar").plot(geom='bar')
+
+            maxLen = max(observedSize + simulatedSize) 
+            # for order in [i+1 for i in range(maxLen)]:
+            for order in [i+1 for i in range(5)]:
+                dic = self.__countToDic(self.getCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
+                histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_observed_order_%i" % (order)).plot()
 
 
         ## Count kmers      
@@ -837,11 +872,17 @@ class counter():
             >>> print errorCounter.getSimulatedCount(emission='A')
             2
         """
-        return self.getCount(truth=truth,emission=emission,kmerBefore=kmerBefore,
+        try:
+            count = self.getCount(truth=truth,emission=emission,kmerBefore=kmerBefore,
                             kmerAfter=kmerAfter,type=type,maxAlignedDist=maxAlignedDist,
                             readPosRange=readPosRange,readPerRange=readPerRange,
                             qualRange=qualRange,tlenRange=tlenRange,readLength=readLength,returnList=returnList,
                             collection='simulatedErrors')
+        except KeyError:
+            count = 0
+
+
+        return count
 
 
     def probKmerRef(self,kmer):
@@ -868,7 +909,11 @@ class counter():
 
     def compareSimulationToResults(self,query={}):
         errorList = self.errordb['errors'].find_errors(query=query)
-        simErrorList = self.errordb['simulatedErrors'].find_errors(query=query)
+        try:
+            simErrorList = self.errordb['simulatedErrors'].find_errors(query=query)
+        except KeyError:
+            simErrorList = []
+
         errorDict  = {}
         for err in errorList:
             errorDict[err.refPos] = err
@@ -1063,7 +1108,7 @@ class counter():
             outdic['INS'][context]['pvalue'] = scipy.stats.binom_test(outdic['INS'][context]['samCount'], 
                                                                     self.getCount(type='Insertion'), 
                                                                     outdic['INS'][context]['expectedCount']/totalExpectedCount)
-        print self.getCount(type='Insertion'),self.getSimulatedCount(type='Insertion'),totalExpectedCount
+
 
         logging.info("Generating readable output for Insertion bias Stats")
         outputList = []
@@ -1140,8 +1185,7 @@ class counter():
                                     # outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
                     logging.info("p-values for context %s %s" %(context,outDicContextOnly['SNP'][context]['pvalue'].values()))
 
-        print samCount,simCount,expectedCount
-        print self.getCount(type='SNP'),self.getSimulatedCount(type='SNP'),totalExpectedCount
+
 
         ## Create friendly output
 
@@ -1310,7 +1354,11 @@ class db_summary():
         ## Connection to mongoDB, runs without for now.
         self.errordb = {}
         self.errordb['errors'] = errordb(database=opt.dbName,collection=opt.observedErrorDBName)
-        self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
+        try:
+            self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
+        except AttributeError:
+            pass
+
         self.errordb['metaData'] = errordb(database=opt.dbName,collection='metaData')
         self.opt = opt
         self.qscores = False
@@ -1327,10 +1375,14 @@ class db_summary():
             densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_dens').plot()
             densityPlotterFromLists(dic={'errorDistribution':ed},opt=self.opt,filename='errorDistribution_hist',binwidth=0.1).plot(geom='hist')
 
-        simEd = [doc['readPer'] for doc in self.errordb['simulatedErrors'].find(query={},filt={'readPer'})]
-        if simEd:
-            densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_dens').plot()
-            densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_hist',binwidth=0.1).plot(geom='hist')
+        try:
+            simEd = [doc['readPer'] for doc in self.errordb['simulatedErrors'].find(query={},filt={'readPer'})]
+            if simEd:
+                densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_dens').plot()
+                densityPlotterFromLists(dic={'errorDistribution':simEd},opt=self.opt,filename='simulatedErrorDistribution_hist',binwidth=0.1).plot(geom='hist')
+        except KeyError:
+            pass
+
 
     def errorQualDistribution(self):
         if not self.errorQualList:
@@ -1384,6 +1436,7 @@ class samReader():
     def __init__(self,samfile,ref):
         self.samfile = pysam.Samfile( samfile ).fetch()
         self.ref = ref
+        self.readCounter = 0
     def __iter__(self):
         if self is not None:
             return self
@@ -1394,6 +1447,8 @@ class samReader():
         """
         ## If there are errors left in the read 
         self.alignedRead = self.samfile.next()
+        
+        
         if self.alignedRead.is_unmapped:
             self.__readNext()
         else:
@@ -1405,12 +1460,14 @@ class samReader():
         Returns the next read in the samfile aligned read
         """
         self.__readNext()
+        self.readCounter += 1
+        logging.info("Read %i" % self.readCounter)
         return self
 
             
     @property   
     def ID(self):
-        return int(self.alignedRead.qname.split('id=')[1])
+        return self.alignedRead.qname
 
     def __parseRead(self):
         """
