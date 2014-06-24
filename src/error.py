@@ -19,6 +19,8 @@ class error():
         number of bases between position of start of alignment and where read was sampled None if sampled position n/a 
     alignedCorrectly : bool or None
         If the alignedDist is less then the read length True else False None is alignedDist is None
+    errorType : string
+        type of error (SNP,Insertion,Deletion)
 
     Parameters
     ----------

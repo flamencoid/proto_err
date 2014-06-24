@@ -69,8 +69,6 @@ class errordb():
             # read.seq = str(document['read'])
             read.seq = ''
             qname = 'st=%s&id=%s' % (str(document['refPos']),document['readID'])
-            # read.qname = qname
-            print qname
             read.qname = "TMPCHANGE"
             errorList.append(error(true=document['true'],
                                         emission=document['emission'],

@@ -7,18 +7,18 @@ from utils import *
 import difflib
 import itertools
 from query import errordb
-#from plot import *
+from plot import *
 from error import error
 import os
 from collections import Counter as listCounter
 import pandas as pd
 from pprint import pprint
 import scipy.stats
-
-#from rpy2.robjects.packages import importr
-#from rpy2.robjects.vectors import FloatVector
-
+import random
+from rpy2.robjects.packages import importr
+from rpy2.robjects.vectors import FloatVector
 import re
+import pymongo
 
 class errorReader():
 
@@ -59,7 +59,9 @@ class errorReader():
 
     """
 
-    def __init__(self, samfile,ref):
+    def __init__(self, samfile,ref,percentageOfReadsConsidered=1):
+        self.percentageOfReadsConsidered = percentageOfReadsConsidered
+        self.cntsamreads = 0
         self.__samfile = pysam.Samfile( samfile ).fetch()
         self.__ref = ref
         self.__alphabet = getAlphabet()
@@ -92,18 +94,20 @@ class errorReader():
         """
         ## If there are errors left in the read 
         self.__read = self.__samfile.next()
-        
-        self.readCounter['TotalReads'] += 1
-        logging.info("Read %s ..." % self.readCounter['TotalReads'])
-        self.readCounter['totalBases'] += self.__read.rlen
-        if self.__read.is_unmapped:
-            self.readCounter['UnMapped'] += 1
-        else:
-            self.readCounter['Mapped'] += 1
-            self.readCounter['totalAlignedBases'] += self.__read.alen
-            if 'H' in list(self.__read.cigarstring):
-                self.readCounter['HardClippedReads'] += 1
-            self.__checkRead()
+        self.cntsamreads += 1
+        logging.info("Read %s ..." % self.cntsamreads)
+        if random.random() <= self.percentageOfReadsConsidered:
+            self.readCounter['TotalReads'] += 1
+            
+            self.readCounter['totalBases'] += self.__read.rlen
+            if self.__read.is_unmapped:
+                self.readCounter['UnMapped'] += 1
+            else:
+                self.readCounter['Mapped'] += 1
+                self.readCounter['totalAlignedBases'] += self.__read.alen
+                if 'H' in list(self.__read.cigarstring):
+                    self.readCounter['HardClippedReads'] += 1
+                self.__checkRead()
 
     def next(self):
         """
@@ -234,10 +238,7 @@ class errorReader():
         Checks HardClipped read segment for errors. called when cigarstring = H:N 
         """
         self.readCounter['H'] += N
-        logging.warning("We shouldn't have HardClipped bases in Samfile")
-
-
-        
+        # logging.warning("We shouldn't have HardClipped bases in Samfile")
     def __checkPadding(self,N):
         """
         Checks Padding read segment for errors. called when cigarstring = P:N 
@@ -305,7 +306,7 @@ class counter():
         self.samfile = samfile
 
         self.errorList = []
-        reader = errorReader(samfile,ref)
+        reader = errorReader(samfile,ref,percentageOfReadsConsidered=opt.percentageOfReadsConsidered)
         logging.info("Parsing samfile for errors")
         
         self.readCounter = reader.readCounter
@@ -323,21 +324,22 @@ class counter():
         self.setup(opt)
         ## Connection to mongoDB, runs without for now.
         self.errordb = {}
-        self.errordb['errors'] = errordb(database=opt.dbName,collection=opt.observedErrorDBName)
         try:
-            self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
-        except AttributeError:
-            pass
-        self.errordb['metaData'] = errordb(database=opt.dbName,collection='metaData')
-
+            self.errordb['errors'] = errordb(database=opt.dbName,collection=opt.observedErrorDBName)
+            self.errordb['metaData'] = errordb(database=opt.dbName,collection='metaData')
+            try:
+                self.errordb['simulatedErrors'] = errordb(database=opt.dbName,collection=opt.simulatedErrorDBName)
+            except AttributeError:
+                pass
+        except pymongo.errors.ConnectionFailure:
+            logging.warning("Couldn't find a mongoDB instance running on localhost - we'll continue regardless but we won't be able to generate context stats.")
         for error in reader:
-
             self.errorList.append(error)
         logging.info("Found %i errors in samfile" % (len(self.errorList)))
-        if makeDB:
+        if makeDB and self.errordb:
             self.errordb['errors'].deleteAll()
             self.errorList = self.errordb['errors'].addErrors(self.errorList)
-        else:
+        elif not makeDB and self.errordb:
             # logging.info("Downloading pre-generated errors from database")
             # self.errorList = self.errordb['errors'].find_errors()
             self.logger.warning("""### Using pre-generated database.""")
@@ -542,40 +544,20 @@ class counter():
                 if t != e:
                     observed = self.getCount(truth=t,emission=e)
                     expected = self.getExpectedCount(truth=t,emission=e)
-                    simulated = self.getSimulatedCount(truth=t,emission=e)
-                    observedDic[t + '->' + e] = observed
                     expectedDic[t + '->' + e] = expected
-                    simulatedDic[t + '->' + e] = simulated
-                    multi[t + '->' + e]['Expected'] = expected
                     multi[t + '->' + e]['Observed'] = observed
-                    multi[t + '->' + e]['Simulated'] = simulated
         histPlotter(dic=observedDic,opt=self.opt,filename="SNP_observed_transition").plot()
         histPlotter(dic=expectedDic,opt=self.opt,filename="SNP_expected_transition").plot()
-        histPlotter(dic=simulatedDic,opt=self.opt,filename="SNP_simulated_transition").plot()
         # multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
         multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_simulated_expected_transition").plot()
         # # Count deletion kmers
         # # get maximum deletion length
-        observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
-        try:
-            simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
-        except KeyError:
-            simulatedSize = []
+        if self.errordb:
+            observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Deletion'}, {'tlen':1} )]
+        else:
+            observedSize = [e.tlen for e in self.errorList if e.errorType == "Deletion"]
 
-        if observedSize and simulatedSize:
-            densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
-                                opt=self.opt,filename="deletion_size_hist_dens").plot(geom='dens')
-            densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
-                                opt=self.opt,filename="deletion_size_bar").plot(geom='bar')
-
-            maxLen = max(observedSize + simulatedSize) 
-            # for order in [i+1 for i in range(maxLen)]:
-            for order in [i+1 for i in range(5)]:
-                dic = self.__countToDic(self.getCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
-                histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_observed_order_%i" % (order)).plot()
-                dic = self.__countToDic(self.getSimulatedCount(type='Deletion',tlenRange=order,returnList=True)[1],attribute='true')
-                histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_simulated_order_%i" % (order)).plot()
-        elif observedSize and not simulatedSize:
+        if observedSize:
             densityPlotterFromLists(dic={'observed':observedSize},
                                 opt=self.opt,filename="deletion_size_hist_dens").plot(geom='dens')
             densityPlotterFromLists(dic={'observed':observedSize},
@@ -588,32 +570,18 @@ class counter():
                 histPlotter(dic=dic,opt=self.opt,filename="deletedKmerCount/deleted_kmer_observed_order_%i" % (order)).plot()
 
         ## Count insterted kmers 
-        observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Insertion'}, {'tlen':1} )]
-        try:
-            simulatedSize = [d['tlen'] for d in self.errordb['simulatedErrors'].find( {'type' : 'Insertion'}, {'tlen':1} )]
-        except KeyError:
-            simulatedSize = []
-        if observedSize and simulatedSize:
-            densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
-                                opt=self.opt,filename="insertion_size_hist_dens").plot(geom='dens')
-            densityPlotterFromLists(dic={'observed':observedSize,'simulated':simulatedSize},
-                                opt=self.opt,filename="insertion_size_bar").plot(geom='bar')
+        if self.errordb:
+            observedSize = [d['tlen'] for d in self.errordb['errors'].find( {'type' : 'Insertion'}, {'tlen':1} )]
+        else:
+            observedSize = [e.tlen for e in self.errorList if e.errorType == "Insertion"]
 
-            maxLen = max(observedSize + simulatedSize) 
-            # for order in [i+1 for i in range(maxLen)]:
-            for order in [i+1 for i in range(5)]:
-                dic = self.__countToDic(self.getCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
-                histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_observed_order_%i" % (order)).plot()
-                dic = self.__countToDic(self.getSimulatedCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
-                histPlotter(dic=dic,opt=self.opt,filename="insertedKmerCount/inserted_kmer_simulated_order_%i" % (order)).plot()
-
-        if observedSize and not simulatedSize:
+        if observedSize:
             densityPlotterFromLists(dic={'observed':observedSize},
                                 opt=self.opt,filename="insertion_size_hist_dens").plot(geom='dens')
             densityPlotterFromLists(dic={'observed':observedSize},
                                 opt=self.opt,filename="insertion_size_bar").plot(geom='bar')
 
-            maxLen = max(observedSize + simulatedSize) 
+            maxLen = max(observedSize) 
             # for order in [i+1 for i in range(maxLen)]:
             for order in [i+1 for i in range(5)]:
                 dic = self.__countToDic(self.getCount(type='Insertion',tlenRange=order,returnList=True)[1],attribute='emmision')
@@ -675,11 +643,22 @@ class counter():
         try:
             p = self.freqKmerDic[kmer]
         except:
-            count = 0
+            logging.info("Counting frequency of all trimers in reads")
+            count = {}
+            baseCount = 0
+            kmerList =  kmerCombo(len(kmer))
             for read in pysam.Samfile( self.samfile ).fetch():
-                count += str(read.seq).count(kmer)
-            p = float(count) / float(self.readCounter['totalAlignedBases'])
-            self.freqKmerDic[kmer] = p
+                if random.random() < self.opt.percentageOfReadsConsidered:
+                    for kmer in kmerList:
+                        try:
+                            count[kmer] += (read.seq).count(kmer)
+                        except:
+                            count[kmer] = (read.seq).count(kmer)
+                        baseCount += read.alen
+            for kmer in kmerList:
+                p = float(count[kmer]) / float(baseCount)
+                logging.info("Counted %fper of kmer %s in reads " % (p,kmer) )
+                self.freqKmerDic[kmer] = p
 
         return p
 
@@ -691,20 +670,28 @@ class counter():
         except:
             logging.info("Calculating mean quality score for all contexts of length %i" % len(kmer))
             qualDic = AutoVivification()
-            for read in samReader(samfile=self.samfile,ref=self.ref):
-                ## Prepopulated with trimers
-                kmerList =  kmerCombo(len(kmer))
-                posAdd = int(float(len(kmer) - 1) / 2.0 )
-                patternDic = dict(zip(kmerList,[re.compile(kmer) for kmer in kmerList]))
-                for kmer,pattern in patternDic.iteritems():
-                    ## Should this be greping in the reference rather than the read?
-                    # results = pattern.finditer("".join(read.seq))
-                    results = pattern.finditer("".join(read.refRead))
-                    for result in results:
-                        try:
-                            qualDic[kmer].append(asciiToInt(read.qual[result.start(0) + posAdd]))
-                        except:
-                            qualDic[kmer] = [asciiToInt(read.qual[result.start(0) + posAdd])]
+            ## Prepopulated with trimers
+            kmerList =  kmerCombo(len(kmer))
+            posAdd = int(float(len(kmer) - 1) / 2.0 )
+            patternDic = dict(zip(kmerList,[re.compile(kmer) for kmer in kmerList]))
+            # for read in samReader(samfile=self.samfile,ref=self.ref):
+            for i,aread in enumerate(pysam.Samfile( self.samfile ).fetch()):
+                ### Only do it for x% of the samfile
+                if (i % 1000 == 0) and not (i == 0) :
+                        logging.info("Read %i ... " %i )
+                if random.random() < self.opt.percentageOfReadsConsidered:
+                    for kmer,pattern in patternDic.iteritems():
+                        ## Should this be greping in the reference rather than the read?
+                        # results = pattern.finditer("".join(read.seq))
+                        results = pattern.finditer(aread.seq)
+                        # results = pattern.finditer("".join(read.refRead))
+                        for result in results:
+                            try:
+                                qualDic[kmer].append(asciiToInt(aread.qual[result.start(0) + posAdd]))
+                                # qualDic[kmer].append(asciiToInt(read.qual[result.start(0) + posAdd]))
+                            except:
+                                qualDic[kmer] = [asciiToInt(aread.qual[result.start(0) + posAdd])]
+                                # qualDic[kmer] = [asciiToInt(read.qual[result.start(0) + posAdd])]
             for kmer in kmerCombo(len(kmer)):
                 self.kmerQualCount[kmer] = listCounter(qualDic[kmer])
                 try:
@@ -773,17 +760,14 @@ class counter():
         if qual is not None:
             context = kmerBefore+truth+kmerAfter
             pContext = self.probKmerRef(context) * self.getFreqQualGivenKmer(kmer=context,qual=qual)
-            # print context,qual, self.getFreqQualGivenKmer(kmer=context,qual=qual)
         elif truth or emission or kmerBefore or kmerAfter:
             ## Use the frequency of the kmer in the reference or in the samfile???? 
             ## Has to be in the reference, as observed contexts are after errors
             pContext = self.probKmerRef(kmerBefore+truth+kmerAfter)
 
             # pContext = self.getFreqKmer(kmerBefore+truth+kmerAfter)
-            # print self.probKmerRef(kmerBefore+truth+kmerAfter) , pContext
         else:
             pContext = 1
-        # print simulationMetaData
         # ExpectedSNPCount = self.readCounter['totalAlignedBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
         # ExpectedSNPCount = self.readCounter['totalBases'] * simulationMetaData['snpFreq'] * simulationMetaData['SnpIndelRatio'] #snpFreq is actually the errorFrequencey
         # probEmmission = float(1)/float(3)
@@ -902,8 +886,10 @@ class counter():
         try:
             p = self.probKmerRefDic[kmer]
         except:
+            logging.info("Count %s in reference" % kmer)
             p = float(self.ref.count(kmer)) / len(self.ref)
             self.probKmerRefDic[kmer] = p
+            logging.info("%iper of %s kmer " % (int(p*100),kmer))
         return p
 
 
@@ -943,94 +929,32 @@ class counter():
         "Log a summary of errors found and samfile counts"
 
         ## Initialise some pandas dataframes to sort output for writing to csv. 
-        SNPRow = [self.getCount(type='SNP'),self.getSimulatedCount(type='SNP')]
-        INSRow = [self.getCount(type='Insertion'),self.getSimulatedCount(type='Insertion')]
-        DELRow = [self.getCount(type='Deletion'),self.getSimulatedCount(type='Deletion')]
+        if self.errordb:
+            SNPRow = [self.getCount(type='SNP')]
+            INSRow = [self.getCount(type='Insertion')]
+            DELRow = [self.getCount(type='Deletion')]
+        else:
+            SNPRow  = [sum(1 for e in self.errorList if e.errorType == "SNP")]
+            INSRow  = [sum(1 for e in self.errorList if e.errorType == "Insertion")] 
+            DELRow  = [sum(1 for e in self.errorList if e.errorType == "Deletion")]  
+
         
 
 
         for key,value in self.readCounter.iteritems():
             self.logger.info("### Count of %s in samfile = %i" % (key,value))
         self.logger.info("### Total SNP errors observed = %i" % (SNPRow[0]) )
-        self.logger.info("### Total SNP errors simulated = %i" % (SNPRow[1]))
         self.logger.info("### Total Insertion errors observed = %i" % (INSRow[0]))
-        self.logger.info("### Total Insertion errors simulated = %i" % (INSRow[1]))
         self.logger.info("### Total Deletion errors observed = %i" % (DELRow[0]))
-        self.logger.info("### Total Deletion errors simulated = %i" % (DELRow[1]))
-
-        ## How many errors are from mismapped reads?
-        self.logger.info("### Total errors from reads mapped mapped correctly =%i" % (self.getCount(mappedCorrectly=1)))
-        self.logger.info("### Total errors from mismapped reads =%i" % (self.getCount(mappedCorrectly=0)))
-        self.logger.info("### Percentage of errors from  mismapped reads =%f " % (round(100*(float(self.getCount(mappedCorrectly=0)) / float(self.getCount()) ),2)))
-
-        ## How many errors were correctly recovered?
-
-        ## Download errors and simulated errors and generate two dicts of the form
-        ## {redPos : errorObject}
-        compareDict = self.compareSimulationToResults()
-        self.logger.info("### Total simulated errors correctly found (TP) = %i" % (len(compareDict['TP'])))
-        self.logger.info("### Total errors found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
-        self.logger.info("### Total errors simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
-        compareDict = self.compareSimulationToResults(query={'type':'SNP'})
-        SNPRow.extend([len(compareDict['TP']),len(compareDict['FP']),len(compareDict['FN']) ])
-        self.logger.info("### Total simulated SNPs correctly found (TP) = %i" % (len(compareDict['TP'])))
-        self.logger.info("### Total SNPs found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
-        self.logger.info("### Total SNPs simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
-        compareDict = self.compareSimulationToResults(query={'type':'Insertion'})
-        INSRow.extend([len(compareDict['TP']),len(compareDict['FP']),len(compareDict['FN']) ])
-        self.logger.info("### Total simulated Insertions correctly found (TP) = %i" % (len(compareDict['TP'])))
-        self.logger.info("### Total Insertions found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
-        self.logger.info("### Total Insertions simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
-        compareDict = self.compareSimulationToResults(query={'type':'Deletion'})
-        DELRow.extend([len(compareDict['TP']),len(compareDict['FP']),len(compareDict['FN']) ])
-        self.logger.info("### Total simulated Deletions correctly found (TP) = %i" % (len(compareDict['TP'])))
-        self.logger.info("### Total Deletions found which were not simulated (FP)= %i" % (len(compareDict['FP'])))
-        self.logger.info("### Total Deletions simulated which were not found (FN)= %i" % (len(compareDict['FN'])))
-
-        
-
-
 
         TotalRow = []
         for i in range(len(SNPRow)):
             TotalRow.append(sum([SNPRow[i],INSRow[i],DELRow[i]]))
 
-        try:
-            SNPRow.append(round(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[3]),2))
-        except:
-            SNPRow.append('-')
-        try:
-            INSRow.append(round(float(INSRow[2]) / float(INSRow[2] + INSRow[3]),2))
-        except:
-           INSRow.append('-')
-        try:
-            DELRow.append(round(float(DELRow[2]) / float(DELRow[2] + DELRow[3]),2))
-        except:
-            DELRow.append('-')
-        try:
-            TotalRow.append(round(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[3]),2))
-        except:
-            TotalRow.append('-')
-        try:
-            SNPRow.append(round(float(SNPRow[2]) / float(SNPRow[2] + SNPRow[4]),2))
-        except:
-            SNPRow.append('-')
-        try:
-            INSRow.append(round(float(INSRow[2]) / float(INSRow[2] + INSRow[4]),2))
-        except:
-            INSRow.append('-')
-        try:
-            DELRow.append(round(float(DELRow[2]) / float(DELRow[2] + DELRow[4]),2))
-        except:
-            DELRow.append('-')
-        try:
-            TotalRow.append(round(float(TotalRow[2]) / float(TotalRow[2] + TotalRow[4]),2))
-        except:
-            TotalRow.append('-')
         outfile = self.opt.outDir + 'errorsCount.dat'
         logging.info('Writing error counts to %s' % (outfile))
         self.errorsDF = pd.DataFrame.from_items([('Total', TotalRow),('SNP', SNPRow), ('INS', INSRow),('DEL', DELRow)],
-                                orient='index', columns=['samCount', 'simCount', 'TP','FP','FN','Precision','Recall'])
+                                orient='index', columns=['samCount'])
         self.errorsDF.to_csv(path_or_buf=outfile,sep='\t')
 
         outfile = self.opt.outDir + 'readCounts.dat'
@@ -1041,199 +965,219 @@ class counter():
 
     def DELTransitionStats(self,kmerLength=3):
         """
-        Generate some stats about the context in which insertions occur 
+        Generate some stats about the context in which deletions occur 
         We want to know if certain kmer contexts occur more frequently before insetions then would by chance
         """
-        logging.info("Generating Context bias statistics for insertions")
-        alphabet = ['A','T','C','G']
-        outdic = AutoVivification()
-        ## Just do trimers before for now.
-        totalExpectedCount = self.getExpectedCount(type="Deletion")
-        cnt = 0
-        for context in kmerCombo(kmerLength):
-            cnt += 1
-            logging.info("Calculating stats for context %s : %i of %i" %(context,cnt,4**kmerLength))
-            ## Stats for contexts without q scores
-            outdic['DEL'][context]['samCount'] = self.getCount(kmerBefore=context,type='Deletion')
-            outdic['DEL'][context]['simCount'] = self.getSimulatedCount(kmerBefore=context,type='Deletion')
-            outdic['DEL'][context]['expectedCount'] = self.getExpectedCount(kmerBefore=context,type='Deletion')
-            outdic['DEL'][context]['expectedOccurancyofContext'] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
-            outdic['DEL'][context]['observedOccurancyofContext'] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
-            outdic['DEL'][context]['avgQual'] = round(self.getContextMeanQualScore(kmer=context),2)
-            # print outdic['DEL'][context]['samCount'] , self.getCount(type='Deletion'), outdic['DEL'][context]['expectedCount'],totalExpectedCount
-            outdic['DEL'][context]['pvalue'] = scipy.stats.binom_test(outdic['DEL'][context]['samCount'], 
-                                                                    self.getCount(type='Deletion'), 
-                                                                    outdic['DEL'][context]['expectedCount']/totalExpectedCount)
-        print self.getCount(type='Deletion'),self.getSimulatedCount(type='Deletion'),totalExpectedCount
+        if self.errordb:
+            logging.info("Generating Context bias statistics for deletions")
+            alphabet = ['A','T','C','G']
+            outdic = AutoVivification()
+            ## Just do trimers before for now.
+            totalExpectedCount = self.getExpectedCount(type="Deletion")
+            cnt = 0
+            for context in kmerCombo(kmerLength):
+                cnt += 1
+                logging.info("Calculating stats for context %s : %i of %i" %(context,cnt,4**kmerLength))
+                ## Stats for contexts without q scores
+                outdic['DEL'][context]['samCount'] = self.getCount(kmerBefore=context,type='Deletion')
+                logging.info("Found %i deletions for context %s " % (outdic['DEL'][context]['samCount'],context))
+                outdic['DEL'][context]['expectedCount'] = self.getExpectedCount(kmerBefore=context,type='Deletion')
+                outdic['DEL'][context]['simCount'] = self.getSimulatedCount(kmerBefore=context,type='Deletion')
+                logging.info("Expected %i deletions for context %s " % (outdic['DEL'][context]['expectedCount'],context))
 
-        logging.info("Generating readable output for Deletion bias Stats")
-        outputList = []
-        outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
-        for context in kmerCombo(kmerLength):
-            row = [context] + [outdic['DEL'][context][t] for t in outputListHeader]
-            outputList.append(row)
-        self.contextDELStats = pd.DataFrame(outputList, columns=['ContextTrue']+outputListHeader)
+                outdic['DEL'][context]['expectedOccurancyofContext'] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
+                outdic['DEL'][context]['observedOccurancyofContext'] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
+                logging.info("Expected %i occurances of %s ; found %i" % (outdic['DEL'][context]['expectedOccurancyofContext'],context,outdic['DEL'][context]['observedOccurancyofContext'] ))
 
-        ## Adjust the p-values for multiple testing
-        stats = importr('stats')
-        p_adjust = stats.p_adjust(FloatVector(list(self.contextDELStats['pvalue'])), method = 'BH')
-        self.contextDELStats['pvalue-adjust'] = p_adjust
-        self.contextDELStats = self.contextDELStats.sort(['pvalue'],ascending=True)
-        outfile = self.opt.outDir + 'contextDELStats_kmer%i.dat' % kmerLength
-        logging.info("Writing context bias stats to %s" % (outfile))
-        self.contextDELStats.to_csv(path_or_buf=outfile,sep='\t') 
+                outdic['DEL'][context]['avgQual'] = round(self.getContextMeanQualScore(kmer=context),2)
+                logging.info("Context %s had an average quality of %f" % (context,outdic['DEL'][context]['avgQual']))
+                if totalExpectedCount:
+                    outdic['DEL'][context]['pvalue'] = scipy.stats.binom_test(outdic['DEL'][context]['samCount'], 
+                                                                            self.getCount(type='Deletion'), 
+                                                                            outdic['DEL'][context]['expectedCount']/totalExpectedCount)
+                else:
+                    outdic['DEL'][context]['pvalue'] = 1
+            logging.info("Generating readable output for Deletion bias Stats")
+            outputList = []
+            outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
+            for context in kmerCombo(kmerLength):
+                row = [context] + [outdic['DEL'][context][t] for t in outputListHeader]
+                outputList.append(row)
+            self.contextDELStats = pd.DataFrame(outputList, columns=['ContextTrue']+outputListHeader)
+
+            ## Adjust the p-values for multiple testing
+            stats = importr('stats')
+            p_adjust = stats.p_adjust(FloatVector(list(self.contextDELStats['pvalue'])), method = 'BH')
+            self.contextDELStats['pvalue-adjust'] = p_adjust
+            self.contextDELStats = self.contextDELStats.sort(['pvalue'],ascending=True)
+            outfile = self.opt.outDir + 'contextDELStats_kmer%i.dat' % kmerLength
+            logging.info("Writing context bias stats to %s" % (outfile))
+            self.contextDELStats.to_csv(path_or_buf=outfile,sep='\t')
+        else:
+            logging.warning("Can't generate insertion statistics without mongoDB")
+
 
     def INSTransitionStats(self,kmerLength=3):
         """
         Generate some stats about the context in which insertions occur 
         We want to know if certain kmer contexts occur more frequently before insetions then would by chance
         """
-        logging.info("Generating Context bias statistics for insertions")
-        alphabet = ['A','T','C','G']
-        outdic = AutoVivification()
-        ## Just do trimers before for now.
-        totalExpectedCount = self.getExpectedCount(type="Insertion")
-        cnt = 0
-        for context in kmerCombo(kmerLength):
-            cnt += 1
-            logging.info("Calculating stats for context %s : %i of %i" %(context,cnt,4**kmerLength))
-            ## Stats for contexts without q scores
-            outdic['INS'][context]['samCount'] = self.getCount(kmerBefore=context,type='Insertion')
-            outdic['INS'][context]['simCount'] = self.getSimulatedCount(kmerBefore=context,type='Insertion')
-            outdic['INS'][context]['expectedCount'] = self.getExpectedCount(kmerBefore=context,type='Insertion')
-            outdic['INS'][context]['expectedOccurancyofContext'] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
-            outdic['INS'][context]['observedOccurancyofContext'] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
-            outdic['INS'][context]['avgQual'] = round(self.getContextMeanQualScore(kmer=context),2)
-            # print outdic['INS'][context]['samCount'] , self.getCount(type='Insertion'), outdic['INS'][context]['expectedCount'],totalExpectedCount
-            outdic['INS'][context]['pvalue'] = scipy.stats.binom_test(outdic['INS'][context]['samCount'], 
-                                                                    self.getCount(type='Insertion'), 
-                                                                    outdic['INS'][context]['expectedCount']/totalExpectedCount)
+        if self.errordb:
+
+            logging.info("Generating Context bias statistics for insertions")
+            alphabet = ['A','T','C','G']
+            outdic = AutoVivification()
+            ## Just do trimers before for now.
+            totalExpectedCount = self.getExpectedCount(type="Insertion")
+            cnt = 0
+            for context in kmerCombo(kmerLength):
+                cnt += 1
+                logging.info("Calculating stats for context %s : %i of %i" %(context,cnt,4**kmerLength))
+                ## Stats for contexts without q scores
+                outdic['INS'][context]['samCount'] = self.getCount(kmerBefore=context,type='Insertion')
+                logging.info("%i insertions found " % outdic['INS'][context]['samCount'] )
+                outdic['INS'][context]['simCount'] = self.getSimulatedCount(kmerBefore=context,type='Insertion')
+                outdic['INS'][context]['expectedCount'] = self.getExpectedCount(kmerBefore=context,type='Insertion')
+                outdic['INS'][context]['expectedOccurancyofContext'] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
+                outdic['INS'][context]['observedOccurancyofContext'] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
+                outdic['INS'][context]['avgQual'] = round(self.getContextMeanQualScore(kmer=context),2)
+                if totalExpectedCount:
+                    outdic['INS'][context]['pvalue'] = scipy.stats.binom_test(outdic['INS'][context]['samCount'], 
+                                                                            self.getCount(type='Insertion'), 
+                                                                            outdic['INS'][context]['expectedCount']/totalExpectedCount)
+                else:
+                    outdic['INS'][context]['pvalue'] = 1
 
 
-        logging.info("Generating readable output for Insertion bias Stats")
-        outputList = []
-        outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
-        for context in kmerCombo(kmerLength):
-            row = [context] + [outdic['INS'][context][t] for t in outputListHeader]
-            outputList.append(row)
-        self.contextINSStats = pd.DataFrame(outputList, columns=['ContextTrue']+outputListHeader)
+            logging.info("Generating readable output for Insertion bias Stats")
+            outputList = []
+            outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
+            for context in kmerCombo(kmerLength):
+                row = [context] + [outdic['INS'][context][t] for t in outputListHeader]
+                outputList.append(row)
+            self.contextINSStats = pd.DataFrame(outputList, columns=['ContextTrue']+outputListHeader)
 
-        ## Adjust the p-values for multiple testing
-        stats = importr('stats')
-        p_adjust = stats.p_adjust(FloatVector(list(self.contextINSStats['pvalue'])), method = 'BH')
-        self.contextINSStats['pvalue-adjust'] = p_adjust
-        self.contextINSStats = self.contextINSStats.sort(['pvalue'],ascending=True)
-        outfile = self.opt.outDir + 'contextINSStats_kmer%i.dat' % kmerLength
-        logging.info("Writing context bias stats to %s" % (outfile))
-        self.contextINSStats.to_csv(path_or_buf=outfile,sep='\t') 
+            ## Adjust the p-values for multiple testing
+            stats = importr('stats')
+            p_adjust = stats.p_adjust(FloatVector(list(self.contextINSStats['pvalue'])), method = 'BH')
+            self.contextINSStats['pvalue-adjust'] = p_adjust
+            self.contextINSStats = self.contextINSStats.sort(['pvalue'],ascending=True)
+            outfile = self.opt.outDir + 'contextINSStats_kmer%i.dat' % kmerLength
+            logging.info("Writing context bias stats to %s" % (outfile))
+            self.contextINSStats.to_csv(path_or_buf=outfile,sep='\t') 
+        else:
+            logging.warning("Can't generate insertion statistics without mongoDB ")
 
     def SNPTransitionStats(self):
         """
         generate some statistics of transition probabilites
         """
-        logging.info("Generating Context bias statistics")
-        alphabet = ['A','T','C','G']
+        if self.errordb:
+            logging.info("Generating Context bias statistics")
+            alphabet = ['A','T','C','G']
 
-        logging.info("Generating unique list of quality scores")
-        qscores = unique([d['qual'] for d in self.errordb['errors'].find({'qual':{'$exists':1},'type':'SNP' } )])
-        outdic = AutoVivification()
-        outDicContextOnly = AutoVivification()
-        samCount = 0
-        simCount = 0 
-        expectedCount = 0
-        totalExpectedCount = self.getExpectedCount()
-        cnt = 0
-        for before in alphabet:
-            for truth in alphabet:
-                for after in alphabet:
-                    context = before + truth + after
-                    cnt += 1
-                    logging.info("Calculating stats for context %s : %i of 64" %(context,cnt))
+            logging.info("Generating unique list of quality scores")
+            qscores = unique([d['qual'] for d in self.errordb['errors'].find({'qual':{'$exists':1},'type':'SNP' } )])
+            outdic = AutoVivification()
+            outDicContextOnly = AutoVivification()
+            samCount = 0
+            simCount = 0 
+            expectedCount = 0
+            totalExpectedCount = self.getExpectedCount()
+            cnt = 0
+            for before in alphabet:
+                for truth in alphabet:
+                    for after in alphabet:
+                        context = before + truth + after
+                        cnt += 1
+                        logging.info("Calculating stats for context %s : %i of 64" %(context,cnt))
 
-                    for emission in alphabet:
-                        if not truth == emission:
-                            ## Stats for contexts without q scores
-                            outDicContextOnly['SNP'][context]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
-                                                                                    kmerBefore=before,kmerAfter=after)
-                            outDicContextOnly['SNP'][context]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
-                                                                                    kmerBefore=before,kmerAfter=after)
-                            outDicContextOnly['SNP'][context]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
-                                                                                    kmerBefore=before,kmerAfter=after)
+                        for emission in alphabet:
+                            if not truth == emission:
+                                ## Stats for contexts without q scores
+                                outDicContextOnly['SNP'][context]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
+                                                                                        kmerBefore=before,kmerAfter=after)
+                                outDicContextOnly['SNP'][context]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
+                                                                                        kmerBefore=before,kmerAfter=after)
+                                outDicContextOnly['SNP'][context]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
+                                                                                        kmerBefore=before,kmerAfter=after)
 
-                            outDicContextOnly['SNP'][context]['expectedOccurancyofContext'][emission] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
-                            outDicContextOnly['SNP'][context]['observedOccurancyofContext'][emission] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
-                            outDicContextOnly['SNP'][context]['avgQual'][emission] = round(self.getContextMeanQualScore(kmer=context),2)
+                                outDicContextOnly['SNP'][context]['expectedOccurancyofContext'][emission] = int(round(self.probKmerRef(context) * self.readCounter['totalAlignedBases']))
+                                outDicContextOnly['SNP'][context]['observedOccurancyofContext'][emission] = int(round(self.getFreqKmer(context) * self.readCounter['totalAlignedBases']))
+                                outDicContextOnly['SNP'][context]['avgQual'][emission] = round(self.getContextMeanQualScore(kmer=context),2)
 
-                            outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], self.getCount(type='SNP'), outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
-                            if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
-                                outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
-                            ## Stats for contexts with q scores
-                            
-                            for qscore in qscores:
-                                outdic['SNP'][context][qscore]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
-                                                                                kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
-                                outdic['SNP'][context][qscore]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
-                                                                                kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
-                                outdic['SNP'][context][qscore]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
-                                                                                kmerBefore=before,kmerAfter=after,qual=qscore)
-                                outdic['SNP'][context][qscore]['pvalue'][emission] = float(scipy.stats.binom_test(outdic['SNP'][context][qscore]['samCount'][emission], totalExpectedCount, outdic['SNP'][context][qscore]['expectedCount'][emission]/totalExpectedCount) )
+                                outDicContextOnly['SNP'][context]['pvalue'][emission] = scipy.stats.binom_test(outDicContextOnly['SNP'][context]['samCount'][emission], self.getCount(type='SNP'), outDicContextOnly['SNP'][context]['expectedCount'][emission]/totalExpectedCount)
+                                if (outDicContextOnly['SNP'][context]['samCount'][emission]) > 0:
+                                    outDicContextOnly['SNP'][context]['expectedDiff'][emission] = round((float( outDicContextOnly['SNP'][context]['samCount'][emission]) - float(outDicContextOnly['SNP'][context]['expectedCount'][emission])) ,2)
+                                ## Stats for contexts with q scores
                                 
-                                samCount +=  outdic['SNP'][context][qscore]['samCount'][emission]
-                                simCount += outdic['SNP'][context][qscore]['simCount'][emission]
-                                expectedCount += outdic['SNP'][context][qscore]['expectedCount'][emission]
-                                # if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
-                                    # outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
-                    logging.info("p-values for context %s %s" %(context,outDicContextOnly['SNP'][context]['pvalue'].values()))
+                                # for qscore in qscores:
+                                #     outdic['SNP'][context][qscore]['samCount'][emission] = self.getCount(truth=truth,emission=emission,
+                                #                                                     kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
+                                #     outdic['SNP'][context][qscore]['simCount'][emission] = self.getSimulatedCount(truth=truth,emission=emission,
+                                #                                                     kmerBefore=before,kmerAfter=after,qualRange=[qscore,qscore])
+                                #     outdic['SNP'][context][qscore]['expectedCount'][emission] = self.getExpectedCount(truth=truth,emission=emission,
+                                #                                                     kmerBefore=before,kmerAfter=after,qual=qscore)
+                                #     outdic['SNP'][context][qscore]['pvalue'][emission] = float(scipy.stats.binom_test(outdic['SNP'][context][qscore]['samCount'][emission], totalExpectedCount, outdic['SNP'][context][qscore]['expectedCount'][emission]/totalExpectedCount) )
+                                    
+                                #     samCount +=  outdic['SNP'][context][qscore]['samCount'][emission]
+                                #     simCount += outdic['SNP'][context][qscore]['simCount'][emission]
+                                #     expectedCount += outdic['SNP'][context][qscore]['expectedCount'][emission]
+                                    # if (outdic['SNP'][context][qscore]['samCount'][emission]) > 0:
+                                        # outdic['SNP'][context][qscore]['expectedDiff'][emission] = round((float( outdic['SNP'][context][qscore]['samCount'][emission]) - float(outdic['SNP'][context][qscore]['expectedCount'][emission])) ,2)
+                        # logging.info("p-values for context %s %s" %(context,outDicContextOnly['SNP'][context]['pvalue'].values()))
 
 
 
-        ## Create friendly output
 
-        ##                      simCount     ExptCount   SamCount    pvalue  pvalue-corrected
-        ## Context ContextOut
-        ## AAA  ATC 123 122     124 0.05    0.2
-        ## ...
-        logging.info("Generating readable output")
-        outputList = []
-        outputWithQscoresList = []
-        outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
-        for before in alphabet:
-            for truth in alphabet:
-                for after in alphabet:
-                    for emission in alphabet:
-                        if not truth == emission:
-                            context = before + truth + after
-                            contextOut = before + emission + after
-                            row = [context,contextOut] + [outDicContextOnly['SNP'][context][t][emission] for t in outputListHeader]
-                            outputList.append(row)
-                            for qscore in qscores:
-                                row = [context,contextOut,qscore] + [outdic['SNP'][context][qscore][t][emission] for t in ['simCount','samCount','expectedCount','pvalue']]
-                                outputWithQscoresList.append(row)
-        self.contextStats = pd.DataFrame(outputList, columns=['ContextTrue','ContextEmit']+outputListHeader)
-        self.contextQualStats = pd.DataFrame(outputWithQscoresList, columns=['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount','pvalue'])
+            ## Create friendly output
 
-        ## Adjust the p-values for multiple testing
-        stats = importr('stats')
-        p_adjust = stats.p_adjust(FloatVector(list(self.contextStats['pvalue'])), method = 'BH')
-        p_adjustQ = stats.p_adjust(FloatVector(list(self.contextQualStats['pvalue'])), method = 'BH')
-        
-        self.contextStats['pvalue-adjust'] = p_adjust
-        self.contextQualStats['pvalue-adjust'] = p_adjustQ
+            ##                      simCount     ExptCount   SamCount    pvalue  pvalue-corrected
+            ## Context ContextOut
+            ## AAA  ATC 123 122     124 0.05    0.2
+            ## ...
+            logging.info("Generating readable output")
+            outputList = []
+            outputWithQscoresList = []
+            outputListHeader = ['avgQual','expectedOccurancyofContext','observedOccurancyofContext','simCount','samCount','expectedCount','pvalue']
+            for before in alphabet:
+                for truth in alphabet:
+                    for after in alphabet:
+                        for emission in alphabet:
+                            if not truth == emission:
+                                context = before + truth + after
+                                contextOut = before + emission + after
+                                row = [context,contextOut] + [outDicContextOnly['SNP'][context][t][emission] for t in outputListHeader]
+                                outputList.append(row)
+                                # for qscore in qscores:
+                                #     row = [context,contextOut,qscore] + [outdic['SNP'][context][qscore][t][emission] for t in ['simCount','samCount','expectedCount','pvalue']]
+                                #     outputWithQscoresList.append(row)
+            self.contextStats = pd.DataFrame(outputList, columns=['ContextTrue','ContextEmit']+outputListHeader)
+            # self.contextQualStats = pd.DataFrame(outputWithQscoresList, columns=['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount','pvalue'])
+
+            ## Adjust the p-values for multiple testing
+            stats = importr('stats')
+            p_adjust = stats.p_adjust(FloatVector(list(self.contextStats['pvalue'])), method = 'BH')
+            p_adjustQ = stats.p_adjust(FloatVector(list(self.contextQualStats['pvalue'])), method = 'BH')
+            
+            self.contextStats['pvalue-adjust'] = p_adjust
+            # self.contextQualStats['pvalue-adjust'] = p_adjustQ
 
 
 
-        self.contextStats = self.contextStats.sort(['pvalue'],ascending=True)
-        self.contextQualStats = self.contextQualStats.sort(['pvalue'],ascending=True)
-        
-        outfile = self.opt.outDir + 'contextStats.dat'
-        logging.info("Writing context bias stats to %s" % (outfile))
-        self.contextStats.to_csv(path_or_buf=outfile,sep='\t') 
+            self.contextStats = self.contextStats.sort(['pvalue'],ascending=True)
+            # self.contextQualStats = self.contextQualStats.sort(['pvalue'],ascending=True)
+            
+            outfile = self.opt.outDir + 'contextStats.dat'
+            logging.info("Writing context bias stats to %s" % (outfile))
+            self.contextStats.to_csv(path_or_buf=outfile,sep='\t') 
 
-        
-        outfile = self.opt.outDir + 'contextQualityScoreStats.dat'
-        logging.info("Writing context and qual score bias stats to %s" % (outfile))
-        self.contextQualStats.to_csv(path_or_buf=outfile,sep='\t') 
-
+            
+            # outfile = self.opt.outDir + 'contextQualityScoreStats.dat'
+            # logging.info("Writing context and qual score bias stats to %s" % (outfile))
+            # self.contextQualStats.to_csv(path_or_buf=outfile,sep='\t') 
+        else:
+            logging.warning("Can't generate insertion statistics without mongoDB ")
                         
     
 
@@ -1340,13 +1284,22 @@ class counter():
                 query['tlen'] = {'$lte':tlenRange[1],'$gte':tlenRange[0]}
             else:
                 query['tlen'] = tlenRange
-        
-        mongoPointer = self.errordb[collection].find(query)
-        if returnList:
-            errorList = self.errordb[collection].find_errors(query)
-            return mongoPointer.count(),errorList
+        if self.errordb:
+            mongoPointer = self.errordb[collection].find(query)
+            if returnList:
+                errorList = self.errordb[collection].find_errors(query)
+                return mongoPointer.count(),errorList
+            else:
+                return mongoPointer.count()
         else:
-            return mongoPointer.count()
+            logging.warning("Counting is more efficient with a local mongoDB instance running")
+            if len(query) == 2 and "true" in query and "emission" in query:
+                return sum(1 for e in self.errorList if (e.true == query["true"] and e.emission == query["emission"] )  ) 
+            elif len(query) == 2 and "type" in query and "tlen" in query:
+                return sum(1 for e in self.errorList if (e.errorType == query["type"] and e.tlen == query["tlen"] )  )
+            else:
+                raise NotImplementedError("Without a mongoDB instance running this query cannot be calculated")
+
 
 
 class db_summary():
@@ -1367,7 +1320,11 @@ class db_summary():
     def getAllQualScores(self):
         "Returns a list of quality scores of all the bases"
         logging.info("Extracting Qscores from samfile")
-        return [asciiToInt(i) for i in list("".join(read.qual for read in pysam.Samfile( self.opt.samfile ).fetch()))]
+        asciiList = []
+        for read in pysam.Samfile( self.opt.samfile ).fetch():
+            if random.random() <= self.opt.percentageOfReadsConsidered:
+                asciiList.extend( list("".join(read.qual)) )
+        return [asciiToInt(i) for i in asciiList]
 
     def errorDistribution(self):
         ed =  [doc['readPer'] for doc in self.errordb['errors'].find(query={},filt={'readPer'})]
@@ -1399,7 +1356,7 @@ class db_summary():
     def qualDistribution(self):
         if not self.qscores:
             self.qscores = self.getAllQualScores()
-
+        logging.info("Plotting quality score distribution")
         densityPlotterFromLists(dic={'QualDistribution':self.qscores},opt=self.opt,filename='QualDistribution_dens').plot()
         densityPlotterFromLists(dic={'QualDistribution':self.qscores},opt=self.opt,filename='QualDistribution_hist').plot(geom='hist')
 
@@ -1528,15 +1485,9 @@ class samReader():
         """
         Checks read segment for SNP errors. called when cigarstring = M:N 
         """
-
-        readSeg = popLong(self.__currentReadList,0,N)
-        refSeg = popLong(self.__currentRefReadList,0,N)
-        qualSeg = popLong(self.__currentQualList,0,N)
-
-        self.currentRead.extend(readSeg)
-        self.currentRefRead.extend(refSeg)
-        self.currentQual.extend(qualSeg)
-
+        self.currentRead.extend(popLong(self.__currentReadList,0,N))
+        self.currentRefRead.extend(popLong(self.__currentRefReadList,0,N))
+        self.currentQual.extend(popLong(self.__currentQualList,0,N))
         self.__readPos += N
         self.__readPosIndex += N  
 
@@ -1547,10 +1498,8 @@ class samReader():
 
         ## add _ to reference
         insSeg = popLong(self.__currentReadList,0,N)
-        insQualSeg = popLong(self.__currentQualList,0,N)
-
         self.currentRead.extend(insSeg)
-        self.currentQual.extend(insQualSeg)
+        self.currentQual.extend(popLong(self.__currentQualList,0,N))
         self.currentRefRead.extend('_'*len(insSeg))
         self.__readPos += N
     def __checkDeletion(self,N):
@@ -1584,7 +1533,8 @@ class samReader():
         """
         Checks HardClipped read segment for errors. called when cigarstring = H:N 
         """
-        logging.warning("We shouldn't have HardClipped bases in Samfile")
+        pass
+        # logging.warning("We shouldn't have HardClipped bases in Samfile")
     def __checkPadding(self,N):
         """
         Checks Padding read segment for errors. called when cigarstring = P:N 

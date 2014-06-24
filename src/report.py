@@ -8,13 +8,30 @@ PROJECT_PATH = os.path.join(BASE_DIR,os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
 print PROJECT_PATH
 class Reporter(object):
-	"""docstring for Reporter"""
-	def __init__(self,opt,outfileDir,counter,latexTemplate="../data/template.tex",):
+	"""Generate an error report for ONT reads
+
+	...
+    Parameters
+    ----------
+    opt : Optparse.opt
+        Options from Optparse
+    outfileDir : str
+    	Output file directory 
+    counter : object
+    	Couter object
+    firstRead : object
+    	arbirtrary aligned read from (s/b)amfile
+    latexTemplate : str
+    	Path to LaTeX report template
+
+	"""
+	def __init__(self,opt,outfileDir,counter,firstRead=None,latexTemplate="../data/template.tex",):
 		self.template = open(latexTemplate,'r')
 		self.docString =  TexString(string=self.template.read())
 		self.outfileDir = outfileDir
 		self.opt = opt
 		self.counter = counter
+		self.read = firstRead
 
 		self.latexWriten = False
 		self.imgDir = PROJECT_PATH + '/proto_err/results/%s/img/' % (self.opt.runID  )
@@ -39,6 +56,9 @@ class Reporter(object):
 		## Metadata
 		self.docString.replace(k='runID',v=self.opt.runID)
 		self.docString.replace(k='options',v=self.renderOptions())
+		## Aligned read
+		self.docString.replace(k='refRead',v=self.read.refRead,escape=False)
+		self.docString.replace(k='alignedRead',v=self.read.read,escape=False)
 		## Images
 		self.docString.replace(k="SNPQualCalibration",v='%sqscoreCalibration_SNP.png' % (self.imgDir),escape=False)
 		self.docString.replace(k="INSQualCalibration",v='%sqscoreCalibration_Insertion.png' % (self.imgDir),escape=False)

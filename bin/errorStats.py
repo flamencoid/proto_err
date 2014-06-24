@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-## A script to take a sam file of aligned reads and do some stats on errors
+#! /usr/bin/env python
+## A script to take a sam file of aligned reads and generate an error report
 
 import sys
 import os
@@ -11,7 +11,7 @@ from errorCount import errorReader,counter,db_summary,samReader
 from Bio import SeqIO
 from query import errordb
 import time
-#from report import Reporter
+from report import Reporter
 from fastaIO import getRef
 start = time.clock()
 
@@ -47,7 +47,7 @@ opt.dbName = 'proto_err_' + opt.runID
 opt.observedErrorDBName = 'errors'
 opt.observedReadDBName = 'alignedReads'
 ref = getRef(opt.refFilename)
-observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName )
+# observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName )
 
 
 # Generate read documents for uploading to db
@@ -58,18 +58,43 @@ observedReadsDB = errordb(database=opt.dbName,collection=opt.observedReadDBName 
 # 		'qual':read.qual,'cigar':read.alignedRead.cigarstring}
 # 		observedReadsDB.insert(post)
 
+## Get the first read
+reader = samReader(samfile=opt.samfile,ref=ref)
+read = reader.next()
+ml=0
+# for i,r in enumerate(read.samfile):
+# 	print i
+# 	l = r.alen
+# 	if l > ml:
+# 		ml = l
+# 		print ml
+
+# for r in samReader(samfile=opt.samfile,ref=ref):
+# 	l = r.alignedRead.alen
+# 	if l > ml:
+# 		ml = l
+# 		print ml
+
+### When we have a lot of data we only want to consider a subset of data when calculating averages.
+### This sets the percentage of reads we consider at random
+opt.percentageOfReadsConsidered = 0.0001 
+
 
 if opt.force:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=True)
 else:
 	errorCounter = counter(ref,opt,samfile=opt.samfile,makeDB=False)
-errorCounter.INSTransitionStats()
-errorCounter.DELTransitionStats()
-
-errorCounter.SNPTransitionStats()
-errorCounter.summary()
+# logging.info("INDEL Transitions")
+# errorCounter.INSTransitionStats()
+# errorCounter.DELTransitionStats()
+# logging.info("SNP Transitions")
+# errorCounter.SNPTransitionStats()
+# logging.info("Summary statistics")
+# errorCounter.summary()
+logging.info("Generating histograms")
 errorCounter.plotHist()
-# # ## Do some meta and summary statistics
+# # # ## Do some meta and summary statistics
+logging.info("More summary statistics")
 summ = db_summary(opt)
 summ.errorDistribution()
 summ.qualDistribution()
@@ -77,8 +102,8 @@ summ.qScoreCalibrationTest('SNP')
 summ.qScoreCalibrationTest('Insertion')
 summ.qScoreCalibrationTest('Deletion')
 
-#report = Reporter(opt=opt,counter=errorCounter,outfileDir= opt.outDir ,latexTemplate='../data/template.tex')
-#report.generatePdfReport()
+report = Reporter(opt=opt,counter=errorCounter,outfileDir= opt.outDir ,latexTemplate='../data/template.tex',firstRead=read)
+report.generatePdfReport()
 
 end = time.clock()
 logging.info("errorStats.py took %f seconds to run" % (end-start))
