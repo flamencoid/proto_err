@@ -201,7 +201,11 @@ class error():
             return asciiToInt(self.read.qqual[self.readPos-1])
         elif self.isInsertion:
             ## If it's an insertion return the mean quality across the indel + previous base
-            qualList = [asciiToInt(self.read.qqual[i]) for i in range(self.readPos-1,self.readPos + self.tlen)]
+            try:
+                qualList = [asciiToInt(self.read.qqual[i]) for i in range(self.readPos-1,self.readPos + self.tlen)]
+            except IndexError:
+                print "Index Error calculating insertion quality score"
+                qualList = [asciiToInt(self.read.qqual[ self.readPos-1 ] )]
             meanqual = float(sum(qualList)) / float(len(qualList))
         else:
             return asciiToInt(self.read.qqual[self.readPos])

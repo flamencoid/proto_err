@@ -25,16 +25,16 @@ class Reporter(object):
     	Path to LaTeX report template
 
 	"""
-	def __init__(self,opt,outfileDir,counter,firstRead=None,latexTemplate="../data/template.tex",):
+	def __init__(self,opt,outfileDir,imgDir,counter,basicStats=None,latexTemplate="../data/template.tex",):
 		self.template = open(latexTemplate,'r')
 		self.docString =  TexString(string=self.template.read())
 		self.outfileDir = outfileDir
 		self.opt = opt
 		self.counter = counter
-		self.read = firstRead
 
 		self.latexWriten = False
-		self.imgDir = PROJECT_PATH + '/proto_err/results/%s/img/' % (self.opt.runID  )
+		self.imgDir = imgDir
+		self.basicStats = basicStats
 		
 
 	def renderOptions(self):
@@ -56,16 +56,23 @@ class Reporter(object):
 		## Metadata
 		self.docString.replace(k='runID',v=self.opt.runID)
 		self.docString.replace(k='options',v=self.renderOptions())
+		## Basic stats
+		if self.basicStats:
+			self.docString.replace(k='numReads',v=self.basicStats.get('readsConsidered'))
+			self.docString.replace(k='totalReads',v=self.basicStats.get('totalNumberofReads'))
+			self.docString.replace(k='snps',v= (float(100*self.basicStats.get('snps')) )/self.basicStats.get('readsConsidered') )
+			self.docString.replace(k='ins',v=float(100*self.basicStats.get('del')) / self.basicStats.get('readsConsidered'))
+			self.docString.replace(k='del',v=float(100*self.basicStats.get('ins')) / self.basicStats.get('readsConsidered'))
+
 		## Aligned read
-		self.docString.replace(k='refRead',v=self.read.refRead,escape=False)
-		self.docString.replace(k='alignedRead',v=self.read.read,escape=False)
+		self.docString.replace(k='msf',v=self.opt.outDir+"align.msf",escape=False)
 		## Images
 		self.docString.replace(k="SNPQualCalibration",v='%sqscoreCalibration_SNP.png' % (self.imgDir),escape=False)
 		self.docString.replace(k="INSQualCalibration",v='%sqscoreCalibration_Insertion.png' % (self.imgDir),escape=False)
 		self.docString.replace(k="DELQualCalibration",v='%sqscoreCalibration_Deletion.png' % (self.imgDir),escape=False)
 		self.docString.replace(k="errorDistribution_hist",v='%serrorDistribution_hist.png' % (self.imgDir),escape=False)
 		self.docString.replace(k="QualDistribution_hist",v='%sQualDistribution_hist.png' % (self.imgDir),escape=False)
-		self.docString.replace(k="SNP_observed_simulated_expected_transition",v='%sSNP_observed_simulated_expected_transition.png' % (self.imgDir),escape=False)
+		self.docString.replace(k="SNP_observed_expected_transition",v='%sSNP_observed_vs_expected_transition.png' % (self.imgDir),escape=False)
 		self.docString.replace(k="deletion_size_bar",v='%sdeletion_size_bar.png' % (self.imgDir),escape=False)
 		self.docString.replace(k="insertion_size_bar",v='%sinsertion_size_bar.png' % (self.imgDir),escape=False)
 		## Tables
@@ -82,11 +89,11 @@ class Reporter(object):
 		self.docString.replace(k="significantContext1",v=topTenContext1.to_latex(),escape=False)
 		self.docString.replace(k="significantContext2",v=topTenContext2.to_latex(),escape=False)
 		## Contexts with high significant differecne
-		topTenContext = self.counter.contextQualStats[:10]
-		topTenContext1 = topTenContext[['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount']]
-		topTenContext2 = topTenContext[['ContextTrue','ContextEmit','qscore','pvalue','pvalue-adjust']]
-		self.docString.replace(k="significantQualContext1",v=topTenContext1.to_latex(),escape=False)
-		self.docString.replace(k="significantQualContext2",v=topTenContext2.to_latex(),escape=False)
+		# topTenContext = self.counter.contextQualStats[:10]
+		# topTenContext1 = topTenContext[['ContextTrue','ContextEmit','qscore','simCount','samCount','expectedCount']]
+		# topTenContext2 = topTenContext[['ContextTrue','ContextEmit','qscore','pvalue','pvalue-adjust']]
+		# self.docString.replace(k="significantQualContext1",v=topTenContext1.to_latex(),escape=False)
+		# self.docString.replace(k="significantQualContext2",v=topTenContext2.to_latex(),escape=False)
 		## Contexts with low Qscore
 		topTenContext = self.counter.contextStats.sort(['avgQual'],ascending=True)[:10]
 		topTenContext1 = topTenContext[['ContextTrue','ContextEmit','avgQual','simCount','samCount','expectedCount']]
@@ -105,14 +112,14 @@ class Reporter(object):
 	def writeLatex(self):
 		self.renderTemplate()
 		logging.info("Writing LaTeX to %s " % (self.outfileDir+'report.tex'))
-		with open(self.outfileDir+'report.tex','w') as outfile:
+		with open(self.outfileDir+'error_report.tex','w') as outfile:
 			outfile.write(self.docString.text)
 		self.latexWriten = True
 
 	def generatePdfReport(self):
 		if not self.latexWriten:
 			self.writeLatex()
-		cmd =  'pdflatex -output-directory=%s %sreport.tex  ' % (self.outfileDir,self.outfileDir)
+		cmd =  'pdflatex -output-directory=%s %serror_report.tex  ' % (self.outfileDir,self.outfileDir)
 		print cmd
 		logging.info("Running %s" % cmd)
 		proc=subprocess.Popen(shlex.split(cmd))

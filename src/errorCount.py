@@ -546,10 +546,11 @@ class counter():
                     expected = self.getExpectedCount(truth=t,emission=e)
                     expectedDic[t + '->' + e] = expected
                     multi[t + '->' + e]['Observed'] = observed
+                    multi[t + '->' + e]['Expected'] = expected
         histPlotter(dic=observedDic,opt=self.opt,filename="SNP_observed_transition").plot()
         histPlotter(dic=expectedDic,opt=self.opt,filename="SNP_expected_transition").plot()
-        # multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
-        multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_simulated_expected_transition").plot()
+        multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_vs_expected_transition").plot()
+        # multiHistPlotter(dic=multi,opt=self.opt,filename="SNP_observed_simulated_expected_transition").plot()
         # # Count deletion kmers
         # # get maximum deletion length
         if self.errordb:
@@ -718,8 +719,10 @@ class counter():
         sumQual = 0
         for qual,count in zip(qual,counts):
             sumQual+= (qual * count)
-
-        meanQual = float(sumQual) / sum(counts)
+        try:
+            meanQual = float(sumQual) / sum(counts)
+        except ZeroDivisionError:
+            meanQual = 0
         return meanQual
         
 
@@ -1158,7 +1161,7 @@ class counter():
             ## Adjust the p-values for multiple testing
             stats = importr('stats')
             p_adjust = stats.p_adjust(FloatVector(list(self.contextStats['pvalue'])), method = 'BH')
-            p_adjustQ = stats.p_adjust(FloatVector(list(self.contextQualStats['pvalue'])), method = 'BH')
+            # p_adjustQ = stats.p_adjust(FloatVector(list(self.contextQualStats['pvalue'])), method = 'BH')
             
             self.contextStats['pvalue-adjust'] = p_adjust
             # self.contextQualStats['pvalue-adjust'] = p_adjustQ
@@ -1316,14 +1319,46 @@ class db_summary():
         self.opt = opt
         self.qscores = False
         self.errorQualList = False
+        ## Count # Reads in Samfile
+        self.readCount = None
+
+    def getBasicStats(self):
+        uniqueReadIdList = []
+        self.stats = {'numBases' : 0,
+                'snps' : 0 ,
+                'ins' : 0 ,
+                'del' : 0,
+                }
+        for error in self.errordb['errors'].find():
+            readID = error.get('readID','')
+            errorType = error.get('type','')
+            if errorType == "SNP":
+                self.stats['snps'] +=1
+            elif errorType == "Insertion":
+                self.stats['ins'] += 1
+            elif errorType == "Deletion":
+                self.stats['del'] += 1
+            if not readID in uniqueReadIdList:
+                uniqueReadIdList.append(readID)
+                self.stats['numBases'] += error.get('readLength',0)
+        
+        self.stats['readsConsidered'] = len(uniqueReadIdList)
+        print self.stats
+        return self.stats
+
+
+
 
     def getAllQualScores(self):
         "Returns a list of quality scores of all the bases"
         logging.info("Extracting Qscores from samfile")
         asciiList = []
+        self.readCount = 0 
         for read in pysam.Samfile( self.opt.samfile ).fetch():
+            self.readCount += 1
             if random.random() <= self.opt.percentageOfReadsConsidered:
                 asciiList.extend( list("".join(read.qual)) )
+        self.stats['totalNumberofReads'] = self.readCount
         return [asciiToInt(i) for i in asciiList]
 
     def errorDistribution(self):

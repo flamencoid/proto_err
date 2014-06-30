@@ -1,0 +1,152 @@
+    TeXshade v1.24
+    >>
+    >> A LaTeX package for setting nucleotide and peptide alignments.
+    >>
+    >> Setting alignments of nucleotides and peptides for publication 
+    >> or presentation purposes  is usually a time consuming two-step 
+    >> process. First, a scientific software is used for the calcula-
+    >> tion of the alignment. This is done in a few minutes. Then, in
+    >> order to highlight special sequence relationships and to label
+    >> positions and regions of interest  a second software with high 
+    >> output capability is needed.
+    >>
+    >> Manipulating sequence alignments with standard word processing
+    >> or graphics programs  takes its time--often several hours--and 
+    >> simple layout changes such as  re-breaking lines,  say from 50
+    >> to 40 residues per line, elongate the working time considerab-
+    >> ly.
+    >> 
+    >> TeXshade is  an alignment shading software  completely written 
+    >> in TeX/LaTeX which can process multiple sequence alignments in
+    >> the MSF, ALN and FASTA file format. It provides in addition to
+    >> common  shading  algorithms  special  shading  modes featuring
+    >> functional aspects, e.g. charge or hydropathy, and a plenitude
+    >> of commands for handling shading colors,  text styles, labels,
+    >> legends and even allows the user to define completely new sha-
+    >> ding modes.  TeXshade  combines  highest  flexibility  and the
+    >> habitual TeX output quality--with reasonable time expenditure.
+    >>
+    Copyright (C)  1999 - 2011  Eric Beitz
+
+
+
+    FOR THE HASTY READER
+
+    Be sure to use a docstrip version 2.4 or later! 
+    Otherwise you will not be able to tex the documentation!
+
+
+
+1 - FILES DISTRIBUTED WITH THIS PACKAGE
+
+    texshade.ins   Batch file, run through LaTeX
+    texshade.dtx   Docstrip archive, run twice through LaTeX
+    tsfaq.tex      Frequently asked questions about TeXshade
+    texshade.txt   This file
+
+    
+  (a) FILES THAT WILL BE GENERATED FROM TEXSHADE.INS
+
+    texshade.sty   LaTeX package
+    texshade.def   Standard definitions
+    AQPDNA.MSF     Example nucleotide alignment file (MSF-format)
+    AQPpro.MSF     Example protein alignment file (MSF-format)
+    AQP_TC.asc     Example T-Coffee shading file
+    AQP2spec.ALN   Example protein alignment file (ALN-format)
+    AQP1.top       Example topology data file generated from PHD
+    AQP1.phd       Example PHD secondary structure file
+    AQP1_HMM.sgl   Example HMMTOP topology data (single line format)
+    AQP1_HMM.ext   Example HMMTOP topology data (extended format)
+    Standard.cod   Standard genetic code definitions
+    Ciliate.cod    Ciliate macronuclear genetic code definitions
+
+
+  (b) FILE THAT WILL BE GENERATED FROM TEXSHADE.DTX
+
+    texshade.dvi   Package documentation
+
+
+
+2 - INSTALLATION
+
+  (a) EXTRACTING FILES FROM THE DOCSTRIP ARCHIVE
+
+    All files  provided by TeXshade  are  compacted to one single file,
+    namely  "texshade.dtx".  To extract the archive run  "texshade.ins"
+    -  which contains the corresponding instructions  -  through LaTeX. 
+    A list of the generated files is given above, see 1(a).
+
+    AGAIN:  Be sure to use a docstrip version 2.4  or later!  Otherwise
+            you will not be able to tex the documentation!
+
+
+  (b) THE DOCUMENTATION
+
+    The file "texshade.dtx" further contains the package documentation.
+    Therefore,  run this file through LaTeX now.  As you will recognize
+    two runs are needed to make proper references within the document.
+
+    TeXshade needs lots of TeX's memory,  so adjust your parameter set-
+    tings to  make TeXshade  feel comfortable.  The documentation  is a
+    good test for this.  (If you encounter problems texing the doc, you
+    should  tex and read section  A  of the FAQ-list  (see d below)  or 
+    download an on-line version  [PDF-, DVI-, or PostScript format]  at 
+    http://homepages.uni-tuebingen.de/beitz/)
+
+    The resulting file "texshade.dvi" can be viewed and printed using a
+    DVI-viewer  which is able to display embedded  PostScript.  Another
+    possibility is to run "texshade.dvi" through DVIPS,  a DVI to Post-
+    Script  converter,  and finally view  and  print the converted file
+    which will be most likely "texshade.ps" with GhostView from the GNU 
+    free software foundation.
+
+    TeXshade makes use of "color.sty" by David Carlisle.  This style is
+    part of the Standard LaTeX Graphics Bundle.  Usually, the bundle is
+    present in  a comprehensive LaTeX installation.  If this is not the
+    case for your system you have to download the package from  a CTAN-
+    server, e.g. ftp.dante.de.
+
+
+  (c) MAKING TEXSHADE.STY AVAILABLE FOR YOUR LATEX SYSTEM
+
+    In the final step,  copy  at  least  the files  "texshade.sty"  and
+    "ciliate.cod" to a directory searched by TeX in order to make these
+    files available for all documents you'll produce in the future. The 
+    remaining files are example files  which are not necessary for run-
+    ning  TeXshade.  Nevertheless,  it would be a good idea to keep all 
+    the files together.
+
+
+  (d) THE FAQ LIST
+
+    The FAQ list contains frequently asked questions about the package.
+    Use it as a helpful source for solving problems with TeXshade.  You
+    get the list by simply running "tsfaq.tex" through LaTeX once.
+
+
+
+3 - CONTACT
+
+    E-Mail:  ebeitz@pharmazie.uni-kiel.de
+    WWW:     http://www.pharmazie.uni-kiel.de/chem/
+             (On-line documentation and updates)
+    Address: Eric Beitz, University of Kiel, Pharmaceutical Chemistry,
+             Gutenbergstrasse 76, D-24118 Kiel (Germany)
+
+
+
+4 - AGREEMENT
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    In order to receive a copy of the GNU General Public License write to
+    the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.

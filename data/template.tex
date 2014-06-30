@@ -17,7 +17,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Bibliography style:
-\usepackage{mathtools}
+%% \usepackage{mathtools}
+\usepackage{../src/texshade/texshade}
 \usepackage{mathptmx}           % Use the Times font.
 \usepackage{graphicx}           % Needed for including graphics.
 \usepackage{url}                % Facility for activating URLs.
@@ -77,15 +78,18 @@
 \title{  Run ID : {{runID}}   }
 \maketitle
 
-\section{MetaData}
+\textbf{MetaData}
 
-%\begin{verbatim}
-	{{options}}
-%\end{verbatim}
-\begin{verbatim}
-{{refRead}}
-{{alignedRead}}
-\end{verbatim}
+{{options}}
+
+\textbf{Basic Error Stats}\\
+Number of reads analysed = {{numReads}} of {{totalReads}}\\
+Number of SNPs per 100 bp = {{snps}}\\
+Number of Deletions per 100 bp = {{del}}\\
+Number of Insertions per 100 bp = {{ins}}\\
+
+
+
 
 
 \section{Quality Score Distributions}
@@ -127,9 +131,9 @@
 	\end{figure}	
 \begin{figure}[!htbp]
 	  \centering
-	  \includegraphics[width=10cm]{{{SNP_observed_simulated_expected_transition}}}
+	  \includegraphics[width=10cm]{{{SNP_observed_expected_transition}}}
 	  \caption{SNP Transitions}
-	  \label{fig:SNP_observed_simulated_expected_transition}
+	  \label{fig:SNP_observed_expected_transition}
 \end{figure}
 	
 
@@ -296,7 +300,12 @@
 \bibliography{template}	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
-\appendix
+\appendix{Read Alignment}
+
+\begin{texshade}{../results/template_last/align.msf}
+% \setends{1}{1.}
+\hideconsensus
+\end{texshade}
 
 
 

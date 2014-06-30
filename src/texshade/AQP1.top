@@ -1,0 +1,14 @@
+
+\feature{bottom}{1}{1..14}{'-'}{int.\ A}
+\feature{top}{1}{15..32}{box[LightGray]:TM1}{}
+\feature{top}{1}{33..49}{,-,}{ext.\ B}
+\feature{top}{1}{50..68}{box[LightGray]:TM2}{}
+\feature{bottom}{1}{69..81}{'-'}{int.\ C}
+\feature{top}{1}{82..106}{box[LightGray]:TM3}{}
+\feature{top}{1}{107..136}{,-,}{ext.\ D}
+\feature{top}{1}{137..154}{box[LightGray]:TM4}{}
+\feature{bottom}{1}{155..168}{'-'}{int.\ E}
+\feature{top}{1}{169..186}{box[LightGray]:TM5}{}
+\feature{top}{1}{187..211}{,-,}{ext.\ F}
+\feature{top}{1}{212..230}{box[LightGray]:TM6}{}
+\feature{bottom}{1}{231..269}{'-'}{int.\ G}

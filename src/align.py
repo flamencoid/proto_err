@@ -22,6 +22,7 @@ def refIndex(reference,stdout=".tmp",algorithm="bwa-mem"):
         cmd_line = "/home/phelimb/tools/last/src/lastdb %s.lastindex %s " % (reference,reference)
         args = shlex.split(cmd_line)
         proc = subprocess.Popen(args)
+        proc.wait()
     return 1
 
 def align(reference, read_file, stdout,algorithm='bwa-mem',
@@ -30,23 +31,28 @@ def align(reference, read_file, stdout,algorithm='bwa-mem',
 
     if algorithm=='bwa-mem':
         logging.info("Aligning reads to reference with bwa-mem")
-        alignCmd = BwaMemAlignCommandline( reference=reference, read_file=read_file)
-        return alignCmd(stdout=stdout)
+        # alignCmd = BwaMemAlignCommandline( reference=reference, read_file=read_file)
+        cmd_line = "bwa mem  -A 3 -B 2 -t 4 -O 3 -E 0 -L 9 -v 3 -T 0 %s %s " % (reference,read_file)
+        args = shlex.split(cmd_line)
+        proc = subprocess.Popen(args,stdout = open(stdout,'w'))
+        proc.wait()
+        return 1
+        # return alignCmd(stdout=stdout)
     elif algorithm=='stampy':
         logging.info("Aligning reads to reference with stampy")
         cmd_line = "%s -g %s -h %s --maxbasequal 60  -M %s" % (exectuablePath,index_name,hash_name,read_file)
         args = shlex.split(cmd_line)
         proc = subprocess.Popen(args,stdout = open(stdout,'w'))
+        proc.wait()
         return 1
     elif algorithm == "last":
         logging.info("Aligning reads to reference with last")
-        cmd_line = "/home/phelimb/tools/last/src/lastal -s 2 -T 0 -Q1 -a 1 %s.lastindex %s " % (reference,read_file)
-        print cmd_line
+        cmd_line = "/home/phelimb/tools/last/src/lastal -Q1 -r5 -q5 -a5 -b1 %s.lastindex %s " % (reference,read_file)
         args = shlex.split(cmd_line)
         proc = subprocess.Popen(args,stdout = open(stdout,'w'))
+        proc.wait()
+        return 1
 
-
-        
 
 class BwaMemAlignCommandline(AbstractCommandline):
     """Command line wrapper for Burrows Wheeler Aligner (BWA) aln.
@@ -75,7 +81,7 @@ class BwaMemAlignCommandline(AbstractCommandline):
         self.program_name = cmd
         self.parameters = \
                 [
-                    _StaticArgument("mem -B 3 -t 4 -O 1 -L 9"),
+                    _StaticArgument("mem -A 3 -B 2 -t 4 -O 3 -E 0 -L 9 -v 3 -T 0"),
                     _Argument(["reference"], "Reference file name",
                               filename=True, is_required=True),
                     _Argument(["read_file"], "Read file name",

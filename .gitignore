@@ -1,3 +1,7 @@
+*.tmp
+birch_venv/
+bvenv
+data/sam/
 *.aux
 *.log
 venv/

@@ -1,0 +1,148 @@
+
+Protein: AQP1
+Length:  269
+N-terminus:  IN
+Number of transmembrane helices: 6
+Transmembrane helices: 14-33 54-73 94-112 139-156 165-184 211-230
+
+Total entropy of the model:  17.0025
+Entropy of the best path:  17.0049
+
+The best path:
+
+     seq  MASEIKKKLF WRAVVAEFLA MTLFVFISIG SALGFNYPLE RNQTLVQDNV    50
+     pred IIIIiiiiii iiiHHHHHHH HHHHHHHHHH HHHooooooo oooooooooo
+
+     seq  KVSLAFGLSI ATLAQSVGHI SGAHSNPAVT LGLLLSCQIS ILRAVMYIIA   100
+     pred oooHHHHHHH HHHHHHHHHH HHHiiiiiii iiiiiiiiii iiiHHHHHHH
+
+     seq  QCVGAIVASA ILSGITSSLL ENSLGRNDLA RGVNSGQGLG IEIIGTLQLV   150
+     pred HHHHHHHHHH HHoooooooo oooooooooo ooooooooHH HHHHHHHHHH
+
+     seq  LCVLATTDRR RRDLGGSAPL AIGLSVALGH LLAIDYTGCG INPARSFGSA   200
+     pred HHHHHHiiii iiiiHHHHHH HHHHHHHHHH HHHHoooooo oooooooooo
+
+     seq  VLTRNFSNHW IFWVGPFIGS ALAVLIYDFI LAPRSSDFTD RMKVWTSGQV   250
+     pred oooooooooo HHHHHHHHHH HHHHHHHHHH iiiiiiiiii iiiiiIIIII
+
+     seq  EEYDLDADDI NSRVEMKPK  269
+     pred IIIIIIIIII IIIIIIIII
+
+Protein: AQP2
+Length:  271
+N-terminus:  IN
+Number of transmembrane helices: 6
+Transmembrane helices: 17-35 44-65 86-104 131-148 157-176 203-224
+
+Total entropy of the model:  17.0017
+Entropy of the best path:  17.0046
+
+The best path:
+
+     seq  MWELRSIAFS RAVLAEFLAT LLFVFFGLGS ALQWASSPPS VLQIAVAFGL    50
+     pred IIIIIIiiii iiiiiiHHHH HHHHHHHHHH HHHHHooooo oooHHHHHHH
+
+     seq  GIGILVQALG HVSGAHINPA VTVACLVGCH VSFLRAAFYV AAQLLGAVAG   100
+     pred HHHHHHHHHH HHHHHiiiii iiiiiiiiii iiiiiHHHHH HHHHHHHHHH
+
+     seq  AAILHEITPV EIRGDLAVNA LHNNATAGQA VTVELFLTMQ LVLCIFASTD   150
+     pred HHHHoooooo oooooooooo oooooooooo HHHHHHHHHH HHHHHHHHii
+
+     seq  ERRGDNLGSP ALSIGFSVTL GHLLGIYFTG CSMNPARSLA PAVVTGKFDD   200
+     pred iiiiiiHHHH HHHHHHHHHH HHHHHHoooo oooooooooo oooooooooo
+
+     seq  HWVFWIGPLV GAIIGSLLYN YLLFPSAKSL QERLAVLKGL EPDTDWEERE   250
+     pred ooHHHHHHHH HHHHHHHHHH HHHHiiiiii iiiiiiiiiI IIIIIIIIII
+
+     seq  VRRRQSVELH SPQSLPRGSK A  271
+     pred IIIIIIIIII IIIIIIIIII I
+
+Protein: AQP3
+Length:  285
+N-terminus:  IN
+Number of transmembrane helices: 6
+Transmembrane helices: 22-41 50-72 103-122 153-172 185-207 238-260
+
+Total entropy of the model:  17.0059
+Entropy of the best path:  17.0075
+
+The best path:
+
+     seq  MNRCGEMLHI RYRLLRQALA ECLGTLILVM FGCGSVAQVV LSRGTHGGFL    50
+     pred IIIIIIiiii iiiiiiiiii iHHHHHHHHH HHHHHHHHHH HooooooooH
+
+     seq  TINLAFGFAV TLAILVAGQV SGAHLNPAVT FAMCFLAREP WIKLPIYTLA   100
+     pred HHHHHHHHHH HHHHHHHHHH HHiiiiiiii iiiiiiiiii iiiiiiiiii
+
+     seq  QTLGAFLGAG IVFGLYYDAI WAFAGNELVV SGPNGTAGIF ATYPSGHLDM   150
+     pred iiHHHHHHHH HHHHHHHHHH HHoooooooo oooooooooo oooooooooo
+
+     seq  VNGFFDQFIG TAALIVCVLA IVDPYNNPVP RGLEAFTVGL VVLVIGTSMG   200
+     pred ooHHHHHHHH HHHHHHHHHH HHiiiiiiii iiiiHHHHHH HHHHHHHHHH
+
+     seq  FNSGYAVNPA RDFGPRLFTA LAGWGSEVFT TGQNWWWVPI VSPLLGSIGG   250
+     pred HHHHHHHooo oooooooooo oooooooooo oooooooHHH HHHHHHHHHH
+
+     seq  VFVYQLMIGC HLEQPPPSTE AENVKLAHMK HKEQI  285
+     pred HHHHHHHHHH iiiiiiiiii iiiiiIIIII IIIII
+
+Protein: AQP4
+Length:  323
+N-terminus:  IN
+Number of transmembrane helices: 6
+Transmembrane helices: 37-57 70-92 123-147 160-177 186-205 232-254
+
+Total entropy of the model:  17.0058
+Entropy of the best path:  17.0091
+
+The best path:
+
+     seq  MSDGAAARRW GKCGPPCSRE SIMVAFKGVW TQAFWKAVTA EFLAMLIFVL    50
+     pred IIIIIIIIII IIIIIIIIII Iiiiiiiiii iiiiiiHHHH HHHHHHHHHH
+
+     seq  LSVGSTINWG GSENPLPVDM VLISLCFGLS IATMVQCFGH ISGGHINPAV   100
+     pred HHHHHHHooo oooooooooH HHHHHHHHHH HHHHHHHHHH HHiiiiiiii
+
+     seq  TVAMVCTRKI SIAKSVFYIT AQCLGAIIGA GILYLVTPPS VVGGLGVTTV   150
+     pred iiiiiiiiii iiiiiiiiii iiHHHHHHHH HHHHHHHHHH HHHHHHHooo
+
+     seq  HGNLTAGHGL LVELIITFQL VFTIFASCDS KRTDVTGSVA LAIGFSVAIG   200
+     pred oooooooooH HHHHHHHHHH HHHHHHHiii iiiiiHHHHH HHHHHHHHHH
+
+     seq  HLFAINYTGA SMNPARSFGP AVIMGNWENH WIYWVGPIIG AVLAGALYEY   250
+     pred HHHHHooooo oooooooooo oooooooooo oHHHHHHHHH HHHHHHHHHH
+
+     seq  VFCPDVELKR RLKEAFSKAA QQTKGSYMEV EDNRSQVETE DLILKPGVVH   300
+     pred HHHHiiiiii iiiiiiiiiI IIIIIIIIII IIIIIIIIII IIIIIIIIII
+
+     seq  VIDIDRGDEK KGKDSSGEVL SSV  323
+     pred IIIIIIIIII IIIIIIIIII III
+
+Protein: AQP5
+Length:  265
+N-terminus:  IN
+Number of transmembrane helices: 6
+Transmembrane helices: 13-32 59-78 87-110 131-149 158-177 204-228
+
+Total entropy of the model:  17.0020
+Entropy of the best path:  17.0052
+
+The best path:
+
+     seq  MKKEVCSLAF FKAVFAEFLA TLIFVFFGLG SALKWPSALP TILQISIAFG    50
+     pred IIIIIIIIii iiHHHHHHHH HHHHHHHHHH HHoooooooo oooooooooo
+
+     seq  LAIGTLAQAL GPVSGGHINP AITLALLIGN QISLLRAVFY VAAQLVGAIA   100
+     pred ooooooooHH HHHHHHHHHH HHHHHHHHii iiiiiiHHHH HHHHHHHHHH
+
+     seq  GAGILYWLAP LNARGNLAVN ALNNNTTPGK AMVVELILTF QLALCIFSST   150
+     pred HHHHHHHHHH oooooooooo oooooooooo HHHHHHHHHH HHHHHHHHHi
+
+     seq  DSRRTSPVGS PALSIGLSVT LGHLVGIYFT GCSMNPARSF GPAVVMNRFS   200
+     pred iiiiiiiHHH HHHHHHHHHH HHHHHHHooo oooooooooo oooooooooo
+
+     seq  PSHWVFWVGP IVGAMLAAIL YFYLLFPSSL SLHDRVAVVK GTYEPEEDWE   250
+     pred oooHHHHHHH HHHHHHHHHH HHHHHHHHii iiiiiiiiii iiiIIIIIII
+
+     seq  DHREERKKTI ELTAH  265
+     pred IIIIIIIIII IIIII
