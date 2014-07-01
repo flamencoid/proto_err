@@ -58,11 +58,11 @@ class Reporter(object):
 		self.docString.replace(k='options',v=self.renderOptions())
 		## Basic stats
 		if self.basicStats:
-			self.docString.replace(k='numReads',v=self.basicStats.get('readsConsidered'))
-			self.docString.replace(k='totalReads',v=self.basicStats.get('totalNumberofReads'))
-			self.docString.replace(k='snps',v= (float(100*self.basicStats.get('snps')) )/self.basicStats.get('readsConsidered') )
-			self.docString.replace(k='ins',v=float(100*self.basicStats.get('del')) / self.basicStats.get('readsConsidered'))
-			self.docString.replace(k='del',v=float(100*self.basicStats.get('ins')) / self.basicStats.get('readsConsidered'))
+			self.docString.replace(k='numReads',v=str(self.basicStats.get('readsConsidered')),escape=False)
+			self.docString.replace(k='totalReads',v=str(self.basicStats.get('totalNumberofReads')),escape=False)
+			self.docString.replace(k='snps',v=str(float(100*self.basicStats.get('snps'))/self.basicStats.get('numBases') ),escape=False)
+			self.docString.replace(k='ins',v=str(float(100*self.basicStats.get('del')) / self.basicStats.get('numBases')),escape=False)
+			self.docString.replace(k='del',v=str(float(100*self.basicStats.get('ins')) / self.basicStats.get('numBases')),escape=False)
 
 		## Aligned read
 		self.docString.replace(k='msf',v=self.opt.outDir+"align.msf",escape=False)

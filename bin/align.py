@@ -13,11 +13,12 @@ parser.add_option("-r", "--ref", dest="refFilename",help="fasta input ref file",
 					default="../data/ref.fa")
 parser.add_option("-f","--reads",dest="fastqfile",help="fasta of reads",
 						default='')
+parser.add_option("-a","--algorithm",dest="algorithm",help="alignment algorithm (last(default)/bwa-mem/stapmy)",
+						default='last')
 # parser.add_option("-o","--outfile",dest="samfileName",help="outputsamfilename",
 # 						default='')
 
 (opt, args) = parser.parse_args()
-opt.algorithm = "last"
 ## Make run ID mandatory
 if not opt.fastqfile:
 	logging.error("Please specify a run ID with -f '''fasta''' ")
